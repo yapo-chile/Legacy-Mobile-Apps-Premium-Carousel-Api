@@ -3,11 +3,90 @@ package repository
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
 )
+
+type MockHTTPHandler struct {
+	mock.Mock
+}
+
+func (m *MockHTTPHandler) Send(request HTTPRequest) (interface{}, error) {
+	args := m.Called(request)
+	return args.Get(0), args.Error(1)
+}
+
+func (m *MockHTTPHandler) NewRequest() HTTPRequest {
+	args := m.Called()
+	return args.Get(0).(HTTPRequest)
+}
+
+type MockRequest struct {
+	mock.Mock
+}
+
+func (m *MockRequest) SetMethod(method string) HTTPRequest {
+	args := m.Called(method)
+	return args.Get(0).(HTTPRequest)
+}
+
+func (m *MockRequest) GetMethod() string {
+	args := m.Called()
+	return args.String(0)
+}
+
+func (m *MockRequest) SetPath(path string) HTTPRequest {
+	args := m.Called(path)
+	return args.Get(0).(HTTPRequest)
+}
+
+func (m *MockRequest) GetPath() string {
+	args := m.Called()
+	return args.String(0)
+}
+
+func (m *MockRequest) SetHeaders(headers map[string]string) HTTPRequest {
+	args := m.Called(headers)
+	return args.Get(0).(HTTPRequest)
+}
+
+func (m *MockRequest) GetHeaders() map[string][]string {
+	args := m.Called()
+	return args.Get(0).(map[string][]string)
+}
+
+func (m *MockRequest) SetBody(body interface{}) HTTPRequest {
+	args := m.Called(body)
+	return args.Get(0).(HTTPRequest)
+}
+
+func (m *MockRequest) GetBody() interface{} {
+	args := m.Called()
+	return args.Get(0)
+}
+
+func (m *MockRequest) SetQueryParams(queryParams map[string]string) HTTPRequest {
+	args := m.Called(queryParams)
+	return args.Get(0).(HTTPRequest)
+}
+
+func (m *MockRequest) GetQueryParams() map[string][]string {
+	args := m.Called()
+	return args.Get(0).(map[string][]string)
+}
+
+func (m *MockRequest) GetTimeOut() time.Duration {
+	args := m.Called()
+	return args.Get(0).(time.Duration)
+}
+
+func (m *MockRequest) SetTimeOut(t int) HTTPRequest {
+	args := m.Called(t)
+	return args.Get(0).(HTTPRequest)
+}
 
 func TestNewUserDataRepository(t *testing.T) {
 	mHandler := MockHTTPHandler{}
