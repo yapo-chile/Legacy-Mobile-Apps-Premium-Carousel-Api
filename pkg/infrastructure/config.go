@@ -43,13 +43,19 @@ type RuntimeConfig struct {
 	Port int    `env:"PORT" envDefault:"8080"`
 }
 
-// CircuitBreakerConf holds all configurations for circuit breaker
-type CircuitBreakerConf struct {
-	Name               string  `env:"NAME" envDefault:"HTTP_SEND"`
-	ConsecutiveFailure uint32  `env:"CONSECUTIVE_FAILURE" envDefault:"10"`
-	FailureRatio       float64 `env:"FAILURE_RATIO" envDefault:"0.5"`
-	Timeout            int     `env:"TIMEOUT" envDefault:"30"`
-	Interval           int     `env:"INTERVAL" envDefault:"30"`
+// DatabaseConf holds configuration for postgres database connection
+type DatabaseConf struct {
+	Host        string `env:"HOST" envDefault:"db"`
+	Port        int    `env:"PORT" envDefault:"5432"`
+	Dbname      string `env:"NAME" envDefault:"pgdb"`
+	DbUser      string `env:"USER" envDefault:"postgres"`
+	DbPasswd    string `env:"PASSWORD" envDefault:"postgres"`
+	Sslmode     string `env:"SSL_MODE" envDefault:"disable"`
+	MaxIdle     int    `env:"MAX_IDLE" envDefault:"10"`
+	MaxOpen     int    `env:"MAX_OPEN" envDefault:"100"`
+	MgFolder    string `env:"MIGRATIONS_FOLDER" envDefault:"migrations"`
+	MgDriver    string `env:"MIGRATIONS_DRIVER" envDefault:"postgres"`
+	ConnRetries int    `env:"CONN_RETRIES" envDefault:"60"`
 }
 
 // GomsClientConf holds configuration regarding to our http client (premium-carousel-api itself in this case)
@@ -65,7 +71,6 @@ type EtcdConf struct {
 	Prefix     string `env:"PREFIX" envDefault:"/v2/keys"`
 }
 
-// ProfileConf holds configuration to send http request to profile
 // CorsConf holds cors headers
 type CorsConf struct {
 	Enabled bool   `env:"ENABLED" envDefault:"false"`
@@ -110,16 +115,16 @@ type ProfileConf struct {
 
 // Config holds all configuration for the service
 type Config struct {
-	ServiceConf        ServiceConf        `env:"SERVICE_"`
-	PrometheusConf     PrometheusConf     `env:"PROMETHEUS_"`
-	LoggerConf         LoggerConf         `env:"LOGGER_"`
-	Runtime            RuntimeConfig      `env:"APP_"`
-	CircuitBreakerConf CircuitBreakerConf `env:"CIRCUIT_BREAKER_"`
-	GomsClientConf     GomsClientConf     `env:"GOMS_"`
-	EtcdConf           EtcdConf           `env:"ETCD_"`
-	CorsConf           CorsConf           `env:"CORS_"`
-	CacheConf          CacheConf          `env:"CACHE_"`
-	ProfileConf        ProfileConf        `env:"PROFILE_"`
+	ServiceConf    ServiceConf    `env:"SERVICE_"`
+	PrometheusConf PrometheusConf `env:"PROMETHEUS_"`
+	LoggerConf     LoggerConf     `env:"LOGGER_"`
+	Runtime        RuntimeConfig  `env:"APP_"`
+	GomsClientConf GomsClientConf `env:"GOMS_"`
+	EtcdConf       EtcdConf       `env:"ETCD_"`
+	CorsConf       CorsConf       `env:"CORS_"`
+	CacheConf      CacheConf      `env:"CACHE_"`
+	ProfileConf    ProfileConf    `env:"PROFILE_"`
+	DatabaseConf   DatabaseConf   `env:"DATABASE_"`
 }
 
 // LoadFromEnv loads the config data from the environment variables

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"io"
 	"time"
 )
 
@@ -24,4 +25,24 @@ type HTTPRequest interface {
 type HTTPHandler interface {
 	Send(HTTPRequest) (interface{}, error)
 	NewRequest() HTTPRequest
+}
+
+// DbHandler represents a database connection handler
+// it provides basic database capabilities
+// after its use, the connection with the database must be closed
+type DbHandler interface {
+	io.Closer
+	Insert(statement string, params ...interface{}) error
+	Update(statement string, params ...interface{}) error
+	Query(statement string, params ...interface{}) (DbResult, error)
+}
+
+// DbResult represents a database query result rows
+// after its use, the Close() method must be invoked
+// to ensure that the database connection used to perform the query
+// returns to the connection pool to be used again
+type DbResult interface {
+	io.Closer
+	Scan(dest ...interface{})
+	Next() bool
 }
