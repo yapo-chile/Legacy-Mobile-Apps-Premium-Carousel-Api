@@ -10,86 +10,86 @@ import (
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
 )
 
-type MockHTTPHandler struct {
+type mockHTTPHandler struct {
 	mock.Mock
 }
 
-func (m *MockHTTPHandler) Send(request HTTPRequest) (interface{}, error) {
+func (m *mockHTTPHandler) Send(request HTTPRequest) (interface{}, error) {
 	args := m.Called(request)
 	return args.Get(0), args.Error(1)
 }
 
-func (m *MockHTTPHandler) NewRequest() HTTPRequest {
+func (m *mockHTTPHandler) NewRequest() HTTPRequest {
 	args := m.Called()
 	return args.Get(0).(HTTPRequest)
 }
 
-type MockRequest struct {
+type mockRequest struct {
 	mock.Mock
 }
 
-func (m *MockRequest) SetMethod(method string) HTTPRequest {
+func (m *mockRequest) SetMethod(method string) HTTPRequest {
 	args := m.Called(method)
 	return args.Get(0).(HTTPRequest)
 }
 
-func (m *MockRequest) GetMethod() string {
+func (m *mockRequest) GetMethod() string {
 	args := m.Called()
 	return args.String(0)
 }
 
-func (m *MockRequest) SetPath(path string) HTTPRequest {
+func (m *mockRequest) SetPath(path string) HTTPRequest {
 	args := m.Called(path)
 	return args.Get(0).(HTTPRequest)
 }
 
-func (m *MockRequest) GetPath() string {
+func (m *mockRequest) GetPath() string {
 	args := m.Called()
 	return args.String(0)
 }
 
-func (m *MockRequest) SetHeaders(headers map[string]string) HTTPRequest {
+func (m *mockRequest) SetHeaders(headers map[string]string) HTTPRequest {
 	args := m.Called(headers)
 	return args.Get(0).(HTTPRequest)
 }
 
-func (m *MockRequest) GetHeaders() map[string][]string {
+func (m *mockRequest) GetHeaders() map[string][]string {
 	args := m.Called()
 	return args.Get(0).(map[string][]string)
 }
 
-func (m *MockRequest) SetBody(body interface{}) HTTPRequest {
+func (m *mockRequest) SetBody(body interface{}) HTTPRequest {
 	args := m.Called(body)
 	return args.Get(0).(HTTPRequest)
 }
 
-func (m *MockRequest) GetBody() interface{} {
+func (m *mockRequest) GetBody() interface{} {
 	args := m.Called()
 	return args.Get(0)
 }
 
-func (m *MockRequest) SetQueryParams(queryParams map[string]string) HTTPRequest {
+func (m *mockRequest) SetQueryParams(queryParams map[string]string) HTTPRequest {
 	args := m.Called(queryParams)
 	return args.Get(0).(HTTPRequest)
 }
 
-func (m *MockRequest) GetQueryParams() map[string][]string {
+func (m *mockRequest) GetQueryParams() map[string][]string {
 	args := m.Called()
 	return args.Get(0).(map[string][]string)
 }
 
-func (m *MockRequest) GetTimeOut() time.Duration {
+func (m *mockRequest) GetTimeOut() time.Duration {
 	args := m.Called()
 	return args.Get(0).(time.Duration)
 }
 
-func (m *MockRequest) SetTimeOut(t int) HTTPRequest {
+func (m *mockRequest) SetTimeOut(t int) HTTPRequest {
 	args := m.Called(t)
 	return args.Get(0).(HTTPRequest)
 }
 
 func TestNewUserDataRepository(t *testing.T) {
-	mHandler := MockHTTPHandler{}
+	mHandler := mockHTTPHandler{}
 	expected := &UserProfileRepository{
 		Handler: &mHandler,
 	}
@@ -99,8 +99,8 @@ func TestNewUserDataRepository(t *testing.T) {
 }
 
 func TestUserDataRepositoryGetUserDataOK(t *testing.T) {
-	mHandler := MockHTTPHandler{}
-	mRequest := MockRequest{}
+	mHandler := mockHTTPHandler{}
+	mRequest := mockRequest{}
 
 	mRequest.On("SetPath", mock.AnythingOfType("string")).Return(&mRequest)
 	mRequest.On("SetMethod", "GET").Return(&mRequest)
@@ -121,8 +121,8 @@ func TestUserDataRepositoryGetUserDataOK(t *testing.T) {
 }
 
 func TestUserDataRepositoryGetUserDataError(t *testing.T) {
-	mHandler := MockHTTPHandler{}
-	mRequest := MockRequest{}
+	mHandler := mockHTTPHandler{}
+	mRequest := mockRequest{}
 
 	mRequest.On("SetPath", mock.AnythingOfType("string")).Return(&mRequest)
 	mRequest.On("SetMethod", "GET").Return(&mRequest)
@@ -143,8 +143,8 @@ func TestUserDataRepositoryGetUserDataError(t *testing.T) {
 }
 
 func TestUserDataRepositoryGetUserDataRequestError(t *testing.T) {
-	mHandler := MockHTTPHandler{}
-	mRequest := MockRequest{}
+	mHandler := mockHTTPHandler{}
+	mRequest := mockRequest{}
 
 	mRequest.On("SetPath", mock.AnythingOfType("string")).Return(&mRequest)
 	mRequest.On("SetMethod", "GET").Return(&mRequest)
@@ -165,8 +165,8 @@ func TestUserDataRepositoryGetUserDataRequestError(t *testing.T) {
 }
 
 func TestUserDataRepositoryUnmarshalError(t *testing.T) {
-	mHandler := MockHTTPHandler{}
-	mRequest := MockRequest{}
+	mHandler := mockHTTPHandler{}
+	mRequest := mockRequest{}
 
 	mRequest.On("SetPath", mock.AnythingOfType("string")).Return(&mRequest)
 	mRequest.On("SetMethod", "GET").Return(&mRequest)

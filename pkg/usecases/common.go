@@ -27,3 +27,24 @@ type UserProfileRepository interface {
 	// GetUserData gets the user data based on his email
 	GetUserProfileData(email string) (UserBasicData, error)
 }
+
+// SearchResponse object to recieve search response data type
+type SearchResponse map[string][]struct {
+	ListID        string `json:"listId"`
+	Subject       string `json:"subject"`
+	Price         string `json:"price"`
+	UnitOfAccount string `json:"priceUf"`
+	Currency      string `json:"currency"`
+	Image         Image  `json:"image"`
+}
+
+// Image struct that defines the internal structure of the images
+// that search-ms retrieves
+type Image struct {
+	MainImage string `json:"mainImage"`
+	Thumbs    string `json:"thumbs"`
+	Thumbli   string `json:"thumbli"`
+}
+
+// SearchInput object to recieve search input data type
+type SearchInput map[string][]interface{}
