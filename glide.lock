@@ -1,0 +1,79 @@
+hash: c8030d9369802ac0d03fe574aef797dde7d986700538bdfef6118b92d94e0359
+updated: 2019-10-18T10:33:12.219508-03:00
+imports:
+- name: github.com/beorn7/perks
+  version: 37c8de3658fcb183f997c4e13e8337516ab753e6
+  subpackages:
+  - quantile
+- name: github.com/davecgh/go-spew
+  version: d8f796af33cc11cb798c1aaeb27a4ebc5099927d
+  subpackages:
+  - spew
+- name: github.com/golang/protobuf
+  version: 1680a479a2cfb3fa22b972af7e36d0a0fde47bf8
+  subpackages:
+  - proto
+- name: github.com/gorilla/context
+  version: 8559d4a6b87e4f517ec1846eb90a192b8748cc89
+- name: github.com/matttproud/golang_protobuf_extensions
+  version: c182affec369e30f25d3eb8cd8a478dee585ae7d
+  subpackages:
+  - pbutil
+- name: github.com/pact-foundation/pact-go
+  version: 3ce08c8af46b7bc33a06efc9b8807c08806c8af2
+  subpackages:
+  - dsl
+  - types
+- name: github.com/pmezard/go-difflib
+  version: 5d4384ee4fb2527b0a1256a821ebfc92f91efefc
+  subpackages:
+  - difflib
+- name: github.com/prometheus/client_golang
+  version: 9a37535b1ba53f6216e9c8557559a714e0dbb84a
+  subpackages:
+  - prometheus
+  - prometheus/internal
+  - prometheus/promhttp
+- name: github.com/prometheus/client_model
+  version: 14fe0d1b01d4d5fc031dd4bec1823bd3ebbe8016
+  subpackages:
+  - go
+- name: github.com/prometheus/common
+  version: 287d3e634a1e550c9e463dd7e5a75a422c614505
+  subpackages:
+  - expfmt
+  - internal/bitbucket.org/ww/goautoneg
+  - model
+- name: github.com/prometheus/procfs
+  version: aee14273b394209f45977b2d7a6b730071adf5e2
+  subpackages:
+  - internal/fs
+  - internal/util
+- name: github.com/sony/gobreaker
+  version: 21dbfda1fc5e89b91bd0c835a91c31fe4d461e88
+- name: github.com/stretchr/objx
+  version: 35313a95ee26395aa17d366c71a2ccf788fa69b6
+- name: github.com/stretchr/testify
+  version: 85f2b59c4459e5bf57488796be8c3667cb8246d6
+  subpackages:
+  - assert
+  - mock
+- name: github.com/tidwall/gjson
+  version: c5e72cdf74dff23857243dd662c465b810891c21
+- name: github.com/tidwall/match
+  version: 33827db735fff6510490d69a8622612558a557ed
+- name: github.com/tidwall/pretty
+  version: 1166b9ac2b65e46a43d8618d30d1554f4652d49b
+- name: github.com/Yapo/goutils
+  version: 8563913313114ecb543b197533daa93aedb513e5
+- name: github.com/Yapo/logger
+  version: 91855e974718b8c68dd00e63817568f1f512a4cc
+- name: golang.org/x/sys
+  version: 543471e840be449c53d44b32c7adf1261ad67e37
+  subpackages:
+  - windows
+- name: gopkg.in/gorilla/mux.v1
+  version: 00bdffe0f3c77e27d2cf6f5c70232a2d3e4d9c15
+- name: gopkg.in/yaml.v2
+  version: f221b8435cfb71e54062f6c6e99e9ade30b124d5
+testImports: []

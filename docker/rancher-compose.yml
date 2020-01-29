@@ -1,0 +1,19 @@
+version: '2'
+services:
+  goms:
+    scale: 1
+    start_on_create: true
+    health_check:
+      port: 8080
+      request_line: GET /healthcheck HTTP/1.0
+      # Measured in milliseconds, sets how often the healthcheck is executed
+      interval: 6000
+      # Measured in milliseconds, sets time to wait before executing healthchecks
+      initializing_timeout: 60000
+      unhealthy_threshold: 3
+      healthy_threshold: 2
+      # Strategy for what to do when unhealthy
+      # You can choose between none, recreate or 
+      # recreateOnQuorum (this last one requires more config)
+      strategy: recreate
+      response_timeout: 5000

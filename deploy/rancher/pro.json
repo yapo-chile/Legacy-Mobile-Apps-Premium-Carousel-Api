@@ -1,0 +1,6 @@
+{
+    "stack_name": "Goms",
+    "service_name": "goms",
+    "timeout": 300,
+    "env": {}
+}
