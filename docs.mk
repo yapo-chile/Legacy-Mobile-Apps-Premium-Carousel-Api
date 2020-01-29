@@ -18,4 +18,4 @@ docs-update: docs-compile
 
 ## Opens the live documentation on the default web browser
 docs: docs-stop docs-start
-	open http://${DOCS_HOST}/pkg/github.mpi-internal.com/Yapo/goms/
+	open http://${DOCS_HOST}/pkg/github.mpi-internal.com/Yapo/premium-carousel-api/

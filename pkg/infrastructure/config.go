@@ -52,7 +52,7 @@ type CircuitBreakerConf struct {
 	Interval           int     `env:"INTERVAL" envDefault:"30"`
 }
 
-// GomsClientConf holds configuration regarding to our http client (goms itself in this case)
+// GomsClientConf holds configuration regarding to our http client (premium-carousel-api itself in this case)
 type GomsClientConf struct {
 	TimeOut            int    `env:"TIMEOUT" envDefault:"30"`
 	GetHealthcheckPath string `env:"HEALTH_PATH" envDefault:"/get/healthcheck"`

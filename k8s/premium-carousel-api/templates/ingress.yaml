@@ -1,13 +1,13 @@
 {{- if .Values.ingress.enabled -}}
-{{- $fullName := include "goms.fullname" . -}}
-{{- $hostPrefix := include "goms.hostPrefix" . -}}
+{{- $fullName := include "premium-carousel-api.fullname" . -}}
+{{- $hostPrefix := include "premium-carousel-api.hostPrefix" . -}}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: {{ $fullName }}
   namespace: {{ .Release.Namespace }}
   labels:
-{{ include "goms.labels" . | indent 4 }}
+{{ include "premium-carousel-api.labels" . | indent 4 }}
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}

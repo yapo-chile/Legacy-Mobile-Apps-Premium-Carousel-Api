@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{.Release.Name}}-goms-configmap
+  name: {{.Release.Name}}-premium-carousel-api-configmap
   namespace: {{ .Release.Namespace }}
   labels:
-{{ include "goms.labels" . | indent 4 }}
+{{ include "premium-carousel-api.labels" . | indent 4 }}
 data:
   # Your env variables should be written here.
   PROMETHEUS_ENABLED: "{{ .Values.prometheus.enabled }}"

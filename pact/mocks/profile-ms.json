@@ -1,6 +1,6 @@
 {
 	"consumer": {
-		"name": "goms"
+		"name": "premium-carousel-api"
 	},
 	"provider": {
 		"name": "profile-ms"

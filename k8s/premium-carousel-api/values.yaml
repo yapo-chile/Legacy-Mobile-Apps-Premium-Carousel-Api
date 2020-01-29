@@ -1,4 +1,4 @@
-# Default values for goms.
+# Default values for premium-carousel-api.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -7,7 +7,7 @@ globals:
   env: reg
 
 image:
-  repository: containers.mpi-internal.com/yapo/goms
+  repository: containers.mpi-internal.com/yapo/premium-carousel-api
   tag: "" # Should it pass from the command line
   pullPolicy: IfNotPresent
   pullSecret: containers-mpi-internal-com

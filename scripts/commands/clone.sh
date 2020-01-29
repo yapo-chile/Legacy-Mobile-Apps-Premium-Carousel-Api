@@ -5,7 +5,7 @@ DIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 . "$DIR/colors.sh"
 
-TEMPLATE=goms
+TEMPLATE=premium-carousel-api
 BRANCH=master
 GITHUB_ORG=github.mpi-internal.com/Yapo
 GITHUB_URL=git@github.mpi-internal.com:Yapo
@@ -41,7 +41,7 @@ echoTitle "Preparing the new repo ${SERVICE}:${BRANCH}"
 git config user.name "${NAME}"
 git config user.email "${EMAIL}"
 TEMPLATE_HEAD=$(git rev-parse HEAD)
-SERVICE_HEAD=$(echo "Fork made from goms:${TEMPLATE_HEAD}" | git commit-tree HEAD^{tree})
+SERVICE_HEAD=$(echo "Fork made from premium-carousel-api:${TEMPLATE_HEAD}" | git commit-tree HEAD^{tree})
 git reset ${SERVICE_HEAD}
 git tag | xargs git tag -d
 
@@ -72,7 +72,7 @@ echoTitle "Removing code examples and leftovers"
 find . -iname "*.bak" | xargs rm
 find . -iname "*fibonacci*" | xargs rm
 find . -iname "*getHealthcheck*" | xargs rm
-find . -iname "*gomsRepo*" | xargs rm
+find . -iname "*premium-carousel-apiRepo*" | xargs rm
 
 read -p "Would you like to add HTTP connections to your repo by default? [y/N] " RESPONSE
 if [[ "${RESPONSE}" =~ ^([nN][oO]?)?$ ]]

@@ -1,4 +1,4 @@
-FROM golang:1.11 AS gobuilder
+FROM golang:1.13 AS gobuilder
 
 ARG APPFOLDER
 ARG APPNAME
@@ -8,7 +8,7 @@ ADD ./ .
 RUN make setup
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o /app.linux cmd/${APPNAME}/main.go
 
-FROM alpine:3.8
+FROM alpine:3.11
 RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 
 ARG GIT_COMMIT

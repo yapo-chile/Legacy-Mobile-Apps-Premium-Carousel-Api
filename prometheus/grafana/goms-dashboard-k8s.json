@@ -19,7 +19,7 @@
         "name": "VAR_SERVICE_NAME",
         "type": "constant",
         "label": "service_name",
-        "value": "goms",
+        "value": "premium-carousel-api",
         "description": ""
       },
       {
@@ -33,14 +33,14 @@
         "name": "VAR_GITHUB_LINK",
         "type": "constant",
         "label": "GITHUB_LINK",
-        "value": "https://github.mpi-internal.com/Yapo/goms",
+        "value": "https://github.mpi-internal.com/Yapo/premium-carousel-api",
         "description": ""
       },
       {
         "name": "VAR_EVENTS_COLLECTOR_METRIC_NAME",
         "type": "constant",
         "label": "EVENTS_COLLECTOR_METRIC_NAME",
-        "value": "goms_service_events_total",
+        "value": "premium-carousel-api_service_events_total",
         "description": ""
       }
     ],

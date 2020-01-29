@@ -45,7 +45,7 @@ docker-start: build docker-build docker-compose-up info
 ## Stop docker containers
 docker-stop: docker-compose-down
 
-## Setup a new service repository based on goms
+## Setup a new service repository based on premium-carousel-api
 clone:
 	@scripts/commands/clone.sh
 

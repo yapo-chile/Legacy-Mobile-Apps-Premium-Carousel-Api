@@ -4,7 +4,7 @@ language: go
 # Only current version is considered given limitations to publish more than one
 # report per build to Quality Gates.
 go:
-  - "1.11"
+  - "1.13"
 
 # This build should not be triggered by tags
 if: tags IS blank

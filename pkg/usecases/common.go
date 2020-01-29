@@ -1,7 +1,7 @@
 package usecases
 
 // GomsRepository interface that represents all the methods available to
-// interact with goms microservice
+// interact with premium-carousel-api microservice
 type GomsRepository interface {
 	GetHealthcheck() (string, error)
 }

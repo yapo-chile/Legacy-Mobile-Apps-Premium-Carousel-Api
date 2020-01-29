@@ -1,27 +1,63 @@
-# goms
+# premium-carousel-api
 
 <!-- Badger start badges -->
-[![Status of the build](https://badger.spt-engprod-pro.mpi-internal.com/badge/travis/Yapo/goms)](https://travis.mpi-internal.com/Yapo/goms)
-[![Testing Coverage](https://badger.spt-engprod-pro.mpi-internal.com/badge/coverage/Yapo/goms)](https://reports.spt-engprod-pro.mpi-internal.com/#/Yapo/goms?branch=master&type=push&daterange&daterange)
-[![Style/Linting issues](https://badger.spt-engprod-pro.mpi-internal.com/badge/issues/Yapo/goms)](https://reports.spt-engprod-pro.mpi-internal.com/#/Yapo/goms?branch=master&type=push&daterange&daterange)
-[![Badger](https://badger.spt-engprod-pro.mpi-internal.com/badge/flaky_tests/Yapo/goms)](https://databulous.spt-engprod-pro.mpi-internal.com/test/flaky/Yapo/goms)
-[![Badger](https://badger.spt-engprod-pro.mpi-internal.com/badge/quality_index/Yapo/goms)](https://databulous.spt-engprod-pro.mpi-internal.com/quality/repo/Yapo/goms)
-[![Badger](https://badger.spt-engprod-pro.mpi-internal.com/badge/engprod/Yapo/goms)](https://github.mpi-internal.com/spt-engprod/badger)
+[![Status of the build](https://badger.spt-engprod-pro.mpi-internal.com/badge/travis/Yapo/premium-carousel-api)](https://travis.mpi-internal.com/Yapo/premium-carousel-api)
+[![Testing Coverage](https://badger.spt-engprod-pro.mpi-internal.com/badge/coverage/Yapo/premium-carousel-api)](https://reports.spt-engprod-pro.mpi-internal.com/#/Yapo/premium-carousel-api?branch=master&type=push&daterange&daterange)
+[![Style/Linting issues](https://badger.spt-engprod-pro.mpi-internal.com/badge/issues/Yapo/premium-carousel-api)](https://reports.spt-engprod-pro.mpi-internal.com/#/Yapo/premium-carousel-api?branch=master&type=push&daterange&daterange)
+[![Badger](https://badger.spt-engprod-pro.mpi-internal.com/badge/flaky_tests/Yapo/premium-carousel-api)](https://databulous.spt-engprod-pro.mpi-internal.com/test/flaky/Yapo/premium-carousel-api)
+[![Badger](https://badger.spt-engprod-pro.mpi-internal.com/badge/quality_index/Yapo/premium-carousel-api)](https://databulous.spt-engprod-pro.mpi-internal.com/quality/repo/Yapo/premium-carousel-api)
+[![Badger](https://badger.spt-engprod-pro.mpi-internal.com/badge/engprod/Yapo/premium-carousel-api)](https://github.mpi-internal.com/spt-engprod/badger)
 <!-- Badger end badges -->
 
-Goms is the official golang microservice template for Yapo.
+premium-carousel-api needs a description here.
 
-## A few rules
+## Checklist: Is my service ready?
 
-* Goms was built following [Clean Architecture](https://www.amazon.com/Clean-Architecture-Craftsmans-Software-Structure/dp/0134494164) so, please, familiarize yourself with it and let's code great code!
+* [ ] Configure your github repository
+  - Open https://github.mpi-internal.com/Yapo/premium-carousel-api/settings
+  - Features: Wikis, Restrict editing, Issues, Projects
+  - Merge button: Only allow merge commits
+  - GitHub Pages: master branch / docs folder
+  - Open https://github.mpi-internal.com/Yapo/premium-carousel-api/settings/branches
+  - Default branch: master
+  - Protected branches: choose master
+  - Protect this branch
+    + Require pull request reviews
+    + Require status checks before merging
+      - Require branches to be up to date
+      - Quality gate code analysis
+      - Quality gate coverage
+      - Travis-ci
+    + Include administrators
+* [ ] Enable TravisCI
+  - Go to your service's github settings -> Hooks & Services -> Add Service -> Travis CI
+  - Fill in the form with the credentials you obtain from https://travis.mpi-internal.com/profile/
+  - Sync your repos and organizations on Travis
+  - Create a pull request and make a push on it
+  - The push should trigger a build. If it didn't, ensure that it is enabled on the travis service list
+  - Enjoy! This should automatically enable quality-gate reports and a few other goodies
+* [ ] Get your first PR merged
+  - Master should be a protected branch, so the only way to get commits there is via pull request
+  - Once the travis build is ok, and you got approval merge it back to master
+  - This will allow for the broken badges on top of this readme to display correctly
+  - Should them not display after some time, please report it
+* [ ] Enable automatic deployment
+  - Have your service created and deployed on a stack on Rancher
+  - Modify `rancher/deploy/*.json` files to reflect new names
+  - Follow the instructions on https://github.mpi-internal.com/Yapo/rancher-deploy
+* [ ] Create Helm Charts for Kubernetes deploy
+  - Create a new Chart with `helm create k8s/premium-carousel-api` cmd
+  - Copy configmap.yaml from k8s/premium-carousel-api/templates/ and change premium-carousel-api to your premium-carousel-api name.
+  - In the k8s/premium-carousel-api/deployment.yaml file:
+      + Add `/healthcheck` value to livenessProbe and readinessProbe section
+      + Copy imagePullSecrets, annotations and envFrom section from premium-carousel-api example deploment.yaml and change the names to your service name
+  - Delete premium-carousel-api chart
+* [ ] Delete this section
+  - It's time for me to leave, I've done my part
+  - It's time for you to start coding your new service and documenting your endpoints below
+  - Seriously, document your endpoints and delete this section
 
-* Goms has great [test coverage](https://quality-gate.mpi-internal.com/#/Yapo/goms) and [examples](https://github.mpi-internal.com/Yapo/goms/search?l=Go&q=func+Test&type=&utf8=%E2%9C%93) of how good testing can be done. Please honor the effort and keep your test quality in the top tier.
-
-* Goms is not a silver bullet. If your service clearly doesn't fit in this template, let's have a [conversation](mailto:dev@schibsted.cl)
-
-* [README.md](README.md) is the entrypoint for new users of your service. Keep it up to date and get others to proof-read it.
-
-## How to run the service
+## How to run premium-carousel-api
 
 * Create the dir: `~/go/src/github.mpi-internal.com/Yapo`
 
@@ -31,13 +67,13 @@ Goms is the official golang microservice template for Yapo.
 
   ```
   $ cd ~/go/src/github.mpi-internal.com/Yapo
-  $ git clone git@github.mpi-internal.com:Yapo/goms.git
+  $ git clone git@github.mpi-internal.com:Yapo/premium-carousel-api.git
   ```
 
 * On the top dir execute the make instruction to clean and start:
 
   ```
-  $ cd goms
+  $ cd premium-carousel-api
   $ make start
   ```
 
@@ -81,50 +117,6 @@ Goms is the official golang microservice template for Yapo.
   ```
   $ make checkstyle
   ```
-  
-
-## Creating a new service
-
-* Create a repo for your new service on: https://github.mpi-internal.com/Yapo
-* Rename your goms dir to your service name:
-  ```
-  $ mv goms YourService
-  ```
-* Update origin: 
-  ```
-  # https://help.github.com/articles/changing-a-remote-s-url/
-  $ git remote set-url origin git@github.mpi-internal.com:Yapo/YourService.git
-  ```
-
-* Replace every goms reference to your service's name:
-  ```
-  $ git grep -l goms | xargs sed -i.bak 's/goms/yourservice/g'
-  $ find . -name "*.bak" | xargs rm
-  ```
-
-* Go through the code examples and implement your service
-  ```
-  $ git grep -il fibonacci
-  README.md
-  cmd/goms/main.go
-  pkg/domain/fibonacci.go
-  pkg/domain/fibonacci_test.go
-  pkg/interfaces/handlers/fibonacci.go
-  pkg/interfaces/handlers/fibonacci_test.go
-  pkg/interfaces/loggers/fibonacciInteractorLogger.go
-  pkg/interfaces/repository/fibonacci.go
-  pkg/interfaces/repository/fibonacci_test.go
-  pkg/usecases/getNthFibonacci.go
-  pkg/usecases/getNthFibonacci_test.go
-  ```
-
-* Enable TravisCI
-  - Go to your service's github settings -> Hooks & Services -> Add Service -> Travis CI
-  - Fill in the form with the credentials you obtain from https://travis.mpi-internal.com/profile/
-  - Sync your repos and organizations on Travis
-  - Make a push on your service
-  - The push should trigger a build. If it didn't ensure that it is enabled on the travis service list
-  - Enjoy! This should automatically enable quality-gate reports and a few other goodies
 
 ## Endpoints
 ### GET  /healthcheck
@@ -146,51 +138,7 @@ No request parameters
 }
 ```
 
-### GET  /fibonacci
-Implements the Fibonacci Numbers with Clean Architecture
-
-#### Request
-{
-	"n": int - Ask for the nth fibonacci number
-}
-
-#### Response
-
-```javascript
-200 OK
-{
-	"Result": int - The nth fibonacci number
-}
-```
-
-#### Error response
-```javascript
-400 Bad Request
-{
-	"ErrorMessage": string - Explaining what went wrong
-}
-```
-
-### GET  /user/basic-data?mail=[user_mail]
-Returns the essential user data. It is in communication with the Profile Microservice. The main goal of this endpoint is to be used for a basic Pact Test.
-
-#### Request
-
-No additional parameters
-
-#### Response
-
-```javascript
-200 OK
-{
-    "fullname": Full name of the user,
-    "cellphone": The user´s cellphone,
-    "gender": The user gender,
-    "country": The country where the user lives (Currently only Chile is Available),
-    "region": The region where the user lives,
-    "commune": The commune where the user lives,
-}
-### Contact
+## Contact
 dev@schibsted.cl
 
 ## Kubernetes
@@ -201,9 +149,9 @@ If you haven't done it yet, you need to create a secret to reach Artifactory.
 
 ### Helm Charts
 
-1. You need to fill out the ENV variables in the k8s/goms/templates/configmap.yaml file.
+1. You need to fill out the ENV variables in the k8s/premium-carousel-api/templates/configmap.yaml file.
 2. You should fill out the *tag*, and *host* under hosts to your namespace.
 3. Add this host name to your /etc/hosts file with the correct IP address (127.21.5.11)
-4. You run `helm install -n <name_of_your_release> k8s/goms`
+4. You run `helm install -n <name_of_your_release> k8s/premium-carousel-api`
 5. Check your pod is running with `kubectl get pods`
 6. If you want to check your request log `kubectl logs <name_of_your_pod>`

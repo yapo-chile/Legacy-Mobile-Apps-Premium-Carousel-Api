@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.mpi-internal.com/Yapo/goms/pkg/interfaces/loggers"
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/interfaces/loggers"
 )
 
 // Server struct that implements http server to routes incoming requests

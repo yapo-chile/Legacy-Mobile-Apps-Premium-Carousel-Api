@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.mpi-internal.com/Yapo/goms/pkg/usecases"
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
 )
 
 func TestNewUserDataRepository(t *testing.T) {

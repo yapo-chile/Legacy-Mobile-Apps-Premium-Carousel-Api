@@ -1,6 +1,6 @@
 {
     "stack_name": "Goms",
-    "service_name": "goms",
+    "service_name": "premium-carousel-api",
     "timeout": 300,
     "env": {}
 }

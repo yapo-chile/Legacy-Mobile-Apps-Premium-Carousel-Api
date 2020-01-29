@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/Yapo/goutils"
-	"github.mpi-internal.com/Yapo/goms/pkg/usecases"
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
 )
 
 // GetUserDataHandlerPrometheusDefaultLogger is the logger used by the handler

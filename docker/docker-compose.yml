@@ -1,58 +1,8 @@
 version: '3'
-# CLONE-RCONF REMOVE START
-volumes:
-  etcd: {}
-# CLONE-RCONF REMOVE END
 services:
-  goms:
+  premium-carousel-api:
     image: ${DOCKER_IMAGE}:local
     ports:
      - "${DOCKER_PORT}:8080"
     labels:
       prometheus.port: ${PROMETHEUS_PORT}
-    # CLONE-RCONF REMOVE START
-    environment:
-      ETCD_HOST: http://etcd:2379
-    depends_on:
-    - git2etcd
-  etcd:
-    image: quay.io/coreos/etcd
-    volumes:
-    - etcd:/etcd_data
-    ports:
-    - 2379/tcp
-    - 2380/tcp
-    command:
-    - /usr/local/bin/etcd
-    - -name
-    - etcd
-    - --data-dir
-    - /etcd_data
-    - -advertise-client-urls
-    - http://etcd:2379
-    - -listen-client-urls
-    - http://0.0.0.0:2379
-    - -initial-advertise-peer-urls
-    - http://etcd:2380
-    - -listen-peer-urls
-    - http://0.0.0.0:2380
-    - --debug 
-  git2etcd:
-    image: containers.mpi-internal.com/yapo/git2etcd
-    environment:
-      G2E_AUTH_SSH_KEY: /opt/git2etcd/keys/key20180829
-      G2E_AUTH_SSH_PUBLIC: /opt/git2etcd/keys/key20180829.pub
-      G2E_AUTH_TYPE: ssh
-      G2E_ETCD_HOST: http://etcd:2379
-      G2E_REPO_BRANCH: minimal
-      G2E_REPO_PATH: data/
-      G2E_REPO_SYNCCYCLE: '86400'
-      G2E_REPO_URL: ssh://git@github.mpi-internal.com/Yapo/EtcdConfig.git
-      SSH_KNOWN_HOSTS: /opt/git2etcd/keys/known_hosts
-      TZ: America/Santiago
-    command:
-    - /opt/git2etcd/bin/git2etcd
-    - -conf_dir=/opt/git2etcd/config
-    depends_on:
-    - etcd
-    # CLONE-RCONF REMOVE END

@@ -13,17 +13,22 @@ tools=(
     github.com/jstemmer/go-junit-report
     github.com/axw/gocov/gocov
     github.com/AlekSi/gocov-xml
-    github.com/Masterminds/glide
     github.com/golangci/golangci-lint/cmd/golangci-lint
 )
 
 echoTitle "Installing missing tools"
 # Install missed tools
 for tool in ${tools[@]}; do
-    go get -u -v ${tool}
+   GO111MODULE=off go get -u -v ${tool}
 done
 
-echoTitle "Installing Glide dependencies"
-glide install
+echoTitle "Removing outdated vendor"
+rm -rf vendor glide.* go.*
+
+echoTitle "Initializating go modules"
+GO111MODULE=on go mod init $APPMODULE
+
+echoTitle "Installing project dependencies"
+GO111MODULE=on go mod tidy
 
 set +e

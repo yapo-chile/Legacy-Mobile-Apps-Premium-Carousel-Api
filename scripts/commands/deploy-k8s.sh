@@ -1,6 +1,6 @@
 echo "Publishing helm package to Artifactory"
 
-export CHART_DIR=k8s/goms
+export CHART_DIR=k8s/premium-carousel-api
 export CHART_VERSION=$(grep version $CHART_DIR/Chart.yaml | awk '{print $2}')
 
 helm lint ${CHART_DIR}
