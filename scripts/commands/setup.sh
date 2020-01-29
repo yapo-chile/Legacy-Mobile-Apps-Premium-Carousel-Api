@@ -22,12 +22,6 @@ for tool in ${tools[@]}; do
    GO111MODULE=off go get -u -v ${tool}
 done
 
-echoTitle "Removing outdated vendor"
-rm -rf vendor glide.* go.*
-
-echoTitle "Initializating go modules"
-GO111MODULE=on go mod init $APPMODULE
-
 echoTitle "Installing project dependencies"
 GO111MODULE=on go mod tidy
 
