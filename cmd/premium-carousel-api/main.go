@@ -7,7 +7,8 @@ import (
 
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/infrastructure"
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/interfaces/handlers"
-
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/interfaces/repository"
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
 )
 
 func main() { //nolint: funlen
@@ -48,10 +49,49 @@ func main() { //nolint: funlen
 	shutdownSequence.Push(prometheus)
 	logger.Info("Initializing resources")
 
+	regions, errorRegions := infrastructure.NewEtcd(
+		conf.EtcdConf.Host,
+		conf.EtcdConf.Region,
+		conf.EtcdConf.Prefix,
+		logger,
+	)
+
+	if errorRegions != nil {
+		panic("Unable to load regions remote config from etcd")
+	}
+
+	HTTPHandler := infrastructure.NewHTTPHandler(logger)
+
+	elasticsearch := infrastructure.NewElasticsearch("http://10.15.1.78", "19200", logger)
+
+	adRepo := repository.MakeAdRepository(
+		elasticsearch,
+		regions,
+		conf.AdConf.Host+conf.AdConf.Path,
+		conf.AdConf.MaxAdsToDisplay,
+	)
+
+	userProfileRepo := repository.MakeUserProfileRepository(
+		HTTPHandler,
+		conf.ProfileConf.Host+conf.ProfileConf.UserDataPath+conf.ProfileConf.UserDataTokens,
+	)
+
+	configRepo := repository.MakeConfigRepository(nil)
+
+	getUserAdsInteractor := usecases.MakeGetUserAdsInteractor(adRepo, configRepo)
+	getUserDataInteractor := usecases.MakeGetUserDataInteractor(userProfileRepo)
+
+	// UserAdsHandler
+	getUserAdsHandler := handlers.GetUserAdsHandler{
+		Interactor:            getUserAdsInteractor,
+		GetUserDataInteractor: getUserDataInteractor,
+		Logger:                nil,
+		UnitOfAccountSymbol:   conf.AdConf.UnitOfAccountSymbol,
+		CurrencySymbol:        conf.AdConf.CurrencySymbol,
+	}
+
 	// HealthHandler
 	var healthHandler handlers.HealthHandler
-
-
 
 	useBrowserCache := handlers.Cache{
 		MaxAge:  conf.CacheConf.MaxAge,
@@ -67,14 +107,18 @@ func main() { //nolint: funlen
 		WithProfiling: conf.ServiceConf.Profiling,
 		Routes: infrastructure.Routes{
 			{
-				// This is the base path, all routes will start with this prefix
-				Prefix: "",
 				Groups: []infrastructure.Route{
 					{
 						Name:    "Check service health",
 						Method:  "GET",
 						Pattern: "/healthcheck",
 						Handler: &healthHandler,
+					},
+					{
+						Name:    "Get user ads",
+						Method:  "GET",
+						Pattern: "/ads/{token:.*}",
+						Handler: &getUserAdsHandler,
 					},
 				},
 			},

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"encoding/json"
 	"io"
 	"time"
 )
@@ -45,4 +46,30 @@ type DbResult interface {
 	io.Closer
 	Scan(dest ...interface{})
 	Next() bool
+}
+
+// Config contains all info of configured
+type Config interface {
+	Get(string) string
+}
+
+type SearchResult interface {
+	GetResults() (results []json.RawMessage)
+	TotalHits() int64
+}
+
+type Query interface {
+	// Source returns the JSON-serializable query request.
+	Source() (interface{}, error)
+}
+
+type Elasticsearch interface {
+	NewMultiMatchQuery(text interface{}, typ string, fields ...string) Query
+	NewTermQuery(name string, value interface{}) Query
+	Search(index string,
+		query Query, from,
+		size int) (SearchResult, error)
+	NewFunctionScoreQuery(query Query, boost float64,
+		boostMode string, random bool) Query
+	NewBoolQueryMust(query ...Query) Query
 }

@@ -69,6 +69,7 @@ type EtcdConf struct {
 	Host       string `env:"HOST" envDefault:"http://lb:2397"`
 	LastUpdate string `env:"LAST_UPDATE" envDefault:"/last_update"`
 	Prefix     string `env:"PREFIX" envDefault:"/v2/keys"`
+	Region     string `env:"REGION" envDefault:"/public/location/regions.json"`
 }
 
 // CorsConf holds cors headers
@@ -113,6 +114,15 @@ type ProfileConf struct {
 	UserDataTokens string `env:"USER_DATA_TOKENS" envDefault:"tokens=%s"`
 }
 
+// AdConf contains search-ms configuration params
+type AdConf struct {
+	Host                string `env:"HOST" envDefault:"http://search:8080"`
+	Path                string `env:"PATH" envDefault:"/api/v1/search"`
+	CurrencySymbol      string `env:"CURRENCY_SYMBOL" envDefault:"$"`
+	UnitOfAccountSymbol string `env:"UNIT_OF_ACCOUNT_SYMBOL" envDefault:"UF"`
+	MaxAdsToDisplay     int    `env:"MAX_ADS_TO_DISPLAY" envDefault:"15"`
+}
+
 // Config holds all configuration for the service
 type Config struct {
 	ServiceConf    ServiceConf    `env:"SERVICE_"`
@@ -125,6 +135,7 @@ type Config struct {
 	CacheConf      CacheConf      `env:"CACHE_"`
 	ProfileConf    ProfileConf    `env:"PROFILE_"`
 	DatabaseConf   DatabaseConf   `env:"DATABASE_"`
+	AdConf         AdConf         `env:"AD_"`
 }
 
 // LoadFromEnv loads the config data from the environment variables

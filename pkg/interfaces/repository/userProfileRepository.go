@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"crypto/sha1" // nolint: gosec
 	"encoding/json"
 	"fmt"
 
@@ -9,7 +8,7 @@ import (
 )
 
 const (
-	errorNoUserDataFound string = "there was no user data found using the email: %s"
+	errorNoUserDataFound string = "there was no user data found using the email: %s. %+v"
 	errorUnmarshal       string = "there was an error parsing the user data %s"
 )
 
@@ -19,8 +18,8 @@ type UserProfileRepository struct {
 	Path    string
 }
 
-// NewUserProfileRepository constructor
-func NewUserProfileRepository(handler HTTPHandler, path string) usecases.UserProfileRepository {
+// MakeUserProfileRepository constructor
+func MakeUserProfileRepository(handler HTTPHandler, path string) usecases.UserProfileRepository {
 	return &UserProfileRepository{
 		Handler: handler,
 		Path:    path,
@@ -29,12 +28,10 @@ func NewUserProfileRepository(handler HTTPHandler, path string) usecases.UserPro
 
 // GetUserProfileData makes a http request to profile service
 // to get the user profile data
-// it sends the sha1 representation of the provided email
-func (repo *UserProfileRepository) GetUserProfileData(email string) (usecases.UserBasicData, error) {
-	h := sha1.New()        // nolint: gosec
-	h.Write([]byte(email)) // nolint: gosec, errcheck
-	sha1Email := fmt.Sprintf("%x", h.Sum(nil))
-	request := repo.Handler.NewRequest().SetMethod("GET").SetPath(fmt.Sprintf(repo.Path, sha1Email))
+// it sends the SHA1 representation of the provided email
+func (repo *UserProfileRepository) GetUserProfileData(SHA1Email string) (usecases.UserBasicData, error) {
+	request := repo.Handler.NewRequest().
+		SetMethod("GET").SetPath(fmt.Sprintf(repo.Path, SHA1Email))
 
 	JSONResp, err := repo.Handler.Send(request)
 	if err == nil && JSONResp != "" {
@@ -43,16 +40,16 @@ func (repo *UserProfileRepository) GetUserProfileData(email string) (usecases.Us
 
 		err := json.Unmarshal([]byte(resp), &userData)
 		if err != nil {
-			return usecases.UserBasicData{}, fmt.Errorf(errorUnmarshal, email)
+			return usecases.UserBasicData{}, fmt.Errorf(errorUnmarshal, SHA1Email, err)
 		}
 
-		val, ok := userData[sha1Email]
+		val, ok := userData[SHA1Email]
 		if !ok {
-			return usecases.UserBasicData{}, fmt.Errorf(errorNoUserDataFound, email)
+			return usecases.UserBasicData{}, fmt.Errorf(errorNoUserDataFound, SHA1Email)
 		}
 
 		return val, err
 	}
 
-	return usecases.UserBasicData{}, fmt.Errorf(errorNoUserDataFound, email)
+	return usecases.UserBasicData{}, fmt.Errorf(errorNoUserDataFound, SHA1Email)
 }

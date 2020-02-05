@@ -74,3 +74,6 @@ export PACT_BROKER_PORT=80
 export PROVIDER_HOST=http://localhost
 export PROVIDER_PORT=8080
 export PACTS_PATH=./pacts
+
+export AD_HOST=http://10.15.1.78:9062
+export ETCD_HOST=http://10.15.1.78:56146
