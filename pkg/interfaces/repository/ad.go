@@ -1,57 +1,231 @@
 package repository
 
 import (
+	"encoding/json"
 	"fmt"
+	"math/rand"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
 )
 
-// AdRepo implements the repository interface and gets ads from search-ms
-type AdRepo struct {
-	handler         Elasticsearch
+// adRepo implements the repository interface and gets ads from search repository
+type adRepo struct {
+	handler         Search
 	regionsConf     Config
-	path            string
+	imageServerLink string
+	index           string
 	maxAdsToDisplay int
 }
 
-// MakeAdRepository returns a fresh instance of AdRepo
-func MakeAdRepository(handler Elasticsearch, regionsConf Config, path string, maxAdsToDisplay int) usecases.AdRepository {
-	return &AdRepo{
+// MakeAdRepository returns a fresh instance of AdRepository
+func MakeAdRepository(handler Search, regionsConf Config, index,
+	imageServerLink string, maxAdsToDisplay int) usecases.AdRepository {
+	return &adRepo{
 		handler:         handler,
-		path:            path,
+		index:           index,
+		imageServerLink: imageServerLink,
 		regionsConf:     regionsConf,
 		maxAdsToDisplay: maxAdsToDisplay,
 	}
 }
 
-// SearchInput object to recieve search-ms input data type
-type SearchInput map[string]interface{}
+// SearchOutput holds the ad data contained in external repository
+type SearchOutput struct {
+	AdID        int
+	ListID      int
+	CategoryID  int
+	CommuneID   int
+	RegionID    int
+	UserID      int
+	Type        string
+	Phone       string
+	Region      string
+	Commune     string
+	Category    string
+	SubCategory string
+	Name        string
+	Subject     string
+	Body        string
+	Price       float64
+	OldPrice    float64
+	ListTime    time.Time
+	Media       []Media
+	Params      struct {
+		Condition string
+		Currency  string
+	}
+}
 
-// GetUserAds gets user active ads list from search-ms. The pagination starts
-// from page 1, also page 0 means page 1
-func (repo *AdRepo) GetUserAds(userID string, cpConfig usecases.CpConfig) (domain.Ads, error) {
+// Media holds image data in search Repository format
+type Media struct {
+	ID    int
+	SeqNo int
+}
+
+// GetUserAds gets user active ads from search repository using config to
+// match similar ads
+func (repo *adRepo) GetUserAds(userID string, cpConfig usecases.CpConfig) (domain.Ads, error) {
+	limit := repo.makeLimit(cpConfig)
 	termQuery := repo.handler.NewTermQuery("UserID", userID)
-	multiMatchQuery := repo.handler.NewMultiMatchQuery("hola", "cross_fields", "Category^0.5",
-		"SubCategory^0.5", "Region^0.5", "Commune", "name", "Body",
-		"Subject^2", "Params.Brand", "Params.Model",
-		"Params.Type", "Params.Version")
+	must, mustNot := []Query{termQuery}, []Query{}
 
-	boolQuery := repo.handler.NewBoolQueryMust(termQuery, multiMatchQuery)
+	if len(cpConfig.Categories) > 0 {
+		must = append(must,
+			repo.handler.NewCategoryFilter(cpConfig.Categories...))
+	}
+
+	if cpConfig.CustomQuery != "" {
+		must = append(must,
+			repo.handler.NewMultiMatchQuery(cpConfig.CustomQuery, "cross_fields",
+				"Category^0.5", "SubCategory^0.5", "Region^0.5", "Commune",
+				"name", "Body", "Subject^2", "Params.Brand", "Params.Model",
+				"Params.Type", "Params.Version"))
+	}
+
+	if cpConfig.PriceRangeFrom > 0 || cpConfig.PriceRangeTo > 0 {
+		must = append(must,
+			repo.handler.NewRangeQuery("Price",
+				cpConfig.PriceRangeFrom, cpConfig.PriceRangeTo))
+	}
+	if len(cpConfig.Exclude) > 0 {
+		mustNot = append(mustNot,
+			repo.handler.NewIDsQuery(cpConfig.Exclude...))
+	}
+
+	boolQuery := repo.handler.NewBoolQuery(must, mustNot)
 	scoreQuery := repo.handler.NewFunctionScoreQuery(boolQuery, 5, "multiply", true)
-	result, err := repo.handler.Search("ads", scoreQuery, 0, 10)
+	result, err := repo.handler.Search(repo.index, scoreQuery, 0, limit)
 	if err != nil {
-		panic(err)
+		return domain.Ads{}, err
 	}
 
-	if result.TotalHits() > 0 {
-		fmt.Printf("Found a total of %d ads\n", result.TotalHits())
-		for _, hit := range result.GetResults() {
-			fmt.Printf("Result: %+v\n", string(hit))
-		}
-	} else {
-		// No hits
-		fmt.Print("Ads not found\n")
+	ads := repo.parseToAds(result.GetResults())
+	if len(ads) < limit && cpConfig.FillGapsWithRandom {
+		ads = repo.fillGapsWithRandom(userID, (limit - len(ads)), ads, cpConfig)
 	}
-	return domain.Ads{}, nil
+
+	if len(ads) == 0 {
+		return domain.Ads{}, fmt.Errorf("The specified "+
+			"userID: %s don't return results elasticsearch",
+			userID)
+	}
+
+	return ads, nil
+}
+
+// fillGapsWithRandom fill gaps in case of the limit is less than required ads by config.
+// This method only works if config 'fillGapsWithRandom' is enabled
+func (repo *adRepo) fillGapsWithRandom(userID string, delta int, ads domain.Ads,
+	cpConfig usecases.CpConfig) domain.Ads {
+	exclude := []string{}
+	for _, ad := range ads {
+		exclude = append(exclude, ad.ID)
+	}
+	extraAds, _ := repo.GetUserAds(userID, usecases.CpConfig{
+		Exclude:            append(exclude, cpConfig.Exclude...),
+		FillGapsWithRandom: false,
+		Limit:              delta,
+	})
+	for i, ad := range extraAds {
+		ad.IsRelated = false
+		extraAds[i] = ad
+	}
+	return repo.randomizePositions(append(ads, extraAds...))
+}
+
+// randomizePositions randomizes index in ads array
+func (repo *adRepo) randomizePositions(ads domain.Ads) domain.Ads {
+	for i := range ads {
+		j := rand.Intn(i + 1)
+		ads[i], ads[j] = ads[j], ads[i]
+	}
+	return ads
+}
+
+var notAlphaNumbericRegex, _ = regexp.Compile("[^a-zA-Z0-9]+")
+var specialCases = strings.NewReplacer("á", "a", "é", "e", "í", "i", "ó", "o",
+	"ú", "u", "'", "", "ñ", "n")
+
+// parseToAds parses raw searchRepository response to domain object
+func (repo *adRepo) parseToAds(results []json.RawMessage) (ads domain.Ads) {
+	for _, hit := range results {
+		result := SearchOutput{}
+		json.Unmarshal(hit, &result) // nolint
+		ads = append(ads, repo.fillAd(result))
+	}
+	return
+}
+
+// fillAd parses search's document to domain.Ad struct
+func (repo *adRepo) fillAd(result SearchOutput) domain.Ad {
+	regionKey := fmt.Sprintf("region.%d.link", result.RegionID)
+	regionName := repo.regionsConf.Get(regionKey)
+	return domain.Ad{
+		ID:         strconv.Itoa(result.ListID),
+		UserID:     strconv.Itoa(result.UserID),
+		CategoryID: strconv.Itoa(result.CategoryID),
+		Subject:    result.Subject,
+		Price:      result.Price,
+		Currency:   result.Params.Currency,
+		URL: "/" + strings.Join(
+			[]string{
+				notAlphaNumbericRegex.ReplaceAllString(
+					specialCases.Replace(strings.ToLower(regionName)), "_"),
+				notAlphaNumbericRegex.ReplaceAllString(
+					specialCases.Replace(strings.ToLower(result.Subject)), "_") +
+					"_" + strconv.Itoa(result.ListID),
+			},
+			"/",
+		),
+		IsRelated: true,
+		Image:     repo.getMainImage(result.Media),
+	}
+}
+
+// getMainImage gets the main image for required ad using media struct
+func (repo *adRepo) getMainImage(imgs []Media) domain.Image {
+	if len(imgs) == 0 {
+		return domain.Image{}
+	}
+	for _, img := range imgs {
+		if img.SeqNo == 0 {
+			return repo.fillImage(img.ID)
+		}
+	}
+	return repo.fillImage(imgs[0].ID)
+}
+
+// fillImage parses the image ID to domain Image struct
+func (repo *adRepo) fillImage(ID int) domain.Image {
+	return domain.Image{
+		Full:   fmt.Sprintf(repo.imageServerLink, "images", ID),
+		Medium: fmt.Sprintf(repo.imageServerLink, "thumbsli", ID),
+		Small:  fmt.Sprintf(repo.imageServerLink, "thumbs", ID),
+	}
+}
+
+// makeLimit determines the real limit based on configuration
+func (repo *adRepo) makeLimit(cpConfig usecases.CpConfig) int {
+	if cpConfig.Limit > 0 {
+		return cpConfig.Limit
+	}
+	return repo.maxAdsToDisplay
+}
+
+// GetAd gets ad in search Repository using listID
+func (repo *adRepo) GetAd(listID string) (domain.Ad, error) {
+	res, err := repo.handler.GetDoc(repo.index, listID)
+	if err != nil {
+		return domain.Ad{}, err
+	}
+	result := SearchOutput{}
+	if e := json.Unmarshal(res, &result); e != nil {
+		return domain.Ad{}, e
+	}
+	return repo.fillAd(result), nil
 }

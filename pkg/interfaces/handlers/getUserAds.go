@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"math"
 	"net/http"
 
 	"github.com/Yapo/goutils"
@@ -10,37 +9,42 @@ import (
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
 )
 
-// GetUserAds implements the handler interface and responds to /getUser with getUsered
-// viewed ads
+// GetUserAdsHandler implements the handler interface and responds to /ads with
+// related user ads
 type GetUserAdsHandler struct {
-	Interactor            usecases.GetUserAdsInteractor
-	GetUserDataInteractor usecases.GetUserDataInteractor
-	Logger                GetUserAdsLogger
-	UnitOfAccountSymbol   string
-	CurrencySymbol        string
+	Interactor          usecases.GetUserAdsInteractor
+	GetAdInteractor     usecases.GetAdInteractor
+	Logger              GetUserAdsLogger
+	UnitOfAccountSymbol string
+	CurrencySymbol      string
 }
 
-// GetUserAdsLogger logger for TrackerHandler
-type GetUserAdsLogger interface {
-}
+// GetUserAdsLogger logger for GetUserAds Handler
+type GetUserAdsLogger interface{}
 
+// getUserAdsHandlerInput is the handler expected input
 type getUserAdsHandlerInput struct {
-	SHA1Email string `path:"token"`
+	ListID string `path:"listID"`
 }
 
+// getUserRequestOutput is the handler output
 type getUserRequestOutput struct {
 	Ads []adsOutput `json:"ads"`
 }
 
+// adsOutput is the main output struct
 type adsOutput struct {
-	ID       string      `json:"id"`
-	Title    string      `json:"title"`
-	Price    float64     `json:"price"`
-	Currency string      `json:"currency"`
-	URL      string      `json:"url"`
-	Image    imageOutput `json:"images"`
+	ID        string      `json:"id"`
+	Category  string      `json:"category"`
+	Title     string      `json:"title"`
+	Price     float64     `json:"price"`
+	Currency  string      `json:"currency"`
+	Image     imageOutput `json:"images"`
+	IsRelated bool        `json:"isRelated"`
+	URL       string      `json:"url"`
 }
 
+// imageOutput is the output struct for images
 type imageOutput struct {
 	Full   string `json:"full,omitempty"`
 	Medium string `json:"medium,omitempty"`
@@ -54,7 +58,7 @@ func (*GetUserAdsHandler) Input(ir InputRequest) HandlerInput {
 	return &input
 }
 
-// Execute getUsers current adview and returns getUsered viewed ads list
+// Execute get user ads for the current adview and returns related ads list
 func (h *GetUserAdsHandler) Execute(ig InputGetter) *goutils.Response {
 	input, response := ig()
 	if response != nil {
@@ -62,13 +66,14 @@ func (h *GetUserAdsHandler) Execute(ig InputGetter) *goutils.Response {
 	}
 	in := input.(*getUserAdsHandlerInput)
 
-	userData, err := h.GetUserDataInteractor.GetUserData(in.SHA1Email)
+	currentAd, err := h.GetAdInteractor.GetAd(in.ListID)
 	if err != nil {
 		return &goutils.Response{
 			Code: http.StatusNoContent,
 		}
 	}
-	resp, err := h.Interactor.GetUserAds(userData.UserID)
+
+	resp, err := h.Interactor.GetUserAds(currentAd.UserID, currentAd.ID)
 	if err != nil {
 		return &goutils.Response{
 			Code: http.StatusNoContent,
@@ -88,6 +93,7 @@ func (h *GetUserAdsHandler) Execute(ig InputGetter) *goutils.Response {
 	}
 }
 
+// fillResponse parses domain struct to expected handler output
 func (h *GetUserAdsHandler) fillResponse(ads domain.Ads) []adsOutput {
 	resp := []adsOutput{}
 	for _, ad := range ads {
@@ -96,21 +102,20 @@ func (h *GetUserAdsHandler) fillResponse(ads domain.Ads) []adsOutput {
 			Title:    ad.Subject,
 			Price:    ad.Price,
 			Currency: ad.Currency,
+			Category: ad.CategoryID,
 			Image: imageOutput{
 				Full:   ad.Image.Full,
 				Medium: ad.Image.Medium,
 				Small:  ad.Image.Small,
 			},
+			URL:       ad.URL,
+			IsRelated: ad.IsRelated,
 		}
-		if ad.UnitOfAccount > 0 {
-			adOutTemp.Price = ad.UnitOfAccount
+		if ad.Currency == "uf" {
 			adOutTemp.Currency = h.UnitOfAccountSymbol
 		} else {
 			adOutTemp.Currency = h.CurrencySymbol
 		}
-		// Round the output with 2 decimals
-		adOutTemp.Price = math.Round(adOutTemp.Price*100) / 100
-		adOutTemp.URL = ad.URL
 		resp = append(resp, adOutTemp)
 	}
 	return resp

@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/olivere/elastic/v7"
 
@@ -48,7 +49,22 @@ func (e *elasticsearch) Search(index string,
 	return &result, nil
 }
 
-func (e *elasticsearch) NewMultiMatchQuery(text interface{}, typ string, fields ...string) repository.Query {
+func (e *elasticsearch) GetDoc(index string, id string) (json.RawMessage, error) {
+	res, err := e.client.Get().
+		Index(index).
+		Id(id).
+		Do(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	if !res.Found {
+		return nil, fmt.Errorf("%s not found in elasticsearch", id)
+	}
+	return res.Source, nil
+}
+
+func (e *elasticsearch) NewMultiMatchQuery(text interface{}, typ string,
+	fields ...string) repository.Query {
 	return elastic.NewMultiMatchQuery(text, fields...).
 		Type(typ)
 }
@@ -57,12 +73,28 @@ func (e *elasticsearch) NewTermQuery(name string, value interface{}) repository.
 	return elastic.NewTermQuery(name, value)
 }
 
-func (e *elasticsearch) NewBoolQueryMust(query ...repository.Query) repository.Query {
-	input := []elastic.Query{}
-	for _, q := range query {
-		input = append(input, q.(elastic.Query))
+func (e *elasticsearch) NewRangeQuery(name string, from, to int) repository.Query {
+	q := elastic.NewRangeQuery(name)
+	if from > 0 {
+		q = q.Gte(from)
 	}
-	return elastic.NewBoolQuery().Must(input...)
+	if to > 0 {
+		q = q.Lte(to)
+	}
+	return q
+}
+
+func (e *elasticsearch) NewBoolQuery(must []repository.Query,
+	mustNot []repository.Query) repository.Query {
+	inputMust := []elastic.Query{}
+	for _, q := range must {
+		inputMust = append(inputMust, q.(elastic.Query))
+	}
+	inputMustNot := []elastic.Query{}
+	for _, q := range mustNot {
+		inputMustNot = append(inputMustNot, q.(elastic.Query))
+	}
+	return elastic.NewBoolQuery().Must(inputMust...).MustNot(inputMustNot...)
 }
 
 func (e *elasticsearch) NewFunctionScoreQuery(query repository.Query, boost float64,
@@ -76,6 +108,25 @@ func (e *elasticsearch) NewFunctionScoreQuery(query repository.Query, boost floa
 	return q
 }
 
+func (e *elasticsearch) NewIDsQuery(ids ...string) repository.Query {
+	return elastic.NewIdsQuery().Ids(ids...)
+}
+
+func (e *elasticsearch) NewCategoryFilter(categoryIDs ...int) repository.Query {
+	inputShould := []elastic.Query{}
+	for _, cat := range categoryIDs {
+		if (cat % 1000) == 0 {
+			inputShould = append(inputShould,
+				elastic.NewRangeQuery("CategoryID").Gte(cat).Lt(cat+1000))
+		} else {
+			inputShould = append(inputShould,
+				elastic.NewTermQuery("CategoryID", cat))
+
+		}
+	}
+	return elastic.NewBoolQuery().Should(inputShould...)
+}
+
 type searchResult elastic.SearchResult
 
 func (r *searchResult) GetResults() (results []json.RawMessage) {
@@ -86,5 +137,8 @@ func (r *searchResult) GetResults() (results []json.RawMessage) {
 }
 
 func (r *searchResult) TotalHits() int64 {
-	return r.Hits.TotalHits.Value
+	if r.Hits != nil && r.Hits.TotalHits != nil {
+		return r.Hits.TotalHits.Value
+	}
+	return 0
 }

@@ -4,25 +4,28 @@ import (
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
 )
 
-type CpConfig struct {
+// cpConfig holds connections to get CpConfig
+type cpConfig struct {
 	handler DbHandler
 }
 
+// MakeConfigRepository creates a new instance of ConfigRepository
 func MakeConfigRepository(handler DbHandler) usecases.ConfigRepository {
-	return &CpConfig{
+	return &cpConfig{
 		handler: handler,
 	}
 }
 
-func (repo *CpConfig) GetConfig(userID string) (usecases.CpConfig, error) {
+// GetConfig gets controlpanel configuration for an specific userID
+func (repo *cpConfig) GetConfig(userID string) (usecases.CpConfig, error) {
+	// TODO: load from repo
 	return usecases.CpConfig{
-		Sorting:            "random",
-		Categories:         []string{"2020", "1000"},
-		Limit:              7,
+		Categories:         []int{},
+		Limit:              10,
 		CustomQuery:        ``,
-		Exclude:            []string{"4951846"},
+		Exclude:            []string{},
 		PriceRangeFrom:     0,
 		PriceRangeTo:       0,
-		FillGapsWithRandom: false,
+		FillGapsWithRandom: true,
 	}, nil
 }

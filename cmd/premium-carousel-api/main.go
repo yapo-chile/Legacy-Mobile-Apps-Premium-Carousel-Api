@@ -36,7 +36,7 @@ func main() { //nolint: funlen
 
 	logger, err := infrastructure.MakeYapoLogger(&conf.LoggerConf,
 		prometheus.NewEventsCollector(
-			"premium-carousel-api_service_events_total",
+			"premium_carousel_api_service_events_total",
 			"events tracker counter for premium-carousel-api service",
 		),
 	)
@@ -51,7 +51,7 @@ func main() { //nolint: funlen
 
 	regions, errorRegions := infrastructure.NewEtcd(
 		conf.EtcdConf.Host,
-		conf.EtcdConf.Region,
+		conf.EtcdConf.RegionPath,
 		conf.EtcdConf.Prefix,
 		logger,
 	)
@@ -60,34 +60,28 @@ func main() { //nolint: funlen
 		panic("Unable to load regions remote config from etcd")
 	}
 
-	HTTPHandler := infrastructure.NewHTTPHandler(logger)
-
-	elasticsearch := infrastructure.NewElasticsearch("http://10.15.1.78", "19200", logger)
+	elasticsearch := infrastructure.NewElasticsearch(conf.AdConf.Host, conf.AdConf.Port, logger)
 
 	adRepo := repository.MakeAdRepository(
 		elasticsearch,
 		regions,
-		conf.AdConf.Host+conf.AdConf.Path,
+		conf.AdConf.Index,
+		conf.AdConf.ImageServerURL,
 		conf.AdConf.MaxAdsToDisplay,
 	)
 
-	userProfileRepo := repository.MakeUserProfileRepository(
-		HTTPHandler,
-		conf.ProfileConf.Host+conf.ProfileConf.UserDataPath+conf.ProfileConf.UserDataTokens,
-	)
-
-	configRepo := repository.MakeConfigRepository(nil)
+	configRepo := repository.MakeConfigRepository(nil) // TODO
 
 	getUserAdsInteractor := usecases.MakeGetUserAdsInteractor(adRepo, configRepo)
-	getUserDataInteractor := usecases.MakeGetUserDataInteractor(userProfileRepo)
+	getAdInteractor := usecases.MakeGetAdInteractor(adRepo)
 
 	// UserAdsHandler
 	getUserAdsHandler := handlers.GetUserAdsHandler{
-		Interactor:            getUserAdsInteractor,
-		GetUserDataInteractor: getUserDataInteractor,
-		Logger:                nil,
-		UnitOfAccountSymbol:   conf.AdConf.UnitOfAccountSymbol,
-		CurrencySymbol:        conf.AdConf.CurrencySymbol,
+		Interactor:          getUserAdsInteractor,
+		GetAdInteractor:     getAdInteractor,
+		Logger:              nil, // TODO
+		UnitOfAccountSymbol: conf.AdConf.UnitOfAccountSymbol,
+		CurrencySymbol:      conf.AdConf.CurrencySymbol,
 	}
 
 	// HealthHandler
@@ -117,7 +111,7 @@ func main() { //nolint: funlen
 					{
 						Name:    "Get user ads",
 						Method:  "GET",
-						Pattern: "/ads/{token:.*}",
+						Pattern: "/ads/{listID:[0-9]+}",
 						Handler: &getUserAdsHandler,
 					},
 				},

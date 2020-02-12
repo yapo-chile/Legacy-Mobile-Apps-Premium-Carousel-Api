@@ -3,30 +3,7 @@ package repository
 import (
 	"encoding/json"
 	"io"
-	"time"
 )
-
-// HTTPRequest interface represents the request that is going to be sent via HTTP
-type HTTPRequest interface {
-	GetMethod() string
-	SetMethod(string) HTTPRequest
-	GetPath() string
-	SetPath(string) HTTPRequest
-	GetBody() interface{}
-	SetBody(interface{}) HTTPRequest
-	GetHeaders() map[string][]string
-	SetHeaders(map[string]string) HTTPRequest
-	GetQueryParams() map[string][]string
-	SetQueryParams(map[string]string) HTTPRequest
-	GetTimeOut() time.Duration
-	SetTimeOut(int) HTTPRequest
-}
-
-// HTTPHandler implements HTTP handler operations
-type HTTPHandler interface {
-	Send(HTTPRequest) (interface{}, error)
-	NewRequest() HTTPRequest
-}
 
 // DbHandler represents a database connection handler
 // it provides basic database capabilities
@@ -63,13 +40,14 @@ type Query interface {
 	Source() (interface{}, error)
 }
 
-type Elasticsearch interface {
+type Search interface {
 	NewMultiMatchQuery(text interface{}, typ string, fields ...string) Query
 	NewTermQuery(name string, value interface{}) Query
-	Search(index string,
-		query Query, from,
-		size int) (SearchResult, error)
-	NewFunctionScoreQuery(query Query, boost float64,
-		boostMode string, random bool) Query
-	NewBoolQueryMust(query ...Query) Query
+	NewRangeQuery(name string, from, to int) Query
+	NewFunctionScoreQuery(query Query, boost float64, boostMode string, random bool) Query
+	NewBoolQuery(must []Query, mustNot []Query) Query
+	NewIDsQuery(ids ...string) Query
+	NewCategoryFilter(categoryIDs ...int) Query
+	GetDoc(index string, id string) (json.RawMessage, error)
+	Search(index string, query Query, from, size int) (SearchResult, error)
 }

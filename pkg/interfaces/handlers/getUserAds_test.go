@@ -8,233 +8,198 @@ import (
 	"github.com/Yapo/goutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
 )
 
-func TestTrackHandlernput(t *testing.T) {
-	var h TrackHandler
-	mMockInputRequest := MockInputRequest{}
+func TestGetUserAdsHandlerInput(t *testing.T) {
+	var h GetUserAdsHandler
+	mMockInputRequest := &MockInputRequest{}
+	mTargetRequest := &MockTargetRequest{}
 	mMockInputRequest.On("Set",
-		mock.AnythingOfType("*handlers.trackHandlerInput")).Return(&mMockInputRequest)
-	mMockInputRequest.On("FromCookies").Return(&mMockInputRequest)
-	mMockInputRequest.On("FromPath").Return(&mMockInputRequest)
-	input := h.Input(&mMockInputRequest)
-	var expected *trackHandlerInput
+		mock.AnythingOfType("*handlers.getUserAdsHandlerInput")).Return(mTargetRequest)
+	mTargetRequest.On("FromPath").Return(mTargetRequest)
+	input := h.Input(mMockInputRequest)
+	var expected *getUserAdsHandlerInput
 	assert.IsType(t, expected, input)
 	mMockInputRequest.AssertExpectations(t)
+	mTargetRequest.AssertExpectations(t)
 }
 
-type mockTrackerHandlerLogger struct {
+type mockGetUserAdsInteractor struct {
 	mock.Mock
 }
 
-func (m *mockTrackerHandlerLogger) LogFromUser(userID, listID string) {
-	m.Called(userID, listID)
-}
-
-func (m *mockTrackerHandlerLogger) LogFromVisitor(visitorID, listID string) {
-	m.Called(visitorID, listID)
-}
-
-type mockTrackHandlerInteractor struct {
-	mock.Mock
-}
-
-func (m *mockTrackHandlerInteractor) TrackViewedAds(user domain.User, ad domain.Ad) (domain.Ads, error) {
-	args := m.Called(user, ad)
+func (m *mockGetUserAdsInteractor) GetUserAds(userID string, exclude ...string) (domain.Ads, error) {
+	args := m.Called(userID, exclude)
 	return args.Get(0).(domain.Ads), args.Error(1)
 }
 
-type mockSessionRepo struct {
+type mockGetAdInteractor struct {
 	mock.Mock
 }
 
-func (m *mockSessionRepo) GetUserID(accSession string) (string, error) {
-	args := m.Called(accSession)
-	return args.String(0), args.Error(1)
+func (m *mockGetAdInteractor) GetAd(listID string) (domain.Ad, error) {
+	args := m.Called(listID)
+	return args.Get(0).(domain.Ad), args.Error(1)
 }
 
-func TestTrackHandlerOK(t *testing.T) {
-	mInteractor := &mockTrackHandlerInteractor{}
-	mSessionRepo := &mockSessionRepo{}
-	mLogger := &mockTrackerHandlerLogger{}
-	mLogger.On("LogFromUser", mock.AnythingOfType("string"),
-		mock.AnythingOfType("string"))
-	mInteractor.On("TrackViewedAds", mock.AnythingOfType("domain.User"),
-		mock.AnythingOfType("domain.Ad")).Return(domain.Ads{{ID: "1"}}, nil)
-	mSessionRepo.On("GetUserID", mock.AnythingOfType("string")).Return("", nil)
-	h := TrackHandler{
-		Interactor:  mInteractor,
-		SessionRepo: mSessionRepo,
-		Logger:      mLogger,
+func TestGetUserAdsHandlerOK(t *testing.T) {
+	mInteractor := &mockGetUserAdsInteractor{}
+	mGetAdInteractor := &mockGetAdInteractor{}
+
+	mGetAdInteractor.On("GetAd", mock.AnythingOfType("string")).
+		Return(domain.Ad{ID: "123", UserID: "465"}, nil)
+
+	mInteractor.On("GetUserAds", mock.AnythingOfType("string"),
+		mock.AnythingOfType("[]string")).
+		Return(domain.Ads{{ID: "321", UserID: "465"}}, nil)
+	h := GetUserAdsHandler{
+		Interactor:      mInteractor,
+		GetAdInteractor: mGetAdInteractor,
 	}
-	var input trackHandlerInput
-	input.AccSession = "123"
+	var input getUserAdsHandlerInput
+	input.ListID = "123"
 	getter := MakeMockInputGetter(&input, nil)
 	r := h.Execute(getter)
 
 	expected := &goutils.Response{
 		Code: http.StatusOK,
-		Body: trackRequestOutput{
-			Ads: []adsOutput{{ID: "1", URL: "1"}},
+		Body: getUserRequestOutput{
+			Ads: []adsOutput{{ID: "321"}},
 		},
 	}
 	assert.Equal(t, expected, r)
 	mInteractor.AssertExpectations(t)
-	mSessionRepo.AssertExpectations(t)
-	mLogger.AssertExpectations(t)
+	mGetAdInteractor.AssertExpectations(t)
 }
+func TestGetUserAdsHandlerWithUF(t *testing.T) {
+	mInteractor := &mockGetUserAdsInteractor{}
+	mGetAdInteractor := &mockGetAdInteractor{}
 
-func TestTrackHandlerFromVisitorOK(t *testing.T) {
-	mInteractor := &mockTrackHandlerInteractor{}
-	mSessionRepo := &mockSessionRepo{}
-	mLogger := &mockTrackerHandlerLogger{}
-	mLogger.On("LogFromVisitor", mock.AnythingOfType("string"),
-		mock.AnythingOfType("string"))
-	mInteractor.On("TrackViewedAds", mock.AnythingOfType("domain.User"),
-		mock.AnythingOfType("domain.Ad")).Return(domain.Ads{{ID: "1"}}, nil)
-	mSessionRepo.On("GetUserID",
-		mock.AnythingOfType("string")).Return("", fmt.Errorf("e"))
-	h := TrackHandler{
-		Interactor:  mInteractor,
-		SessionRepo: mSessionRepo,
-		Logger:      mLogger,
-	}
-	var input trackHandlerInput
-	input.AccSession = "123"
-	getter := MakeMockInputGetter(&input, nil)
-	r := h.Execute(getter)
+	mGetAdInteractor.On("GetAd", mock.AnythingOfType("string")).
+		Return(domain.Ad{ID: "123", UserID: "465"}, nil)
 
-	expected := &goutils.Response{
-		Code: http.StatusOK,
-		Body: trackRequestOutput{
-			Ads: []adsOutput{{ID: "1", URL: "1"}},
-		},
-	}
-	assert.Equal(t, expected, r)
-	mInteractor.AssertExpectations(t)
-	mSessionRepo.AssertExpectations(t)
-	mLogger.AssertExpectations(t)
-}
-
-func TestTrackHandlerNoData(t *testing.T) {
-	mInteractor := &mockTrackHandlerInteractor{}
-	mSessionRepo := &mockSessionRepo{}
-	mLogger := &mockTrackerHandlerLogger{}
-	mLogger.On("LogFromUser", mock.AnythingOfType("string"),
-		mock.AnythingOfType("string"))
-	mInteractor.On("TrackViewedAds", mock.AnythingOfType("domain.User"),
-		mock.AnythingOfType("domain.Ad")).Return(domain.Ads{}, nil)
-	mSessionRepo.On("GetUserID", mock.AnythingOfType("string")).Return("", nil)
-	h := TrackHandler{
-		Interactor:  mInteractor,
-		SessionRepo: mSessionRepo,
-		Logger:      mLogger,
-	}
-	var input trackHandlerInput
-	input.AccSession = "123"
-	getter := MakeMockInputGetter(&input, nil)
-	r := h.Execute(getter)
-
-	expected := &goutils.Response{
-		Code: http.StatusNoContent,
-	}
-	assert.Equal(t, expected, r)
-	mInteractor.AssertExpectations(t)
-	mSessionRepo.AssertExpectations(t)
-	mLogger.AssertExpectations(t)
-}
-
-func TestTrackHandlerTrackViewedAdError(t *testing.T) {
-	mInteractor := &mockTrackHandlerInteractor{}
-	mSessionRepo := &mockSessionRepo{}
-	mLogger := &mockTrackerHandlerLogger{}
-	e := fmt.Errorf("error")
-	mLogger.On("LogFromUser", mock.AnythingOfType("string"),
-		mock.AnythingOfType("string"))
-	mInteractor.On("TrackViewedAds", mock.AnythingOfType("domain.User"),
-		mock.AnythingOfType("domain.Ad")).Return(domain.Ads{}, e)
-	mSessionRepo.On("GetUserID", mock.AnythingOfType("string")).Return("", nil)
-	h := TrackHandler{
-		Interactor:  mInteractor,
-		SessionRepo: mSessionRepo,
-		Logger:      mLogger,
-	}
-	var input trackHandlerInput
-	input.AccSession = "123"
-	getter := MakeMockInputGetter(&input, nil)
-	r := h.Execute(getter)
-
-	expected := &goutils.Response{
-		Code: http.StatusNoContent,
-	}
-	assert.Equal(t, expected, r)
-	mInteractor.AssertExpectations(t)
-	mSessionRepo.AssertExpectations(t)
-	mLogger.AssertExpectations(t)
-}
-
-func TestTrackHandlerNotValidVisitorOrUser(t *testing.T) {
-	mInteractor := &mockTrackHandlerInteractor{}
-	mSessionRepo := &mockSessionRepo{}
-	h := TrackHandler{
-		Interactor:  mInteractor,
-		SessionRepo: mSessionRepo,
-	}
-	var input trackHandlerInput
-	getter := MakeMockInputGetter(&input, nil)
-	r := h.Execute(getter)
-
-	expected := &goutils.Response{
-		Code: http.StatusNoContent,
-	}
-	assert.Equal(t, expected, r)
-	mInteractor.AssertExpectations(t)
-	mSessionRepo.AssertExpectations(t)
-}
-
-func TestTrackHandlerBadInput(t *testing.T) {
-	mInteractor := &mockTrackHandlerInteractor{}
-	mSessionRepo := &mockSessionRepo{}
-	h := TrackHandler{
-		Interactor:  mInteractor,
-		SessionRepo: mSessionRepo,
-	}
-	var input trackHandlerInput
-	getter := MakeMockInputGetter(&input,
-		&goutils.Response{Code: http.StatusNoContent})
-	r := h.Execute(getter)
-
-	expected := &goutils.Response{
-		Code: http.StatusNoContent,
-	}
-	assert.Equal(t, expected, r)
-	mInteractor.AssertExpectations(t)
-	mSessionRepo.AssertExpectations(t)
-}
-
-func TestFillResponse(t *testing.T) {
-	mInteractor := &mockTrackHandlerInteractor{}
-	mSessionRepo := &mockSessionRepo{}
-	h := TrackHandler{
+	mInteractor.On("GetUserAds", mock.AnythingOfType("string"),
+		mock.AnythingOfType("[]string")).
+		Return(domain.Ads{{ID: "321", UserID: "465", Currency: "uf"}}, nil)
+	h := GetUserAdsHandler{
 		Interactor:          mInteractor,
-		SessionRepo:         mSessionRepo,
-		UnitOfAccountSymbol: "U.F.",
-		CurrencySymbol:      "$",
-		AdViewLink:          "test.com/vi/",
+		GetAdInteractor:     mGetAdInteractor,
+		UnitOfAccountSymbol: "UF",
 	}
+	var input getUserAdsHandlerInput
+	input.ListID = "123"
+	getter := MakeMockInputGetter(&input, nil)
+	r := h.Execute(getter)
 
-	r := h.fillResponse(
-		domain.Ads{
-			{ID: "1", UnitOfAccount: 123.0},
-			{ID: "2", Price: 124.0},
+	expected := &goutils.Response{
+		Code: http.StatusOK,
+		Body: getUserRequestOutput{
+			Ads: []adsOutput{{ID: "321", Currency: "UF"}},
 		},
-	)
-	expected := []adsOutput{
-		{ID: "1", Price: 123.0, Currency: h.UnitOfAccountSymbol, URL: h.AdViewLink + "1"},
-		{ID: "2", Price: 124.0, Currency: h.CurrencySymbol, URL: h.AdViewLink + "2"},
 	}
 	assert.Equal(t, expected, r)
 	mInteractor.AssertExpectations(t)
-	mSessionRepo.AssertExpectations(t)
+	mGetAdInteractor.AssertExpectations(t)
+}
+
+func TestGetUserAdsHandlerNoAds(t *testing.T) {
+	mInteractor := &mockGetUserAdsInteractor{}
+	mGetAdInteractor := &mockGetAdInteractor{}
+
+	mGetAdInteractor.On("GetAd", mock.AnythingOfType("string")).
+		Return(domain.Ad{ID: "123", UserID: "465"}, nil)
+
+	mInteractor.On("GetUserAds", mock.AnythingOfType("string"),
+		mock.AnythingOfType("[]string")).
+		Return(domain.Ads{}, nil)
+	h := GetUserAdsHandler{
+		Interactor:      mInteractor,
+		GetAdInteractor: mGetAdInteractor,
+	}
+	var input getUserAdsHandlerInput
+	input.ListID = "123"
+	getter := MakeMockInputGetter(&input, nil)
+	r := h.Execute(getter)
+
+	expected := &goutils.Response{
+		Code: http.StatusNoContent,
+	}
+	assert.Equal(t, expected, r)
+	mInteractor.AssertExpectations(t)
+	mGetAdInteractor.AssertExpectations(t)
+}
+
+func TestGetUserAdsHandlerErrorGettingUserAds(t *testing.T) {
+	mInteractor := &mockGetUserAdsInteractor{}
+	mGetAdInteractor := &mockGetAdInteractor{}
+
+	mGetAdInteractor.On("GetAd", mock.AnythingOfType("string")).
+		Return(domain.Ad{ID: "123", UserID: "465"}, nil)
+
+	mInteractor.On("GetUserAds", mock.AnythingOfType("string"),
+		mock.AnythingOfType("[]string")).
+		Return(domain.Ads{}, fmt.Errorf("e"))
+	h := GetUserAdsHandler{
+		Interactor:      mInteractor,
+		GetAdInteractor: mGetAdInteractor,
+	}
+	var input getUserAdsHandlerInput
+	input.ListID = "123"
+	getter := MakeMockInputGetter(&input, nil)
+	r := h.Execute(getter)
+
+	expected := &goutils.Response{
+		Code: http.StatusNoContent,
+	}
+	assert.Equal(t, expected, r)
+	mInteractor.AssertExpectations(t)
+	mGetAdInteractor.AssertExpectations(t)
+}
+
+func TestGetUserAdsHandlerErrorGettingAd(t *testing.T) {
+	mInteractor := &mockGetUserAdsInteractor{}
+	mGetAdInteractor := &mockGetAdInteractor{}
+
+	mGetAdInteractor.On("GetAd", mock.AnythingOfType("string")).
+		Return(domain.Ad{ID: "123", UserID: "465"}, fmt.Errorf("e"))
+
+	h := GetUserAdsHandler{
+		Interactor:      mInteractor,
+		GetAdInteractor: mGetAdInteractor,
+	}
+	var input getUserAdsHandlerInput
+	input.ListID = "123"
+	getter := MakeMockInputGetter(&input, nil)
+	r := h.Execute(getter)
+
+	expected := &goutils.Response{
+		Code: http.StatusNoContent,
+	}
+	assert.Equal(t, expected, r)
+	mInteractor.AssertExpectations(t)
+	mGetAdInteractor.AssertExpectations(t)
+}
+
+func TestGetUserAdsHandlerErrorBadInput(t *testing.T) {
+	mInteractor := &mockGetUserAdsInteractor{}
+	mGetAdInteractor := &mockGetAdInteractor{}
+	h := GetUserAdsHandler{
+		Interactor:      mInteractor,
+		GetAdInteractor: mGetAdInteractor,
+	}
+	var input getUserAdsHandlerInput
+	input.ListID = "123"
+	getter := MakeMockInputGetter(&input, &goutils.Response{
+		Code: http.StatusNoContent,
+	})
+	r := h.Execute(getter)
+
+	expected := &goutils.Response{
+		Code: http.StatusNoContent,
+	}
+	assert.Equal(t, expected, r)
+	mInteractor.AssertExpectations(t)
+	mGetAdInteractor.AssertExpectations(t)
 }
