@@ -9,6 +9,7 @@ require (
 	github.com/gorilla/mux v1.7.3 // indirect
 	github.com/hashicorp/go-version v1.2.0 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
+	github.com/jinzhu/gorm v1.9.12
 	github.com/pact-foundation/pact-go v1.1.0
 	github.com/prometheus/client_golang v1.4.0
 	github.com/stretchr/testify v1.4.0

@@ -31,6 +31,8 @@ LABEL branch=$GIT_BRANCH \
    appname=$APPNAME
 
 COPY --from=gobuilder /app.linux .
+COPY /docker/migrations/*.sql /home/user/app/migrations/
+
 RUN touch /home/user/app/$GIT_COMMIT
 
 # Package tzdata is needed before setting TZ ENV variable
