@@ -1,0 +1,139 @@
+package handlers
+
+import (
+	"fmt"
+	"net/http"
+	"testing"
+	"time"
+
+	"github.com/Yapo/goutils"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
+)
+
+func TestAddUserProductHandlerInput(t *testing.T) {
+	var h AddUserProductHandler
+	mMockInputRequest := &MockInputRequest{}
+	mTargetRequest := &MockTargetRequest{}
+	mMockInputRequest.On("Set",
+		mock.AnythingOfType("*handlers.addUserProductHandlerInput")).Return(mTargetRequest)
+	mTargetRequest.On("FromJSONBody").Return(mTargetRequest)
+	input := h.Input(mMockInputRequest)
+	var expected *addUserProductHandlerInput
+	assert.IsType(t, expected, input)
+	mMockInputRequest.AssertExpectations(t)
+	mTargetRequest.AssertExpectations(t)
+}
+
+type mockAddUserProductInteractor struct {
+	mock.Mock
+}
+
+func (m *mockAddUserProductInteractor) AddUserProduct(userID string, email string,
+	comment string, productType usecases.ProductType, expiredAt time.Time,
+	config usecases.CpConfig) error {
+	args := m.Called(userID, email, comment, productType, expiredAt, config)
+	return args.Error(0)
+}
+
+func TestAddUserProductHandlerErrorBadInput(t *testing.T) {
+	mInteractor := &mockAddUserProductInteractor{}
+	h := AddUserProductHandler{
+		Interactor: mInteractor,
+	}
+	var input getUserAdsHandlerInput
+
+	getter := MakeMockInputGetter(&input, &goutils.Response{
+		Code: http.StatusNoContent,
+	})
+	r := h.Execute(getter)
+
+	expected := &goutils.Response{
+		Code: http.StatusNoContent,
+	}
+	assert.Equal(t, expected, r)
+	mInteractor.AssertExpectations(t)
+}
+
+func TestAddUserProductHandlerOK(t *testing.T) {
+	mInteractor := &mockAddUserProductInteractor{}
+	mInteractor.On("AddUserProduct",
+		mock.AnythingOfType("string"),
+		mock.AnythingOfType("string"),
+		mock.AnythingOfType("string"),
+		usecases.PremiumCarousel,
+		mock.AnythingOfType("time.Time"),
+		mock.AnythingOfType("usecases.CpConfig"),
+	).Return(nil)
+	h := AddUserProductHandler{
+		Interactor: mInteractor,
+	}
+	input := addUserProductHandlerInput{
+		UserID:     "123",
+		Email:      "test@test.cl",
+		Categories: "2000,1000,3000",
+		ExpiredAt:  time.Now().Add(time.Hour * 24 * 365),
+	}
+	getter := MakeMockInputGetter(&input, nil)
+	r := h.Execute(getter)
+	expected := &goutils.Response{
+		Code: http.StatusOK,
+		Body: addUserProductRequestOutput{
+			response: "OK",
+		},
+	}
+	assert.Equal(t, expected, r)
+	mInteractor.AssertExpectations(t)
+}
+
+func TestAddUserProductHandlerError(t *testing.T) {
+	err := fmt.Errorf("err")
+	mInteractor := &mockAddUserProductInteractor{}
+	mInteractor.On("AddUserProduct",
+		mock.AnythingOfType("string"),
+		mock.AnythingOfType("string"),
+		mock.AnythingOfType("string"),
+		usecases.PremiumCarousel,
+		mock.AnythingOfType("time.Time"),
+		mock.AnythingOfType("usecases.CpConfig"),
+	).Return(err)
+	h := AddUserProductHandler{
+		Interactor: mInteractor,
+	}
+	input := addUserProductHandlerInput{
+		UserID:    "123",
+		Email:     "test@test.cl",
+		ExpiredAt: time.Now().Add(time.Hour * 24 * 365),
+	}
+	getter := MakeMockInputGetter(&input, nil)
+	r := h.Execute(getter)
+	expected := &goutils.Response{
+		Code: http.StatusBadRequest,
+		Body: fmt.Sprintf(`{"error": "%+v"}`, err),
+	}
+	assert.Equal(t, expected, r)
+	mInteractor.AssertExpectations(t)
+}
+
+func TestAddUserProductHandlerBadExpiredAtTime(t *testing.T) {
+	mInteractor := &mockAddUserProductInteractor{}
+	h := AddUserProductHandler{
+		Interactor: mInteractor,
+	}
+	input := addUserProductHandlerInput{
+		UserID:    "123",
+		Email:     "test@test.cl",
+		ExpiredAt: time.Now().Add(-1 * time.Hour * 24 * 365),
+	}
+	getter := MakeMockInputGetter(&input, nil)
+	r := h.Execute(getter)
+	expected := &goutils.Response{
+		Code: http.StatusBadRequest,
+		Body: fmt.Sprintf(`{"error": "bad expiration date: %+v"`,
+			input.ExpiredAt),
+	}
+	assert.Equal(t, expected, r)
+	mInteractor.AssertExpectations(t)
+}

@@ -5,11 +5,14 @@ go 1.13
 require (
 	github.com/Yapo/goutils v1.5.0
 	github.com/Yapo/logger v0.0.0-20170328173756-91855e974718
+	github.com/go-redis/redis v6.15.7+incompatible
 	github.com/gorilla/context v1.1.1
 	github.com/gorilla/mux v1.7.3 // indirect
 	github.com/hashicorp/go-version v1.2.0 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/jinzhu/gorm v1.9.12
+	github.com/lib/pq v1.1.1
+	github.com/mattes/migrate v3.0.1+incompatible
 	github.com/olivere/elastic/v7 v7.0.10
 	github.com/pact-foundation/pact-go v1.1.0
 	github.com/prometheus/client_golang v1.4.0

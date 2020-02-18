@@ -156,10 +156,10 @@ func TestGetUserAdsOK(t *testing.T) {
 
 	userAds, err := interactor.GetUserAds("",
 		usecases.CpConfig{
-			Categories:     []int{1234, 2345},
-			Exclude:        []string{"123"},
-			CustomQuery:    "erizo",
-			PriceRangeFrom: 1,
+			Categories:  []int{1234, 2345},
+			Exclude:     []string{"123"},
+			CustomQuery: "erizo",
+			PriceRange:  1,
 		})
 
 	expected := domain.Ads{
@@ -220,8 +220,9 @@ func TestGetUserAdsWithFilledGaps(t *testing.T) {
 
 	mConfig.On("Get", mock.AnythingOfType("string")).Return("something")
 	interactor := adRepo{
-		handler:     mSearch,
-		regionsConf: mConfig,
+		handler:         mSearch,
+		regionsConf:     mConfig,
+		maxAdsToDisplay: 20,
 	}
 
 	userAds, err := interactor.GetUserAds("",
@@ -229,7 +230,7 @@ func TestGetUserAdsWithFilledGaps(t *testing.T) {
 			Categories:         []int{1234, 2345},
 			Exclude:            []string{"123"},
 			CustomQuery:        "erizo",
-			PriceRangeFrom:     1,
+			PriceRange:         1,
 			FillGapsWithRandom: true,
 			Limit:              2,
 		})
@@ -288,16 +289,17 @@ func TestGetUserAdsZeroResults(t *testing.T) {
 
 	mResults.On("GetResults").Return(results)
 	interactor := adRepo{
-		handler:     mSearch,
-		regionsConf: mConfig,
+		handler:         mSearch,
+		regionsConf:     mConfig,
+		maxAdsToDisplay: 20,
 	}
 
 	_, err := interactor.GetUserAds("",
 		usecases.CpConfig{
-			Categories:     []int{1234, 2345},
-			Exclude:        []string{"123"},
-			CustomQuery:    "erizo",
-			PriceRangeFrom: 1,
+			Categories:  []int{1234, 2345},
+			Exclude:     []string{"123"},
+			CustomQuery: "erizo",
+			PriceRange:  1,
 		})
 
 	assert.Error(t, err)
@@ -350,10 +352,10 @@ func TestGetUserAdsSearchError(t *testing.T) {
 
 	_, err := interactor.GetUserAds("",
 		usecases.CpConfig{
-			Categories:     []int{1234, 2345},
-			Exclude:        []string{"123"},
-			CustomQuery:    "erizo",
-			PriceRangeFrom: 1,
+			Categories:  []int{1234, 2345},
+			Exclude:     []string{"123"},
+			CustomQuery: "erizo",
+			PriceRange:  1,
 		})
 
 	assert.Error(t, err)
@@ -393,8 +395,9 @@ func TestGetAdOK(t *testing.T) {
 	mSearch := &mockSearch{}
 	mConfig := &mockConfig{}
 	interactor := adRepo{
-		handler:     mSearch,
-		regionsConf: mConfig,
+		handler:         mSearch,
+		regionsConf:     mConfig,
+		maxAdsToDisplay: 20,
 	}
 	var result json.RawMessage
 	result = []byte(`{"ListID": 123,
