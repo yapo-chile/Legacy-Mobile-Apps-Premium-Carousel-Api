@@ -202,10 +202,11 @@ func (repo *adRepo) getMainImage(imgs []Media) domain.Image {
 
 // fillImage parses the image ID to domain Image struct
 func (repo *adRepo) fillImage(ID int) domain.Image {
+	IDstr := fmt.Sprintf("%010d", ID)
 	return domain.Image{
-		Full:   fmt.Sprintf(repo.imageServerLink, "images", ID),
-		Medium: fmt.Sprintf(repo.imageServerLink, "thumbsli", ID),
-		Small:  fmt.Sprintf(repo.imageServerLink, "thumbs", ID),
+		Full:   fmt.Sprintf(repo.imageServerLink, "images", IDstr[:2], IDstr),
+		Medium: fmt.Sprintf(repo.imageServerLink, "thumbsli", IDstr[:2], IDstr),
+		Small:  fmt.Sprintf(repo.imageServerLink, "thumbs", IDstr[:2], IDstr),
 	}
 }
 

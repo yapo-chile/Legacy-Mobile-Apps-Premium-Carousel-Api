@@ -112,7 +112,7 @@ type AdConf struct {
 	Host                string `env:"HOST" envDefault:"http://10.15.1.78"`
 	Port                string `env:"PORT" envDefault:"19200"`
 	Index               string `env:"PATH" envDefault:"ads"`
-	ImageServerURL      string `env:"IMAGE_SERVER_URL" envDefault:"https://img.yapo.cl/%s/%010d.jpg"`
+	ImageServerURL      string `env:"IMAGE_SERVER_URL" envDefault:"https://img.yapo.cl/%s/%s/%010d.jpg"`
 	CurrencySymbol      string `env:"CURRENCY_SYMBOL" envDefault:"$"`
 	UnitOfAccountSymbol string `env:"UNIT_OF_ACCOUNT_SYMBOL" envDefault:"UF"`
 	MaxAdsToDisplay     int    `env:"MAX_ADS_TO_DISPLAY" envDefault:"15"`

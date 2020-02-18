@@ -365,22 +365,22 @@ func TestGetUserAdsSearchError(t *testing.T) {
 
 func TestGetMainImage(t *testing.T) {
 	interactor := adRepo{
-		imageServerLink: "http://img.yapo.cl/%s/%010d.jpg",
+		imageServerLink: "http://img.yapo.cl/%s/%s/%s.jpg",
 	}
 
 	image := interactor.getMainImage([]Media{{SeqNo: 0, ID: 1}})
 	expected := domain.Image{
-		Full:   "http://img.yapo.cl/images/0000000001.jpg",
-		Medium: "http://img.yapo.cl/thumbsli/0000000001.jpg",
-		Small:  "http://img.yapo.cl/thumbs/0000000001.jpg",
+		Full:   "http://img.yapo.cl/images/00/0000000001.jpg",
+		Medium: "http://img.yapo.cl/thumbsli/00/0000000001.jpg",
+		Small:  "http://img.yapo.cl/thumbs/00/0000000001.jpg",
 	}
 	assert.Equal(t, expected, image)
 
 	image = interactor.getMainImage([]Media{{SeqNo: 1, ID: 100}})
 	expected = domain.Image{
-		Full:   "http://img.yapo.cl/images/0000000100.jpg",
-		Medium: "http://img.yapo.cl/thumbsli/0000000100.jpg",
-		Small:  "http://img.yapo.cl/thumbs/0000000100.jpg",
+		Full:   "http://img.yapo.cl/images/00/0000000100.jpg",
+		Medium: "http://img.yapo.cl/thumbsli/00/0000000100.jpg",
+		Small:  "http://img.yapo.cl/thumbs/00/0000000100.jpg",
 	}
 	assert.Equal(t, expected, image)
 
