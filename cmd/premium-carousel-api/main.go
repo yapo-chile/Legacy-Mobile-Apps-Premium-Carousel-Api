@@ -7,7 +7,8 @@ import (
 
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/infrastructure"
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/interfaces/handlers"
-
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/interfaces/repository"
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
 )
 
 func main() { //nolint: funlen
@@ -35,7 +36,7 @@ func main() { //nolint: funlen
 
 	logger, err := infrastructure.MakeYapoLogger(&conf.LoggerConf,
 		prometheus.NewEventsCollector(
-			"premium-carousel-api_service_events_total",
+			"premium_carousel_api_service_events_total",
 			"events tracker counter for premium-carousel-api service",
 		),
 	)
@@ -48,10 +49,43 @@ func main() { //nolint: funlen
 	shutdownSequence.Push(prometheus)
 	logger.Info("Initializing resources")
 
+	regions, errorRegions := infrastructure.NewEtcd(
+		conf.EtcdConf.Host,
+		conf.EtcdConf.RegionPath,
+		conf.EtcdConf.Prefix,
+		logger,
+	)
+
+	if errorRegions != nil {
+		panic("Unable to load regions remote config from etcd")
+	}
+
+	elasticsearch := infrastructure.NewElasticsearch(conf.AdConf.Host, conf.AdConf.Port, logger)
+
+	adRepo := repository.MakeAdRepository(
+		elasticsearch,
+		regions,
+		conf.AdConf.Index,
+		conf.AdConf.ImageServerURL,
+		conf.AdConf.MaxAdsToDisplay,
+	)
+
+	configRepo := repository.MakeConfigRepository(nil) // TODO
+
+	getUserAdsInteractor := usecases.MakeGetUserAdsInteractor(adRepo, configRepo)
+	getAdInteractor := usecases.MakeGetAdInteractor(adRepo)
+
+	// UserAdsHandler
+	getUserAdsHandler := handlers.GetUserAdsHandler{
+		Interactor:          getUserAdsInteractor,
+		GetAdInteractor:     getAdInteractor,
+		Logger:              nil, // TODO
+		UnitOfAccountSymbol: conf.AdConf.UnitOfAccountSymbol,
+		CurrencySymbol:      conf.AdConf.CurrencySymbol,
+	}
+
 	// HealthHandler
 	var healthHandler handlers.HealthHandler
-
-
 
 	useBrowserCache := handlers.Cache{
 		MaxAge:  conf.CacheConf.MaxAge,
@@ -67,14 +101,18 @@ func main() { //nolint: funlen
 		WithProfiling: conf.ServiceConf.Profiling,
 		Routes: infrastructure.Routes{
 			{
-				// This is the base path, all routes will start with this prefix
-				Prefix: "",
 				Groups: []infrastructure.Route{
 					{
 						Name:    "Check service health",
 						Method:  "GET",
 						Pattern: "/healthcheck",
 						Handler: &healthHandler,
+					},
+					{
+						Name:    "Get user ads",
+						Method:  "GET",
+						Pattern: "/ads/{listID:[0-9]+}",
+						Handler: &getUserAdsHandler,
 					},
 				},
 			},

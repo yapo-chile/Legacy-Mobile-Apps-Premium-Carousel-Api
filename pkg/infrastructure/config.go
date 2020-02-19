@@ -69,6 +69,7 @@ type EtcdConf struct {
 	Host       string `env:"HOST" envDefault:"http://lb:2397"`
 	LastUpdate string `env:"LAST_UPDATE" envDefault:"/last_update"`
 	Prefix     string `env:"PREFIX" envDefault:"/v2/keys"`
+	RegionPath string `env:"REGION_PATH" envDefault:"/public/location/regions.json"`
 }
 
 // CorsConf holds cors headers
@@ -106,11 +107,15 @@ func (chc *CacheConf) InitEtag() int64 {
 	return chc.Etag
 }
 
-// ProfileConf holds configuration to send http request to Profile
-type ProfileConf struct {
-	Host           string `env:"HOST" envDefault:"http://profile:8080"`
-	UserDataPath   string `env:"USER_DATA_PATH" envDefault:"/api/v1/internal/user?"`
-	UserDataTokens string `env:"USER_DATA_TOKENS" envDefault:"tokens=%s"`
+// AdConf contains search-ms configuration params
+type AdConf struct {
+	Host                string `env:"HOST" envDefault:"http://10.15.1.78"`
+	Port                string `env:"PORT" envDefault:"19200"`
+	Index               string `env:"PATH" envDefault:"ads"`
+	ImageServerURL      string `env:"IMAGE_SERVER_URL" envDefault:"https://img.yapo.cl/%s/%s/%010d.jpg"`
+	CurrencySymbol      string `env:"CURRENCY_SYMBOL" envDefault:"$"`
+	UnitOfAccountSymbol string `env:"UNIT_OF_ACCOUNT_SYMBOL" envDefault:"UF"`
+	MaxAdsToDisplay     int    `env:"MAX_ADS_TO_DISPLAY" envDefault:"15"`
 }
 
 // Config holds all configuration for the service
@@ -123,8 +128,8 @@ type Config struct {
 	EtcdConf       EtcdConf       `env:"ETCD_"`
 	CorsConf       CorsConf       `env:"CORS_"`
 	CacheConf      CacheConf      `env:"CACHE_"`
-	ProfileConf    ProfileConf    `env:"PROFILE_"`
 	DatabaseConf   DatabaseConf   `env:"DATABASE_"`
+	AdConf         AdConf         `env:"AD_"`
 }
 
 // LoadFromEnv loads the config data from the environment variables
