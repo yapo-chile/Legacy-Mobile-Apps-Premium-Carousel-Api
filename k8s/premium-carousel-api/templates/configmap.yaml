@@ -9,3 +9,8 @@ data:
   # Your env variables should be written here.
   PROMETHEUS_ENABLED: "{{ .Values.prometheus.enabled }}"
   GOMS_HEALTH_PATH: "{{ .Values.healthcheck.path }}"
+  ETCD_HOST: "{{ .Values.etcd.host }}"
+  AD_HOST: "{{ .Values.ad.host }}"
+  AD_PORT: "{{ .Values.ad.port }}"
+  LOGGER_LOG_LEVEL: "{{ .Values.logger.logLevel }}"
+  AD_IMAGE_SERVER_URL: "{{ .Values.ad.imageServerURL }}"
