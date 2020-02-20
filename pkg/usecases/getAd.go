@@ -18,6 +18,7 @@ type getAdInteractor struct {
 	adRepo    AdRepository
 	cacheRepo CacheRepository
 	logger    GetAdLogger
+	cacheTTL  time.Duration
 }
 
 // GetAdLogger logs GetAd events
@@ -29,8 +30,10 @@ type GetAdLogger interface {
 
 // MakeGetAdInteractor creates a new instance of GetAdInteractor
 func MakeGetAdInteractor(adRepo AdRepository,
-	cacheRepo CacheRepository, logger GetAdLogger) GetAdInteractor {
-	return &getAdInteractor{adRepo: adRepo, cacheRepo: cacheRepo, logger: logger}
+	cacheRepo CacheRepository, logger GetAdLogger,
+	cacheTTL time.Duration) GetAdInteractor {
+	return &getAdInteractor{adRepo: adRepo, cacheRepo: cacheRepo,
+		logger: logger, cacheTTL: cacheTTL}
 }
 
 // GetAd gets ad by given listID
@@ -51,7 +54,7 @@ func (interactor *getAdInteractor) GetAd(listID string) (ad domain.Ad, err error
 	}
 	cacheError = interactor.cacheRepo.SetCache(
 		strings.Join([]string{"ad", listID}, ":"),
-		MinifiedAdDataType, ad, time.Minute*10)
+		MinifiedAdDataType, ad, interactor.cacheTTL)
 	if cacheError != nil {
 		interactor.logger.LogWarnSettingCache(listID, cacheError)
 	}

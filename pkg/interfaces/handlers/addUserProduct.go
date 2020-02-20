@@ -63,7 +63,7 @@ func (h *AddUserProductHandler) Execute(ig InputGetter) *goutils.Response {
 		}
 	}
 	config := usecases.CpConfig{
-		Categories:         h.getCategories(in),
+		Categories:         h.getCategories(in.Categories),
 		Exclude:            strings.Split(in.Exclude, ","),
 		CustomQuery:        in.CustomQuery,
 		Limit:              in.Limit,
@@ -89,9 +89,9 @@ func (h *AddUserProductHandler) Execute(ig InputGetter) *goutils.Response {
 	}
 }
 
-func (h *AddUserProductHandler) getCategories(in *addUserProductHandlerInput) []int {
+func (h *AddUserProductHandler) getCategories(raw string) []int {
 	categories := []int{}
-	categoriesArr := strings.Split(in.Categories, ",")
+	categoriesArr := strings.Split(raw, ",")
 	for _, c := range categoriesArr {
 		cat, _ := strconv.Atoi(c)
 		categories = append(categories, cat)

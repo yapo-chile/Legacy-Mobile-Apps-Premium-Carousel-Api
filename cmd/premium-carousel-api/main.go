@@ -117,12 +117,14 @@ func main() { //nolint: funlen
 		adRepo,
 		cacheRepo,
 		loggers.MakeGetAdLogger(logger),
+		conf.CacheConf.DefaultTTL,
 	)
 
 	addUserProductInteractor := usecases.MakeAddUserProductInteractor(
 		productRepo,
 		cacheRepo,
 		loggers.MakeAddUserProductLogger(logger),
+		conf.CacheConf.DefaultTTL,
 	)
 
 	getUserProductsInteractor := usecases.MakeGetUserProductsInteractor(

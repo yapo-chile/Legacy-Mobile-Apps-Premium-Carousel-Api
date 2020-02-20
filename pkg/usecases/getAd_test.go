@@ -31,7 +31,7 @@ func TestGetAdOkWithoutCache(t *testing.T) {
 	mAdRepo := &mockAdRepo{}
 	mCacheRepo := &mockCacheRepo{}
 	mLogger := &mockGetAdLogger{}
-	interactor := MakeGetAdInteractor(mAdRepo, mCacheRepo, mLogger)
+	interactor := MakeGetAdInteractor(mAdRepo, mCacheRepo, mLogger, 0)
 	tAd := domain.Ad{ID: "1", Subject: "Mi auto", UserID: "123"}
 	mLogger.On("LogWarnGettingCache", mock.Anything, mock.Anything)
 	mCacheRepo.On("GetCache", mock.AnythingOfType("string"), mock.Anything).
@@ -54,7 +54,7 @@ func TestGetAdOkWithCache(t *testing.T) {
 	mAdRepo := &mockAdRepo{}
 	mCacheRepo := &mockCacheRepo{}
 	mLogger := &mockGetAdLogger{}
-	interactor := MakeGetAdInteractor(mAdRepo, mCacheRepo, mLogger)
+	interactor := MakeGetAdInteractor(mAdRepo, mCacheRepo, mLogger, 0)
 	tAd := domain.Ad{ID: "1", Subject: "Mi auto", UserID: "123"}
 	tAdBytes, _ := json.Marshal(tAd)
 	mCacheRepo.On("GetCache", mock.AnythingOfType("string"), mock.Anything).
@@ -71,7 +71,7 @@ func TestGetAdErrorGettingAd(t *testing.T) {
 	mAdRepo := &mockAdRepo{}
 	mCacheRepo := &mockCacheRepo{}
 	mLogger := &mockGetAdLogger{}
-	interactor := MakeGetAdInteractor(mAdRepo, mCacheRepo, mLogger)
+	interactor := MakeGetAdInteractor(mAdRepo, mCacheRepo, mLogger, 0)
 	tAd := domain.Ad{ID: "1", Subject: "Mi auto", UserID: "123"}
 	mLogger.On("LogWarnGettingCache", mock.Anything, mock.Anything)
 	mCacheRepo.On("GetCache", mock.AnythingOfType("string"), mock.Anything).
@@ -88,7 +88,7 @@ func TestGetAdErrorSettingCache(t *testing.T) {
 	mAdRepo := &mockAdRepo{}
 	mCacheRepo := &mockCacheRepo{}
 	mLogger := &mockGetAdLogger{}
-	interactor := MakeGetAdInteractor(mAdRepo, mCacheRepo, mLogger)
+	interactor := MakeGetAdInteractor(mAdRepo, mCacheRepo, mLogger, 0)
 	tAd := domain.Ad{ID: "1", Subject: "Mi auto", UserID: "123"}
 	mLogger.On("LogWarnGettingCache", mock.Anything, mock.Anything)
 	mCacheRepo.On("GetCache", mock.AnythingOfType("string"), mock.Anything).

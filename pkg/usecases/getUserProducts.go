@@ -28,12 +28,12 @@ func MakeGetUserProductsInteractor(productRepo ProductRepository,
 
 // GetUserProducts gets all user products using pagination
 func (interactor *getUserProductsInteractor) GetUserProducts(email string,
-	page int) ([]Product, int, int, error) {
-	products, currentPage, totalPages, err := interactor.productRepo.
+	page int) (products []Product, currentPage int, totalPages int, err error) {
+	products, currentPage, totalPages, err = interactor.productRepo.
 		GetUserProducts(email, page)
 	if err != nil {
 		interactor.logger.LogErrorGettingUserProducts(email, err)
 		return []Product{}, 0, 0, fmt.Errorf("error loading products: %+v", err)
 	}
-	return products, currentPage, totalPages, nil
+	return
 }

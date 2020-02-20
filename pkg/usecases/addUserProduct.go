@@ -6,17 +6,18 @@ import (
 	"time"
 )
 
-// GetUserAdsInteractor allows GetUserAds operations
+// AddUserProductInteractor wraps AddUserProduct operations
 type AddUserProductInteractor interface {
 	AddUserProduct(userID, email, comment string,
 		productType ProductType, expiredAt time.Time, config CpConfig) error
 }
 
-// getUserAdsInteractor defines the interactor for GetUserAds usecase
+// addUserProductInteractor defines the interactor for addUserProduct usecase
 type addUserProductInteractor struct {
 	productRepo ProductRepository
 	cacheRepo   CacheRepository
 	logger      AddUserProductLogger
+	cacheTTL    time.Duration
 }
 
 // AddUserProductLogger logs AddUserProduct events
@@ -27,12 +28,13 @@ type AddUserProductLogger interface {
 
 // MakeAddUserProductInteractor creates a new instance of AddUserProductInteractor
 func MakeAddUserProductInteractor(productRepo ProductRepository,
-	cacheRepo CacheRepository, logger AddUserProductLogger) AddUserProductInteractor {
+	cacheRepo CacheRepository, logger AddUserProductLogger,
+	cacheTTL time.Duration) AddUserProductInteractor {
 	return &addUserProductInteractor{productRepo: productRepo, cacheRepo: cacheRepo,
-		logger: logger}
+		logger: logger, cacheTTL: cacheTTL}
 }
 
-// GetUserAds retrieves user ads based on configuration repository
+// AddUserProduct adds user product to repository, also sets cache
 func (interactor *addUserProductInteractor) AddUserProduct(userID, email, comment string,
 	productType ProductType, expiredAt time.Time, config CpConfig) error {
 	product, err := interactor.productRepo.AddUserProduct(userID, email, comment, productType,
@@ -43,7 +45,7 @@ func (interactor *addUserProductInteractor) AddUserProduct(userID, email, commen
 	}
 	cacheError := interactor.cacheRepo.
 		SetCache(strings.Join([]string{"user", userID, string(PremiumCarousel)}, ":"),
-			ProductCacheType, product, time.Minute*10)
+			ProductCacheType, product, interactor.cacheTTL)
 	if cacheError != nil {
 		interactor.logger.LogWarnSettingCache(userID, cacheError)
 	}

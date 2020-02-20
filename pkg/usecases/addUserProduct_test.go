@@ -26,7 +26,7 @@ func TestAddProductOk(t *testing.T) {
 	mProductRepo := &mockProductRepo{}
 	mCacheRepo := &mockCacheRepo{}
 	mLogger := &mockAddUserProductLogger{}
-	interactor := MakeAddUserProductInteractor(mProductRepo, mCacheRepo, mLogger)
+	interactor := MakeAddUserProductInteractor(mProductRepo, mCacheRepo, mLogger, 0)
 	mCacheRepo.On("SetCache", mock.AnythingOfType("string"),
 		ProductCacheType,
 		mock.AnythingOfType("usecases.Product"),
@@ -53,7 +53,7 @@ func TestAddProductErrorAddingProduct(t *testing.T) {
 	mProductRepo := &mockProductRepo{}
 	mCacheRepo := &mockCacheRepo{}
 	mLogger := &mockAddUserProductLogger{}
-	interactor := MakeAddUserProductInteractor(mProductRepo, mCacheRepo, mLogger)
+	interactor := MakeAddUserProductInteractor(mProductRepo, mCacheRepo, mLogger, 0)
 	mLogger.On("LogErrorAddingProduct", mock.Anything, mock.Anything)
 	mProductRepo.On("AddUserProduct",
 		mock.AnythingOfType("string"),
@@ -76,7 +76,7 @@ func TestAddProductOkErrorSettingCache(t *testing.T) {
 	mProductRepo := &mockProductRepo{}
 	mCacheRepo := &mockCacheRepo{}
 	mLogger := &mockAddUserProductLogger{}
-	interactor := MakeAddUserProductInteractor(mProductRepo, mCacheRepo, mLogger)
+	interactor := MakeAddUserProductInteractor(mProductRepo, mCacheRepo, mLogger, 0)
 	mLogger.On("LogWarnSettingCache", mock.Anything, mock.Anything)
 	mCacheRepo.On("SetCache", mock.AnythingOfType("string"),
 		ProductCacheType,

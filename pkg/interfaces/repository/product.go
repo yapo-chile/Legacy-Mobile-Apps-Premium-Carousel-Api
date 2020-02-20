@@ -41,7 +41,8 @@ func (repo *productRepo) GetUserProductsTotal(email string) (total int) {
 
 // GetUserProducts get a list of user products with pagination
 func (repo *productRepo) GetUserProducts(email string,
-	page int) ([]usecases.Product, int, int, error) {
+	page int) (products []usecases.Product, currentPage int,
+	totalPages int, err error) {
 	if page < 1 {
 		page = 1
 	}
@@ -49,7 +50,7 @@ func (repo *productRepo) GetUserProducts(email string,
 	if total < 1 {
 		return []usecases.Product{}, page, 0, nil
 	}
-	totalPages := (total / repo.resultsPerPage)
+	totalPages = (total / repo.resultsPerPage)
 	if (total % repo.resultsPerPage) > 0 {
 		totalPages++
 	}
@@ -69,7 +70,6 @@ func (repo *productRepo) GetUserProducts(email string,
 		return []usecases.Product{}, 0, 0, err
 	}
 	defer result.Close()
-	products := []usecases.Product{}
 	for result.Next() {
 		product := usecases.Product{}
 		rawConfig := []string{}
