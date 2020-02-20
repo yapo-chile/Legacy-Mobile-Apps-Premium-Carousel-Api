@@ -1,11 +1,11 @@
 CREATE TYPE enum_product_type AS ENUM (
-	'PREMIUM_CAROUSEL'
+    'PREMIUM_CAROUSEL'
 );
 
 CREATE TYPE enum_user_product_status AS ENUM (
     'INACTIVE',
     'ACTIVE',
-	'EXPIRED'
+    'EXPIRED'
 );
 
 CREATE TYPE enum_user_product_config_name AS ENUM (

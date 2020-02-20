@@ -44,12 +44,10 @@ func TestAddUserProductHandlerErrorBadInput(t *testing.T) {
 		Interactor: mInteractor,
 	}
 	var input getUserAdsHandlerInput
-
 	getter := MakeMockInputGetter(&input, &goutils.Response{
 		Code: http.StatusNoContent,
 	})
 	r := h.Execute(getter)
-
 	expected := &goutils.Response{
 		Code: http.StatusNoContent,
 	}

@@ -32,7 +32,6 @@ func TestGetAdOkWithoutCache(t *testing.T) {
 	mCacheRepo := &mockCacheRepo{}
 	mLogger := &mockGetAdLogger{}
 	interactor := MakeGetAdInteractor(mAdRepo, mCacheRepo, mLogger)
-
 	tAd := domain.Ad{ID: "1", Subject: "Mi auto", UserID: "123"}
 	mLogger.On("LogWarnGettingCache", mock.Anything, mock.Anything)
 	mCacheRepo.On("GetCache", mock.AnythingOfType("string"), mock.Anything).
@@ -56,7 +55,6 @@ func TestGetAdOkWithCache(t *testing.T) {
 	mCacheRepo := &mockCacheRepo{}
 	mLogger := &mockGetAdLogger{}
 	interactor := MakeGetAdInteractor(mAdRepo, mCacheRepo, mLogger)
-
 	tAd := domain.Ad{ID: "1", Subject: "Mi auto", UserID: "123"}
 	tAdBytes, _ := json.Marshal(tAd)
 	mCacheRepo.On("GetCache", mock.AnythingOfType("string"), mock.Anything).
@@ -74,17 +72,13 @@ func TestGetAdErrorGettingAd(t *testing.T) {
 	mCacheRepo := &mockCacheRepo{}
 	mLogger := &mockGetAdLogger{}
 	interactor := MakeGetAdInteractor(mAdRepo, mCacheRepo, mLogger)
-
 	tAd := domain.Ad{ID: "1", Subject: "Mi auto", UserID: "123"}
 	mLogger.On("LogWarnGettingCache", mock.Anything, mock.Anything)
 	mCacheRepo.On("GetCache", mock.AnythingOfType("string"), mock.Anything).
 		Return([]byte{}, fmt.Errorf("cache not found"))
-
 	mLogger.On("LogErrorGettingAd", mock.Anything, mock.Anything)
-
 	mAdRepo.On("GetAd", mock.AnythingOfType("string")).Return(tAd, fmt.Errorf("err"))
 	_, err := interactor.GetAd("1")
-
 	assert.Error(t, err)
 	mAdRepo.AssertExpectations(t)
 	mCacheRepo.AssertExpectations(t)
@@ -95,7 +89,6 @@ func TestGetAdErrorSettingCache(t *testing.T) {
 	mCacheRepo := &mockCacheRepo{}
 	mLogger := &mockGetAdLogger{}
 	interactor := MakeGetAdInteractor(mAdRepo, mCacheRepo, mLogger)
-
 	tAd := domain.Ad{ID: "1", Subject: "Mi auto", UserID: "123"}
 	mLogger.On("LogWarnGettingCache", mock.Anything, mock.Anything)
 	mCacheRepo.On("GetCache", mock.AnythingOfType("string"), mock.Anything).
@@ -106,10 +99,8 @@ func TestGetAdErrorSettingCache(t *testing.T) {
 		mock.Anything).
 		Return(fmt.Errorf("err"))
 	mLogger.On("LogWarnSettingCache", mock.Anything, mock.Anything)
-
 	mAdRepo.On("GetAd", mock.AnythingOfType("string")).Return(tAd, nil)
 	ads, err := interactor.GetAd("1")
-
 	expected := tAd
 	assert.NoError(t, err)
 	assert.Equal(t, expected, ads)

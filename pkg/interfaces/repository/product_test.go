@@ -75,7 +75,6 @@ func TestMakeProductRepositoryOK(t *testing.T) {
 func TestGetUserProductsTotalOk(t *testing.T) {
 	mockDB := &dbHandlerMock{}
 	mResult := &mockResult{}
-
 	mockDB.On("Query",
 		mock.AnythingOfType("string"),
 		mock.AnythingOfType("[]interface {}"),
@@ -107,9 +106,7 @@ func TestGetUserProductsTotalError(t *testing.T) {
 func TestGetUserProductsOk(t *testing.T) {
 	mockDB := &dbHandlerMock{}
 	mResult := &mockResult{}
-
 	mResult.On("Close").Return(nil)
-
 	// Get Products Total mocks
 	mockDB.On("Query",
 		mock.AnythingOfType("string"),
@@ -117,9 +114,7 @@ func TestGetUserProductsOk(t *testing.T) {
 	).Return(mResult, nil).Once()
 	mResult.On("Next").Return(true).Once()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{11}).Once()
-
 	// get products query
-
 	mockDB.On("Query",
 		mock.AnythingOfType("string"),
 		mock.Anything,
@@ -127,15 +122,12 @@ func TestGetUserProductsOk(t *testing.T) {
 	mResult.On("Next").Return(true).Once()
 	mResult.On("Next").Return(false).Once()
 	testTime := time.Now()
-
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
 		11, usecases.PremiumCarousel, "1", "test@mail.com", usecases.ActiveProduct,
 		testTime, testTime, []string{"categories=2020,1020"}, "comentario"}).Once()
-
 	repo := MakeProductRepository(mockDB, 10)
 	result, currentPage,
 		totalPages, err := repo.GetUserProducts("test@email.com", 0)
-
 	expected := []usecases.Product{
 		{
 			ID:        11,
@@ -170,7 +162,6 @@ func TestGetUserProductsZeroResults(t *testing.T) {
 	repo := MakeProductRepository(mockDB, 10)
 	result, currentPage,
 		totalPages, err := repo.GetUserProducts("test@email.com", 0)
-
 	expected := []usecases.Product{}
 	assert.Equal(t, 1, currentPage)
 	assert.Equal(t, 0, totalPages)
@@ -204,23 +195,21 @@ func TestGetUserProductsQueryError(t *testing.T) {
 func TestGetUserActiveProductOk(t *testing.T) {
 	mockDB := &dbHandlerMock{}
 	mResult := &mockResult{}
-
 	mResult.On("Close").Return(nil)
-
 	mockDB.On("Query",
 		mock.AnythingOfType("string"),
 		mock.Anything,
 	).Return(mResult, nil).Once()
 	mResult.On("Next").Return(true).Once()
-
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
-		11, usecases.PremiumCarousel, "1", "test@mail.com", usecases.ActiveProduct,
-		testTime, testTime, []string{"categories=2020,1020", "exclude=11111,22222"}, "comentario"}).Once()
-
+		11, usecases.PremiumCarousel, "1",
+		"test@mail.com", usecases.ActiveProduct, testTime, testTime,
+		[]string{"categories=2020,1020",
+			"exclude=11111,22222"}, "comentario"}).Once()
 	repo := MakeProductRepository(mockDB, 10)
-	result, err := repo.GetUserActiveProduct("test@email.com", usecases.PremiumCarousel)
-
+	result, err := repo.GetUserActiveProduct("test@email.com",
+		usecases.PremiumCarousel)
 	expected := usecases.Product{
 		ID:        11,
 		Type:      usecases.PremiumCarousel,
@@ -235,7 +224,6 @@ func TestGetUserActiveProductOk(t *testing.T) {
 		},
 		Comment: "comentario",
 	}
-
 	assert.Equal(t, expected, result)
 	assert.NoError(t, err)
 	mockDB.AssertExpectations(t)
@@ -245,14 +233,13 @@ func TestGetUserActiveProductOk(t *testing.T) {
 func TestGetUserActiveProductError(t *testing.T) {
 	mockDB := &dbHandlerMock{}
 	mResult := &mockResult{}
-
 	mockDB.On("Query",
 		mock.AnythingOfType("string"),
 		mock.Anything,
 	).Return(mResult, fmt.Errorf("err")).Once()
 	repo := MakeProductRepository(mockDB, 10)
-	_, err := repo.GetUserActiveProduct("test@email.com", usecases.PremiumCarousel)
-
+	_, err := repo.GetUserActiveProduct("test@email.com",
+		usecases.PremiumCarousel)
 	assert.Error(t, err)
 	mockDB.AssertExpectations(t)
 	mResult.AssertExpectations(t)
@@ -261,23 +248,20 @@ func TestGetUserActiveProductError(t *testing.T) {
 func TestGetUserActiveProductErrorNoConfig(t *testing.T) {
 	mockDB := &dbHandlerMock{}
 	mResult := &mockResult{}
-
 	mResult.On("Close").Return(nil)
-
 	mockDB.On("Query",
 		mock.AnythingOfType("string"),
 		mock.Anything,
 	).Return(mResult, nil).Once()
 	mResult.On("Next").Return(true).Once()
-
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
-		11, usecases.PremiumCarousel, "1", "test@mail.com", usecases.ActiveProduct,
+		11, usecases.PremiumCarousel, "1",
+		"test@mail.com", usecases.ActiveProduct,
 		testTime, testTime, []string{}, "comentario"}).Once()
-
 	repo := MakeProductRepository(mockDB, 10)
-	_, err := repo.GetUserActiveProduct("test@email.com", usecases.PremiumCarousel)
-
+	_, err := repo.GetUserActiveProduct("test@email.com",
+		usecases.PremiumCarousel)
 	assert.Error(t, err)
 	mockDB.AssertExpectations(t)
 	mResult.AssertExpectations(t)
@@ -286,9 +270,7 @@ func TestGetUserActiveProductErrorNoConfig(t *testing.T) {
 func TestAddUserProductOk(t *testing.T) {
 	mockDB := &dbHandlerMock{}
 	mResult := &mockResult{}
-
 	mResult.On("Close").Return(nil).Once()
-
 	mockDB.On("Query",
 		mock.AnythingOfType("string"),
 		mock.Anything,
@@ -301,14 +283,12 @@ func TestAddUserProductOk(t *testing.T) {
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
 		11, testTime}).Once()
-
 	repo := MakeProductRepository(mockDB, 10)
 	result, err := repo.AddUserProduct("1", "test@mail.com", "comentario",
 		usecases.PremiumCarousel, testTime, usecases.CpConfig{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
 		})
-
 	expected := usecases.Product{
 		ID:        11,
 		Type:      usecases.PremiumCarousel,
@@ -323,7 +303,6 @@ func TestAddUserProductOk(t *testing.T) {
 		},
 		Comment: "comentario",
 	}
-
 	assert.Equal(t, expected, result)
 	assert.NoError(t, err)
 	mockDB.AssertExpectations(t)
@@ -333,7 +312,6 @@ func TestAddUserProductOk(t *testing.T) {
 func TestAddUserProductBadUserId(t *testing.T) {
 	mockDB := &dbHandlerMock{}
 	mResult := &mockResult{}
-
 	testTime := time.Now()
 	repo := MakeProductRepository(mockDB, 10)
 	_, err := repo.AddUserProduct("aaaaaa", "test@mail.com", "comentario",
@@ -341,7 +319,6 @@ func TestAddUserProductBadUserId(t *testing.T) {
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
 		})
-
 	assert.Error(t, err)
 	mockDB.AssertExpectations(t)
 	mResult.AssertExpectations(t)
@@ -350,12 +327,10 @@ func TestAddUserProductBadUserId(t *testing.T) {
 func TestAddUserProductQueryError(t *testing.T) {
 	mockDB := &dbHandlerMock{}
 	mResult := &mockResult{}
-
 	mockDB.On("Query",
 		mock.AnythingOfType("string"),
 		mock.Anything,
 	).Return(mResult, fmt.Errorf("err")).Once()
-
 	testTime := time.Now()
 	repo := MakeProductRepository(mockDB, 10)
 	_, err := repo.AddUserProduct("1", "test@mail.com", "comentario",
@@ -363,7 +338,6 @@ func TestAddUserProductQueryError(t *testing.T) {
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
 		})
-
 	assert.Error(t, err)
 	mockDB.AssertExpectations(t)
 	mResult.AssertExpectations(t)
@@ -372,15 +346,12 @@ func TestAddUserProductQueryError(t *testing.T) {
 func TestAddUserProductNextError(t *testing.T) {
 	mockDB := &dbHandlerMock{}
 	mResult := &mockResult{}
-
 	mockDB.On("Query",
 		mock.AnythingOfType("string"),
 		mock.Anything,
 	).Return(mResult, nil).Once()
-
 	mResult.On("Close").Return(nil).Once()
 	mResult.On("Next").Return(false).Once()
-
 	testTime := time.Now()
 	repo := MakeProductRepository(mockDB, 10)
 	_, err := repo.AddUserProduct("1", "test@mail.com", "comentario",
@@ -388,7 +359,6 @@ func TestAddUserProductNextError(t *testing.T) {
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
 		})
-
 	assert.Error(t, err)
 	mockDB.AssertExpectations(t)
 	mResult.AssertExpectations(t)
@@ -397,9 +367,7 @@ func TestAddUserProductNextError(t *testing.T) {
 func TestAddUserProductAddConfigError(t *testing.T) {
 	mockDB := &dbHandlerMock{}
 	mResult := &mockResult{}
-
 	mResult.On("Close").Return(nil).Once()
-
 	mockDB.On("Query",
 		mock.AnythingOfType("string"),
 		mock.Anything,
@@ -412,14 +380,12 @@ func TestAddUserProductAddConfigError(t *testing.T) {
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
 		11, testTime}).Once()
-
 	repo := MakeProductRepository(mockDB, 10)
 	_, err := repo.AddUserProduct("1", "test@mail.com", "comentario",
 		usecases.PremiumCarousel, testTime, usecases.CpConfig{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
 		})
-
 	assert.Error(t, err)
 	mockDB.AssertExpectations(t)
 	mResult.AssertExpectations(t)

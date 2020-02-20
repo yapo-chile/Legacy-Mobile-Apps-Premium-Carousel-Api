@@ -71,7 +71,6 @@ func TestGetCache(t *testing.T) {
 	mResult.On("Bytes").Return([]byte{}, nil)
 	m.On("Get", mock.AnythingOfType("string")).Return(mResult, nil)
 	result, err := repo.GetCache(`some-key`, usecases.ProductCacheType)
-
 	assert.NoError(t, err)
 	assert.Equal(t, []byte{}, result)
 	m.AssertExpectations(t)
@@ -102,7 +101,6 @@ func TestSetCacheOK(t *testing.T) {
 	m.On("Set", mock.AnythingOfType("string"), mock.AnythingOfType("[]uint8"),
 		mock.AnythingOfType("time.Duration")).Return(nil)
 	err := repo.SetCache(`some-key`, usecases.MinifiedAdDataType, domain.Ad{}, 0)
-
 	assert.NoError(t, err)
 	m.AssertExpectations(t)
 	mResult.AssertExpectations(t)
@@ -129,13 +127,10 @@ func TestMinifyCacheOK(t *testing.T) {
 		"Price":      ad.Price,
 		"Currency":   ad.Currency,
 	}
-	test1 := repo.minifyCache(usecases.MinifiedAdDataType, ad)
-
-	assert.Equal(t, expected, test1)
-
-	test2 := repo.minifyCache(usecases.ProductCacheType, "test2")
-	assert.Equal(t, "test2", test2)
-
+	res := repo.minifyCache(usecases.MinifiedAdDataType, ad)
+	assert.Equal(t, expected, res)
+	res2 := repo.minifyCache(usecases.ProductCacheType, "test2")
+	assert.Equal(t, "test2", res2)
 	m.AssertExpectations(t)
 	mResult.AssertExpectations(t)
 }

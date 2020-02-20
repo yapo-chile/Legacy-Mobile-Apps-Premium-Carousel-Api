@@ -47,7 +47,6 @@ func TestGetUserProductsHandlerErrorBadInput(t *testing.T) {
 		Code: http.StatusNoContent,
 	})
 	r := h.Execute(getter)
-
 	expected := &goutils.Response{
 		Code: http.StatusNoContent,
 	}
