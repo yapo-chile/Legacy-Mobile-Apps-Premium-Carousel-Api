@@ -54,6 +54,27 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{.Release.Name}}-premium-carousel-api-configmap
+          env:
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: premium-carousel-api-secret
+                  key: password
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: premium-carousel-api-secret
+                  key: username
+            - name: DATABASE_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: premium-carousel-api-secret
+                  key: host
+            - name: DATABASE_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: premium-carousel-api-secret
+                  key: port
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
