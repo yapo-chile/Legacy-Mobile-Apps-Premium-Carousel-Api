@@ -26,6 +26,11 @@ type ProductRepository interface {
 	GetUserActiveProduct(userID string,
 		productType ProductType) (Product, error)
 	GetUserProductsTotal(email string) (total int)
+	GetUserProductByID(userProductID int) (Product, error)
+	SetConfig(userProductID int, config CpConfig) error
+	SetPartialConfig(userProductID int, configMap map[string]interface{}) error
+	SetExpiration(userProductID int, expiredAt time.Time) error
+	SetStatus(userProductID int, status ProductStatus) error
 }
 
 // CacheType defines the user cache type

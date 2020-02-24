@@ -14,8 +14,9 @@ func (l *getUserAdsLogger) LogWarnSettingCache(userID string, err error) {
 	l.logger.Warn("not able to set cache for user ads: userID %s - %+v", userID, err)
 }
 
-func (l *getUserAdsLogger) LogInfoActiveProductNotFound(userID string) {
-	l.logger.Info("active product not found for userID: %s", userID)
+func (l *getUserAdsLogger) LogInfoActiveProductNotFound(userID string, product usecases.Product) {
+	l.logger.Info("active product not found for userID: %s. Current product is: %v (id: %d)",
+		userID, product.Status, product.ID)
 }
 
 func (l *getUserAdsLogger) LogInfoProductExpired(userID string, product usecases.Product) {

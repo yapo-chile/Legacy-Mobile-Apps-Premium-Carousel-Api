@@ -109,7 +109,9 @@ func TestAddUserProductHandlerError(t *testing.T) {
 	r := h.Execute(getter)
 	expected := &goutils.Response{
 		Code: http.StatusBadRequest,
-		Body: fmt.Sprintf(`{"error": "%+v"}`, err),
+		Body: goutils.GenericError{
+			ErrorMessage: fmt.Sprintf(`%+v`, err),
+		},
 	}
 	assert.Equal(t, expected, r)
 	mInteractor.AssertExpectations(t)
@@ -129,8 +131,10 @@ func TestAddUserProductHandlerBadExpiredAtTime(t *testing.T) {
 	r := h.Execute(getter)
 	expected := &goutils.Response{
 		Code: http.StatusBadRequest,
-		Body: fmt.Sprintf(`{"error": "bad expiration date: %+v"`,
-			input.ExpiredAt),
+		Body: goutils.GenericError{
+			ErrorMessage: fmt.Sprintf(`bad expiration date: %+v`,
+				input.ExpiredAt),
+		},
 	}
 	assert.Equal(t, expected, r)
 	mInteractor.AssertExpectations(t)

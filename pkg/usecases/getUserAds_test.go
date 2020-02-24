@@ -38,6 +38,34 @@ func (m *mockProductRepo) GetUserProductsTotal(email string) (total int) {
 	return args.Int(0)
 }
 
+func (m *mockProductRepo) GetUserProductByID(userProductID int) (Product, error) {
+	args := m.Called(userProductID)
+	return args.Get(0).(Product), args.Error(1)
+}
+
+func (m *mockProductRepo) SetConfig(userProductID int, config CpConfig) error {
+	args := m.Called(userProductID, config)
+	return args.Error(0)
+}
+
+func (m *mockProductRepo) SetPartialConfig(userProductID int,
+	config map[string]interface{}) error {
+	args := m.Called(userProductID, config)
+	return args.Error(0)
+}
+
+func (m *mockProductRepo) SetExpiration(userProductID int,
+	expiredAt time.Time) error {
+	args := m.Called(userProductID, expiredAt)
+	return args.Error(0)
+}
+
+func (m *mockProductRepo) SetStatus(userProductID int,
+	status ProductStatus) error {
+	args := m.Called(userProductID, status)
+	return args.Error(0)
+}
+
 type mockAdRepo struct {
 	mock.Mock
 }
@@ -80,8 +108,8 @@ func (m *mockgetUserAdsLogger) LogWarnSettingCache(userID string, err error) {
 	m.Called(userID, err)
 }
 
-func (m *mockgetUserAdsLogger) LogInfoActiveProductNotFound(userID string) {
-	m.Called(userID)
+func (m *mockgetUserAdsLogger) LogInfoActiveProductNotFound(userID string, product Product) {
+	m.Called(userID, product)
 }
 
 func (m *mockgetUserAdsLogger) LogInfoProductExpired(userID string, product Product) {
@@ -105,7 +133,7 @@ func TestGetUserAdsOkWithoutCache(t *testing.T) {
 		{ID: "2", Subject: "Mi auto 2", UserID: "123"},
 	}
 	testTime := time.Now().Add(time.Hour * 24)
-	product := Product{Config: cpConfig,
+	product := Product{Config: cpConfig, UserID: "123",
 		ExpiredAt: testTime, Status: ActiveProduct}
 	mCacheRepo.On("GetCache", mock.AnythingOfType("string"), ProductCacheType).
 		Return([]byte{}, fmt.Errorf("cache not found"))
@@ -198,15 +226,24 @@ func TestGetUserAdsErrorProductExpired(t *testing.T) {
 	cpConfig := CpConfig{Categories: []int{2020}, Limit: 2}
 	testTime := time.Now().Add(time.Hour * -24)
 	product := Product{Config: cpConfig,
-		ExpiredAt: testTime, Status: ActiveProduct}
+		ExpiredAt: testTime, UserID: "123", Status: ActiveProduct}
 	productBytes, _ := json.Marshal(product)
 	mCacheRepo.On("GetCache", mock.AnythingOfType("string"), ProductCacheType).
 		Return(productBytes, nil)
 	mLogger.On("LogInfoProductExpired", mock.Anything, mock.Anything)
+	mLogger.On("LogWarnSettingCache", mock.Anything, mock.Anything)
 
+	product.Status = ExpiredProduct
+	mCacheRepo.On("SetCache", "user:123:PREMIUM_CAROUSEL",
+		ProductCacheType,
+		mock.AnythingOfType("Product"),
+		time.Hour).
+		Return(fmt.Errorf("error setting cache"))
+	mProductRepo.On("SetStatus", mock.AnythingOfType("int"),
+		ExpiredProduct).Return(nil)
 	_, err := interactor.GetUserAds("123",
 		"test_excluded_list_id_1234", "excluded_list_id_2123")
-	assert.Error(t, err)
+	assert.NoError(t, err)
 	mProductRepo.AssertExpectations(t)
 	mAdRepo.AssertExpectations(t)
 	mCacheRepo.AssertExpectations(t)

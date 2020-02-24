@@ -96,7 +96,9 @@ func TestGetUserProductsHandlerError(t *testing.T) {
 	r := h.Execute(getter)
 	expected := &goutils.Response{
 		Code: http.StatusBadRequest,
-		Body: fmt.Sprintf(`{"error": "%+v"}`, err),
+		Body: goutils.GenericError{
+			ErrorMessage: fmt.Sprintf(`%+v`, err),
+		},
 	}
 	assert.Equal(t, expected, r)
 	mInteractor.AssertExpectations(t)

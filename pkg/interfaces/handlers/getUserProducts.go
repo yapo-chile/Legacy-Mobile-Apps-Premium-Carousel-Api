@@ -66,7 +66,9 @@ func (h *GetUserProductsHandler) Execute(ig InputGetter) *goutils.Response {
 	if err != nil {
 		return &goutils.Response{
 			Code: http.StatusBadRequest,
-			Body: fmt.Sprintf(`{"error": "%+v"}`, err),
+			Body: goutils.GenericError{
+				ErrorMessage: fmt.Sprintf(`%+v`, err),
+			},
 		}
 	}
 	productsOut := []productsOutput{}

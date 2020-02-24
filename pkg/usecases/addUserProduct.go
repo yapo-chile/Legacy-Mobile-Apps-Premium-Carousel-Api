@@ -43,11 +43,15 @@ func (interactor *addUserProductInteractor) AddUserProduct(userID, email, commen
 		interactor.logger.LogErrorAddingProduct(userID, err)
 		return fmt.Errorf("cannot set control-panel configuration: %+v", err)
 	}
+	interactor.refreshCache(product)
+	return nil
+}
+
+func (interactor *addUserProductInteractor) refreshCache(product Product) {
 	cacheError := interactor.cacheRepo.
-		SetCache(strings.Join([]string{"user", userID, string(PremiumCarousel)}, ":"),
+		SetCache(strings.Join([]string{"user", product.UserID, string(PremiumCarousel)}, ":"),
 			ProductCacheType, product, interactor.cacheTTL)
 	if cacheError != nil {
-		interactor.logger.LogWarnSettingCache(userID, cacheError)
+		interactor.logger.LogWarnSettingCache(product.UserID, cacheError)
 	}
-	return nil
 }
