@@ -7,11 +7,11 @@ type getAdLogger struct {
 }
 
 func (l *getAdLogger) LogWarnGettingCache(listID string, err error) {
-	l.logger.Warn("Error getting ad cache listID: %s error: %+v", listID, err)
+	l.logger.Warn("not able to get ad cache listID: %s - %+v", listID, err)
 }
 
 func (l *getAdLogger) LogWarnSettingCache(listID string, err error) {
-	l.logger.Warn("Error setting ad cache listID: %s error: %+v", listID, err)
+	l.logger.Warn("not able to set ad cache for listID: %s - %+v", listID, err)
 }
 
 func (l *getAdLogger) LogErrorGettingAd(listID string, err error) {

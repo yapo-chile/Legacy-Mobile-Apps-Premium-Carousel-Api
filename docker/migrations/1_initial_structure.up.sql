@@ -29,14 +29,8 @@ CREATE TABLE IF NOT EXISTS user_product(
 );
 
 -- create index to allow only one active product type per user
-create unique index user_product_unique_active_product on user_product(product_type, user_id, status)
+CREATE unique index user_product_unique_active_product on user_product(product_type, user_id, status)
     where status = 'ACTIVE';
-
-CREATE TABLE IF NOT EXISTS user_product_history(
-	user_product_id INTEGER REFERENCES user_product(id),
-	status         enum_user_product_status NOT NULL,
-	timestamp      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
 
 CREATE TABLE IF NOT EXISTS user_product_config(
 	user_product_id INTEGER REFERENCES user_product(id),
@@ -44,12 +38,6 @@ CREATE TABLE IF NOT EXISTS user_product_config(
 	value           TEXT,
 	unique (user_product_id, name)
 
-);
-
-CREATE TABLE IF NOT EXISTS carousel_report(
-	user_product_id INTEGER REFERENCES user_product(id),
-	list_id         INTEGER NOT NULL,
-	views_counter   NUMERIC NOT NULL DEFAULT 0
 );
 
 CREATE INDEX user_product_user_email_idx ON user_product(user_email);

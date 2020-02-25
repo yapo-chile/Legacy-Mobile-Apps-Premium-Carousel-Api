@@ -7,7 +7,7 @@ type addUserProductLogger struct {
 }
 
 func (l *addUserProductLogger) LogWarnSettingCache(userID string, err error) {
-	l.logger.Warn("Error setting product cache userID: %s error: %+v", userID, err)
+	l.logger.Warn("not able to set product cache userID: %s - %+v", userID, err)
 }
 
 func (l *addUserProductLogger) LogErrorAddingProduct(userID string, err error) {

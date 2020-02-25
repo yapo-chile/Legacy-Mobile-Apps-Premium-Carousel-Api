@@ -7,11 +7,11 @@ type getUserAdsLogger struct {
 }
 
 func (l *getUserAdsLogger) LogWarnGettingCache(userID string, err error) {
-	l.logger.Warn("Error getting cache for user ads: userID %s, error: %+v", userID, err)
+	l.logger.Warn("not able to get cache for user ads: userID %s - %+v", userID, err)
 }
 
 func (l *getUserAdsLogger) LogWarnSettingCache(userID string, err error) {
-	l.logger.Warn("Error setting cache for user ads: userID %s, error: %+v", userID, err)
+	l.logger.Warn("not able to set cache for user ads: userID %s - %+v", userID, err)
 }
 
 func (l *getUserAdsLogger) LogInfoActiveProductNotFound(userID string) {
@@ -24,7 +24,7 @@ func (l *getUserAdsLogger) LogInfoProductExpired(userID string, product usecases
 }
 
 func (l *getUserAdsLogger) LogErrorGettingUserAdsData(userID string, err error) {
-	l.logger.Error("Error getting user ads data: userID %s, error: %+v", userID, err)
+	l.logger.Error("error getting user ads data: userID %s, error: %+v", userID, err)
 }
 
 // MakeGetUserAdsLogger sets up a GetUserAdsLogger instrumented

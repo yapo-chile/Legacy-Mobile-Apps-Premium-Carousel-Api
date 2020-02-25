@@ -7,7 +7,7 @@ type getUserProductsLogger struct {
 }
 
 func (l *getUserProductsLogger) LogErrorGettingUserProducts(email string, err error) {
-	l.logger.Error("Error getting user products data: email %s, error: %+v", email, err)
+	l.logger.Error("error getting user products data: email %s, error: %+v", email, err)
 }
 
 // MakeGetUserProductsLogger sets up a GetUserProductsLogger instrumented
