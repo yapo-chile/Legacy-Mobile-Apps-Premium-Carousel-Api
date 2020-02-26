@@ -27,12 +27,12 @@ type addUserProductHandlerInput struct {
 	Email              string    `json:"email"`
 	Categories         string    `json:"categories"`
 	Exclude            string    `json:"exclude"`
-	CustomQuery        string    `json:"custom_query"`
+	CustomQuery        string    `json:"keywords"`
 	Comment            string    `json:"comment"`
 	Limit              int       `json:"limit"`
 	PriceRange         int       `json:"price_range"`
 	ExpiredAt          time.Time `json:"expiration"`
-	FillGapsWithRandom bool      `json:"gaps_with_random"`
+	FillGapsWithRandom bool      `json:"fill_random"`
 }
 
 // getUserRequestOutput is the handler output

@@ -27,25 +27,27 @@ type getUserProductsHandlerInput struct {
 
 // getUserRequestOutput is the handler output
 type getUserProductsRequestOutput struct {
-	Products []productsOutput
-	Metadata metadata
+	Products []productsOutput `json:"assigns"`
+	Metadata metadata         `json:"metadata"`
 }
 
 type productsOutput struct {
-	ID        int
-	UserID    string
-	Email     string
-	Type      string
-	Status    string
-	ExpiredAt time.Time
-	CreatedAt time.Time
-	Comment   string
-	Config    usecases.CpConfig
+	ID                 int       `json:"id"`
+	UserID             string    `json:"user_id"`
+	Email              string    `json:"email"`
+	Type               string    `json:"type"`
+	Status             string    `json:"status"`
+	ExpiredAt          time.Time `json:"expiration"`
+	CreatedAt          time.Time `json:"creation"`
+	Comment            string    `json:"comment"`
+	CustomQuery        string    `json:"keywords"`
+	PriceRange         int       `json:"price_range"`
+	FillGapsWithRandom bool      `json:"fill_gaps"`
 }
 
 type metadata struct {
-	CurrentPage int
-	TotalPages  int
+	CurrentPage int `json:"current_page"`
+	TotalPages  int `json:"total_pages"`
 }
 
 // Input returns a fresh, empty instance of getUserProductsHandlerInput
@@ -74,15 +76,17 @@ func (h *GetUserProductsHandler) Execute(ig InputGetter) *goutils.Response {
 	productsOut := []productsOutput{}
 	for _, v := range products {
 		p := productsOutput{
-			ID:        v.ID,
-			Email:     v.Email,
-			UserID:    v.UserID,
-			Status:    string(v.Status),
-			Type:      string(v.Type),
-			ExpiredAt: v.ExpiredAt,
-			CreatedAt: v.CreatedAt,
-			Comment:   v.Comment,
-			Config:    v.Config,
+			ID:                 v.ID,
+			Email:              v.Email,
+			UserID:             v.UserID,
+			Status:             string(v.Status),
+			Type:               string(v.Type),
+			ExpiredAt:          v.ExpiredAt,
+			CreatedAt:          v.CreatedAt,
+			Comment:            v.Comment,
+			CustomQuery:        v.Config.CustomQuery,
+			PriceRange:         v.Config.PriceRange,
+			FillGapsWithRandom: v.Config.FillGapsWithRandom,
 		}
 		productsOut = append(productsOut, p)
 	}
