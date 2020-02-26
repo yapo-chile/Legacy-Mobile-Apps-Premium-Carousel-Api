@@ -69,7 +69,7 @@ func TestAddUserProductHandlerOK(t *testing.T) {
 		Interactor: mInteractor,
 	}
 	input := addUserProductHandlerInput{
-		UserID:     "123",
+		UserID:     123,
 		Email:      "test@test.cl",
 		Categories: "2000,1000,3000",
 		ExpiredAt:  time.Now().Add(time.Hour * 24 * 365),
@@ -101,7 +101,7 @@ func TestAddUserProductHandlerError(t *testing.T) {
 		Interactor: mInteractor,
 	}
 	input := addUserProductHandlerInput{
-		UserID:    "123",
+		UserID:    123,
 		Email:     "test@test.cl",
 		ExpiredAt: time.Now().Add(time.Hour * 24 * 365),
 	}
@@ -123,7 +123,7 @@ func TestAddUserProductHandlerBadExpiredAtTime(t *testing.T) {
 		Interactor: mInteractor,
 	}
 	input := addUserProductHandlerInput{
-		UserID:    "123",
+		UserID:    123,
 		Email:     "test@test.cl",
 		ExpiredAt: time.Now().Add(-1 * time.Hour * 24 * 365),
 	}

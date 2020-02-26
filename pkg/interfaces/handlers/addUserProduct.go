@@ -23,7 +23,7 @@ type AddUserProductLogger interface{}
 
 // addUserProductHandlerInput is the handler expected input
 type addUserProductHandlerInput struct {
-	UserID             string    `json:"user_id"`
+	UserID             int       `json:"user_id"`
 	Email              string    `json:"email"`
 	Categories         string    `json:"categories"`
 	Exclude            string    `json:"exclude"`
@@ -54,7 +54,6 @@ func (h *AddUserProductHandler) Execute(ig InputGetter) *goutils.Response {
 		return response
 	}
 	in := input.(*addUserProductHandlerInput)
-
 	if in.ExpiredAt.Before(time.Now()) {
 		return &goutils.Response{
 			Code: http.StatusBadRequest,
@@ -73,7 +72,7 @@ func (h *AddUserProductHandler) Execute(ig InputGetter) *goutils.Response {
 		FillGapsWithRandom: in.FillGapsWithRandom,
 	}
 
-	err := h.Interactor.AddUserProduct(in.UserID, in.Email, in.Comment,
+	err := h.Interactor.AddUserProduct(strconv.Itoa(in.UserID), in.Email, in.Comment,
 		usecases.PremiumCarousel, in.ExpiredAt, config)
 	if err != nil {
 		return &goutils.Response{

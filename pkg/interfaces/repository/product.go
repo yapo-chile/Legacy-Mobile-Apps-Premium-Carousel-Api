@@ -35,8 +35,15 @@ func MakeProductRepository(handler DbHandler, resultsPerPage int,
 
 // GetUserProductsTotal get the total of user products
 func (repo *productRepo) GetUserProductsTotal(email string) (total int) {
-	result, err := repo.handler.Query(`SELECT COUNT(*) as total FROM
-	user_product WHERE user_email=$1`, email)
+	var result DbResult
+	var err error
+	if email == "" {
+		result, err = repo.handler.Query(`SELECT COUNT(*) as total FROM
+		user_product`)
+	} else {
+		result, err = repo.handler.Query(`SELECT COUNT(*) as total FROM
+			user_product WHERE user_email=$1`, email)
+	}
 	if err != nil {
 		return 0
 	}
@@ -62,8 +69,7 @@ func (repo *productRepo) GetUserProducts(email string,
 	if (total % repo.resultsPerPage) > 0 {
 		totalPages++
 	}
-	result, err := repo.handler.Query(`
-	SELECT
+	query := `SELECT
 		p.id, p.product_type, p.user_id, p.user_email, p.status, p.expired_at,
 		p.created_at,
 		ARRAY(
@@ -71,9 +77,17 @@ func (repo *productRepo) GetUserProducts(email string,
 			FROM user_product_config WHERE user_product_id = p.id
 		) AS config_params,
 		p.comment
-	FROM user_product as p
-	WHERE  user_email = $1 order by p.expired_at desc OFFSET $2 LIMIT $3`,
-		email, (repo.resultsPerPage * (page - 1)), repo.resultsPerPage)
+	FROM user_product as p`
+	var result DbResult
+	if email == "" {
+		result, err = repo.handler.Query(
+			query+` WHERE TRUE order by p.expired_at desc OFFSET $1 LIMIT $2`,
+			(repo.resultsPerPage * (page - 1)), repo.resultsPerPage)
+	} else {
+		result, err = repo.handler.Query(
+			query+` WHERE user_email = $1 order by p.expired_at desc OFFSET $2 LIMIT $3`,
+			email, (repo.resultsPerPage * (page - 1)), repo.resultsPerPage)
+	}
 	if err != nil {
 		return []usecases.Product{}, 0, 0, err
 	}
