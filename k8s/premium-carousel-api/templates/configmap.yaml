@@ -7,10 +7,13 @@ metadata:
 {{ include "premium-carousel-api.labels" . | indent 4 }}
 data:
   # Your env variables should be written here.
-  PROMETHEUS_ENABLED: "{{ .Values.prometheus.enabled }}"
-  GOMS_HEALTH_PATH: "{{ .Values.healthcheck.path }}"
-  ETCD_HOST: "{{ .Values.etcd.host }}"
-  AD_HOST: "{{ .Values.ad.host }}"
-  AD_PORT: "{{ .Values.ad.port }}"
-  LOGGER_LOG_LEVEL: "{{ .Values.logger.logLevel }}"
-  AD_IMAGE_SERVER_URL: "{{ .Values.ad.imageServerURL }}"
+  PROMETHEUS_ENABLED: "{{ .Values.core.prometheus.enabled }}"
+  GOMS_HEALTH_PATH: "{{ .Values.core.healthcheck.path }}"
+  ETCD_HOST: "{{ .Values.core.etcd.host }}"
+  AD_HOST: "{{ .Values.core.ad.host }}"
+  AD_PORT: "{{ .Values.core.ad.port }}"
+  LOGGER_LOG_LEVEL: "{{ .Values.core.logger.logLevel }}"
+  AD_IMAGE_SERVER_URL: "{{ .Values.core.ad.imageServerURL }}"
+  CACHE_HOST: "{{ .Values.core.cache.host}}"
+  DATABASE_HOST : "{{ .Values.core.database.host }}"
+  DATABASE_PORT : "{{ .Values.core.database.port }}"

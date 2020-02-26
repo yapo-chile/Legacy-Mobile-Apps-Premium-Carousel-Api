@@ -9,13 +9,13 @@ metadata:
   labels:
 {{ include "premium-carousel-api.labels" . | indent 4 }}
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.core.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
+    - port: {{ .Values.core.service.port }}
       targetPort: http
       protocol: TCP
       name: http
-    - port: {{ .Values.service.prometheus_port }}
+    - port: {{ .Values.core.service.prometheus_port }}
       targetPort: prom
       protocol: TCP
       name: prom

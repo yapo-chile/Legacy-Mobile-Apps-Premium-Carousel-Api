@@ -25,11 +25,11 @@ spec:
           - name: ndots
             value: "1"
       imagePullSecrets:
-        - name: {{ .Values.image.pullSecret }}
+        - name: {{ .Values.core.image.pullSecret }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ .Values.core.image.repository }}:{{ .Values.core.image.tag }}"
+          imagePullPolicy: {{ .Values.core.image.pullPolicy }}
           ports:
             - name: http
               containerPort: 8080
@@ -39,16 +39,16 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: "{{ .Values.healthcheck.path }}"
+              path: "{{ .Values.core.healthcheck.path }}"
               port: http
-            initialDelaySeconds: {{ .Values.healthcheck.liveness.initialDelaySeconds }}
-            periodSeconds: {{ .Values.healthcheck.liveness.periodSeconds }}
+            initialDelaySeconds: {{ .Values.core.healthcheck.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.core.healthcheck.liveness.periodSeconds }}
           readinessProbe:
             httpGet:
-              path: "{{ .Values.healthcheck.path }}"
+              path: "{{ .Values.core.healthcheck.path }}"
               port: http
-            initialDelaySeconds: {{ .Values.healthcheck.readiness.initialDelaySeconds }}
-            periodSeconds: {{ .Values.healthcheck.readiness.periodSeconds }}
+            initialDelaySeconds: {{ .Values.core.healthcheck.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.core.healthcheck.readiness.periodSeconds }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           envFrom:
