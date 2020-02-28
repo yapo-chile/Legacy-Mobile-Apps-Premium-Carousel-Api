@@ -65,7 +65,7 @@ func (repo *productRepo) GetUserProducts(email string,
 		p.comment
 	FROM user_product as p
 	WHERE  user_email = $1 order by p.expired_at desc OFFSET $2 LIMIT $3`,
-		email, ((repo.resultsPerPage - 1) * page), repo.resultsPerPage)
+		email, (repo.resultsPerPage * (page - 1)), repo.resultsPerPage)
 	if err != nil {
 		return []usecases.Product{}, 0, 0, err
 	}
