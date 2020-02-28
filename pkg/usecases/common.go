@@ -57,6 +57,8 @@ type CpConfig struct {
 	CustomQuery        string
 	Limit              int
 	PriceRange         int
+	PriceFrom          int
+	PriceTo            int
 	FillGapsWithRandom bool
 }
 

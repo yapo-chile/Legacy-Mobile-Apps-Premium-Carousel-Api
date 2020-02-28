@@ -66,14 +66,14 @@ func (h *GetUserAdsHandler) Execute(ig InputGetter) *goutils.Response {
 	}
 	in := input.(*getUserAdsHandlerInput)
 
-	currentAd, err := h.GetAdInteractor.GetAd(in.ListID)
+	currentAdview, err := h.GetAdInteractor.GetAd(in.ListID)
 	if err != nil {
 		return &goutils.Response{
 			Code: http.StatusNoContent,
 		}
 	}
 
-	resp, err := h.Interactor.GetUserAds(currentAd.UserID, currentAd.ID)
+	resp, err := h.Interactor.GetUserAds(currentAdview)
 	if err != nil {
 		return &goutils.Response{
 			Code: http.StatusNoContent,

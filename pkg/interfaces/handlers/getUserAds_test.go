@@ -30,8 +30,8 @@ type mockGetUserAdsInteractor struct {
 	mock.Mock
 }
 
-func (m *mockGetUserAdsInteractor) GetUserAds(userID string, exclude ...string) (domain.Ads, error) {
-	args := m.Called(userID, exclude)
+func (m *mockGetUserAdsInteractor) GetUserAds(currentAdview domain.Ad) (domain.Ads, error) {
+	args := m.Called(currentAdview)
 	return args.Get(0).(domain.Ads), args.Error(1)
 }
 
@@ -49,8 +49,7 @@ func TestGetUserAdsHandlerOK(t *testing.T) {
 	mGetAdInteractor := &mockGetAdInteractor{}
 	mGetAdInteractor.On("GetAd", mock.AnythingOfType("string")).
 		Return(domain.Ad{ID: "123", UserID: "465"}, nil)
-	mInteractor.On("GetUserAds", mock.AnythingOfType("string"),
-		mock.AnythingOfType("[]string")).
+	mInteractor.On("GetUserAds", mock.AnythingOfType("domain.Ad")).
 		Return(domain.Ads{{ID: "321", UserID: "465"}}, nil)
 	h := GetUserAdsHandler{
 		Interactor:      mInteractor,
@@ -75,8 +74,7 @@ func TestGetUserAdsHandlerWithUF(t *testing.T) {
 	mGetAdInteractor := &mockGetAdInteractor{}
 	mGetAdInteractor.On("GetAd", mock.AnythingOfType("string")).
 		Return(domain.Ad{ID: "123", UserID: "465"}, nil)
-	mInteractor.On("GetUserAds", mock.AnythingOfType("string"),
-		mock.AnythingOfType("[]string")).
+	mInteractor.On("GetUserAds", mock.AnythingOfType("domain.Ad")).
 		Return(domain.Ads{{ID: "321", UserID: "465", Currency: "uf"}}, nil)
 	h := GetUserAdsHandler{
 		Interactor:          mInteractor,
@@ -103,8 +101,7 @@ func TestGetUserAdsHandlerNoAds(t *testing.T) {
 	mGetAdInteractor := &mockGetAdInteractor{}
 	mGetAdInteractor.On("GetAd", mock.AnythingOfType("string")).
 		Return(domain.Ad{ID: "123", UserID: "465"}, nil)
-	mInteractor.On("GetUserAds", mock.AnythingOfType("string"),
-		mock.AnythingOfType("[]string")).
+	mInteractor.On("GetUserAds", mock.AnythingOfType("domain.Ad")).
 		Return(domain.Ads{}, nil)
 	h := GetUserAdsHandler{
 		Interactor:      mInteractor,
@@ -127,8 +124,7 @@ func TestGetUserAdsHandlerErrorGettingUserAds(t *testing.T) {
 	mGetAdInteractor := &mockGetAdInteractor{}
 	mGetAdInteractor.On("GetAd", mock.AnythingOfType("string")).
 		Return(domain.Ad{ID: "123", UserID: "465"}, nil)
-	mInteractor.On("GetUserAds", mock.AnythingOfType("string"),
-		mock.AnythingOfType("[]string")).
+	mInteractor.On("GetUserAds", mock.AnythingOfType("domain.Ad")).
 		Return(domain.Ads{}, fmt.Errorf("e"))
 	h := GetUserAdsHandler{
 		Interactor:      mInteractor,

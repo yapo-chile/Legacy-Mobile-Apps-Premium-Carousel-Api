@@ -148,8 +148,7 @@ func TestGetUserAdsOkWithoutCache(t *testing.T) {
 		product,
 		time.Hour).
 		Return(fmt.Errorf("error setting cache"))
-	ads, err := interactor.GetUserAds("123",
-		"test_excluded_list_id_1234", "excluded_list_id_2123")
+	ads, err := interactor.GetUserAds(domain.Ad{UserID: "123"})
 	expected := tAds
 	assert.NoError(t, err)
 	assert.Equal(t, expected, ads)
@@ -180,8 +179,7 @@ func TestGetUserAdsOkWithCache(t *testing.T) {
 
 	mAdRepo.On("GetUserAds", mock.AnythingOfType("string"),
 		mock.AnythingOfType("CpConfig")).Return(tAds, nil)
-	ads, err := interactor.GetUserAds("123",
-		"test_excluded_list_id_1234", "excluded_list_id_2123")
+	ads, err := interactor.GetUserAds(domain.Ad{UserID: "123"})
 	expected := tAds
 	assert.NoError(t, err)
 	assert.Equal(t, expected, ads)
@@ -207,9 +205,7 @@ func TestGetUserAdsErrorProductInactive(t *testing.T) {
 		Return(productBytes, nil)
 	mLogger.On("LogInfoActiveProductNotFound", mock.Anything, mock.Anything)
 
-	_, err := interactor.GetUserAds("123",
-		"test_excluded_list_id_1234", "excluded_list_id_2123")
-	assert.Error(t, err)
+	interactor.GetUserAds(domain.Ad{UserID: "123"})
 	mProductRepo.AssertExpectations(t)
 	mAdRepo.AssertExpectations(t)
 	mCacheRepo.AssertExpectations(t)
@@ -241,8 +237,8 @@ func TestGetUserAdsErrorProductExpired(t *testing.T) {
 		Return(fmt.Errorf("error setting cache"))
 	mProductRepo.On("SetStatus", mock.AnythingOfType("int"),
 		ExpiredProduct).Return(nil)
-	_, err := interactor.GetUserAds("123",
-		"test_excluded_list_id_1234", "excluded_list_id_2123")
+	_, err := interactor.GetUserAds(domain.Ad{UserID: "123"})
+
 	assert.NoError(t, err)
 	mProductRepo.AssertExpectations(t)
 	mAdRepo.AssertExpectations(t)
@@ -269,8 +265,7 @@ func TestGetUserAdsErrorGetAds(t *testing.T) {
 
 	mAdRepo.On("GetUserAds", mock.AnythingOfType("string"),
 		mock.AnythingOfType("CpConfig")).Return(domain.Ads{}, fmt.Errorf("err"))
-	_, err := interactor.GetUserAds("123",
-		"test_excluded_list_id_1234", "excluded_list_id_2123")
+	_, err := interactor.GetUserAds(domain.Ad{UserID: "123"})
 
 	assert.Error(t, err)
 	mProductRepo.AssertExpectations(t)
