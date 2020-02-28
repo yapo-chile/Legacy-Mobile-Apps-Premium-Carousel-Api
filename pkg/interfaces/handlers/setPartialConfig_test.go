@@ -15,8 +15,8 @@ func TestSetPartialConfigHandlerInput(t *testing.T) {
 	mMockInputRequest := &MockInputRequest{}
 	mTargetRequest := &MockTargetRequest{}
 	mMockInputRequest.On("Set",
-		mock.AnythingOfType("*handlers.setPartialConfigHandlerInput")).Return(mTargetRequest)
-	mTargetRequest.On("FromRawBody").Return(mTargetRequest)
+		mock.Anything).Return(mTargetRequest)
+	mTargetRequest.On("FromJSONBody").Return(mTargetRequest)
 	mTargetRequest.On("FromPath").Return(mTargetRequest)
 	input := h.Input(mMockInputRequest)
 	var expected *setPartialConfigHandlerInput
@@ -63,7 +63,7 @@ func TestSetPartialConfigHandlerOK(t *testing.T) {
 	}
 	input := setPartialConfigHandlerInput{
 		UserProductID: 123,
-		Body:          []byte(`{"status":"ACTIVE"}`),
+		Body:          map[string]interface{}{"status": "ACTIVE"},
 	}
 	getter := MakeMockInputGetter(&input, nil)
 	r := h.Execute(getter)
@@ -89,7 +89,7 @@ func TestSetPartialConfigHandlerError(t *testing.T) {
 	}
 	input := setPartialConfigHandlerInput{
 		UserProductID: 123,
-		Body:          []byte(`{"status":"ACTIVE"}`),
+		Body:          map[string]interface{}{"status": "ACTIVE"},
 	}
 	getter := MakeMockInputGetter(&input, nil)
 	r := h.Execute(getter)
@@ -118,28 +118,6 @@ func TestSetPartialConfigHandlerBadUserProductID(t *testing.T) {
 		Body: goutils.GenericError{
 			ErrorMessage: fmt.Sprintf(`Wrong ProductID: %d`,
 				input.UserProductID),
-		},
-	}
-	assert.Equal(t, expected, r)
-	mInteractor.AssertExpectations(t)
-}
-
-func TestSetPartialConfigHandlerErrorDecodingInput(t *testing.T) {
-	mInteractor := &mockSetPartialConfigInteractor{}
-	h := SetPartialConfigHandler{
-		Interactor: mInteractor,
-	}
-	input := setPartialConfigHandlerInput{
-		UserProductID: 1,
-		Body:          []byte("{{{{{{"),
-	}
-	getter := MakeMockInputGetter(&input, nil)
-	r := h.Execute(getter)
-	expected := &goutils.Response{
-		Code: http.StatusBadRequest,
-		Body: goutils.GenericError{
-			ErrorMessage: fmt.Sprintf(`error decoding input:` +
-				` invalid character '{' looking for beginning of object key string`),
 		},
 	}
 	assert.Equal(t, expected, r)
