@@ -12,10 +12,6 @@ type Ad struct {
 	Subject string
 	// Price represents the ad price
 	Price float64
-	// UnitOfAccount represents the ad price in a nominal monetary measure
-	// defined by law. Example: for Chile is UF.
-	// If unitOFAccount is defined, then it will replace the original price.
-	UnitOfAccount float64
 	// Currency is the symbol displayed by widget, If unitOfAccount is defined
 	// then currency must be the unitOfAccount symbol
 	Currency string

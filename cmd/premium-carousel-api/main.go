@@ -5,8 +5,14 @@ import (
 	"fmt"
 	"os"
 
+	_ "github.com/lib/pq"
+	"github.com/mattes/migrate"
+	mpgsql "github.com/mattes/migrate/database/postgres"
+	_ "github.com/mattes/migrate/source/file"
+
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/infrastructure"
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/interfaces/handlers"
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/interfaces/loggers"
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/interfaces/repository"
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
 )
@@ -15,7 +21,7 @@ func main() { //nolint: funlen
 	var shutdownSequence = infrastructure.NewShutdownSequence()
 	var conf infrastructure.Config
 
-	fmt.Printf("Etag:%d\n", conf.CacheConf.InitEtag())
+	fmt.Printf("Etag:%d\n", conf.BrowserCacheConf.InitEtag())
 	shutdownSequence.Listen()
 	infrastructure.LoadFromEnv(&conf)
 
@@ -60,7 +66,26 @@ func main() { //nolint: funlen
 		panic("Unable to load regions remote config from etcd")
 	}
 
-	elasticsearch := infrastructure.NewElasticsearch(conf.AdConf.Host, conf.AdConf.Port, logger)
+	redisHandler := infrastructure.NewRedisHandler(
+		conf.CacheConf.Host,
+		conf.CacheConf.Password,
+		conf.CacheConf.DB,
+		logger,
+	)
+
+	dbHandler, err := infrastructure.MakePgsqlHandler(conf.DatabaseConf, logger)
+	if err != nil {
+		panic(fmt.Sprintf("Unable to connect with postgres database: %+v", err))
+	}
+	shutdownSequence.Push(dbHandler)
+
+	setupMigrations(conf, dbHandler, logger)
+
+	elasticsearch := infrastructure.NewElasticsearch(
+		conf.AdConf.Host,
+		conf.AdConf.Port,
+		logger,
+	)
 
 	adRepo := repository.MakeAdRepository(
 		elasticsearch,
@@ -70,27 +95,66 @@ func main() { //nolint: funlen
 		conf.AdConf.MaxAdsToDisplay,
 	)
 
-	configRepo := repository.MakeConfigRepository(nil) // TODO
+	cacheRepo := repository.NewCacheRepository(
+		redisHandler,
+		conf.CacheConf.Prefix,
+		conf.CacheConf.DefaultTTL,
+	)
 
-	getUserAdsInteractor := usecases.MakeGetUserAdsInteractor(adRepo, configRepo)
-	getAdInteractor := usecases.MakeGetAdInteractor(adRepo)
+	productRepo := repository.MakeProductRepository(
+		dbHandler,
+		conf.ControlPanelConf.ResultsPerPage)
+
+	getUserAdsInteractor := usecases.MakeGetUserAdsInteractor(
+		adRepo,
+		productRepo,
+		cacheRepo,
+		loggers.MakeGetUserAdsLogger(logger),
+		conf.CacheConf.DefaultTTL,
+	)
+
+	getAdInteractor := usecases.MakeGetAdInteractor(
+		adRepo,
+		cacheRepo,
+		loggers.MakeGetAdLogger(logger),
+		conf.CacheConf.DefaultTTL,
+	)
+
+	addUserProductInteractor := usecases.MakeAddUserProductInteractor(
+		productRepo,
+		cacheRepo,
+		loggers.MakeAddUserProductLogger(logger),
+		conf.CacheConf.DefaultTTL,
+	)
+
+	getUserProductsInteractor := usecases.MakeGetUserProductsInteractor(
+		productRepo,
+		loggers.MakeGetUserProductsLogger(logger),
+	)
 
 	// UserAdsHandler
 	getUserAdsHandler := handlers.GetUserAdsHandler{
 		Interactor:          getUserAdsInteractor,
 		GetAdInteractor:     getAdInteractor,
-		Logger:              nil, // TODO
 		UnitOfAccountSymbol: conf.AdConf.UnitOfAccountSymbol,
 		CurrencySymbol:      conf.AdConf.CurrencySymbol,
+	}
+
+	addUserProductHandler := handlers.AddUserProductHandler{
+		Interactor: addUserProductInteractor,
+	}
+
+	getUserProductsHandler := handlers.GetUserProductsHandler{
+		Interactor: getUserProductsInteractor,
 	}
 
 	// HealthHandler
 	var healthHandler handlers.HealthHandler
 
 	useBrowserCache := handlers.Cache{
-		MaxAge:  conf.CacheConf.MaxAge,
-		Etag:    conf.CacheConf.Etag,
-		Enabled: conf.CacheConf.Enabled,
+		MaxAge:  conf.BrowserCacheConf.MaxAge,
+		Etag:    conf.BrowserCacheConf.Etag,
+		Enabled: conf.BrowserCacheConf.Enabled,
 	}
 	// Setting up router
 	maker := infrastructure.RouterMaker{
@@ -114,6 +178,18 @@ func main() { //nolint: funlen
 						Pattern: "/ads/{listID:[0-9]+}",
 						Handler: &getUserAdsHandler,
 					},
+					{
+						Name:    "Add product",
+						Method:  "POST",
+						Pattern: "/product",
+						Handler: &addUserProductHandler,
+					},
+					{
+						Name:    "Get user products",
+						Method:  "GET",
+						Pattern: "/products",
+						Handler: &getUserProductsHandler,
+					},
 				},
 			},
 		},
@@ -132,4 +208,31 @@ func main() { //nolint: funlen
 	go server.ListenAndServe()
 	shutdownSequence.Wait()
 	logger.Info("Server exited normally")
+}
+
+// Autoexecute database migrations
+func setupMigrations(conf infrastructure.Config, dbHandler *infrastructure.PgsqlHandler, logger loggers.Logger) {
+	driver, err := mpgsql.WithInstance(dbHandler.Conn, &mpgsql.Config{})
+	if err != nil {
+		logger.Error("Error to instance migrations %v", err)
+		return
+	}
+	mig, err := migrate.NewWithDatabaseInstance(
+		"file://"+conf.DatabaseConf.MgFolder,
+		conf.DatabaseConf.MgDriver,
+		driver,
+	)
+	if err != nil {
+		logger.Error("Consume migrations sources err %#v", err)
+		return
+	}
+	version, _, _ := mig.Version()
+	logger.Info("Migrations Actual Version %d", version)
+	err = mig.Up()
+	if err != nil && err != migrate.ErrNoChange {
+		logger.Info("Migration message: %v", err)
+		return
+	}
+	version, _, _ = mig.Version()
+	logger.Info("Migrations upgraded to version %d", version)
 }

@@ -55,7 +55,7 @@ type DatabaseConf struct {
 	MaxOpen     int    `env:"MAX_OPEN" envDefault:"100"`
 	MgFolder    string `env:"MIGRATIONS_FOLDER" envDefault:"migrations"`
 	MgDriver    string `env:"MIGRATIONS_DRIVER" envDefault:"postgres"`
-	ConnRetries int    `env:"CONN_RETRIES" envDefault:"60"`
+	ConnRetries int    `env:"CONN_RETRIES" envDefault:"3"`
 }
 
 // GomsClientConf holds configuration regarding to our http client (premium-carousel-api itself in this case)
@@ -93,16 +93,30 @@ func (cc CorsConf) GetHeaders() map[string]string {
 	}
 }
 
-// CacheConf Used to handle browser cache
-type CacheConf struct {
+// BrowserCacheConf Used to handle browser cache
+type BrowserCacheConf struct {
 	Enabled bool `env:"ENABLED" envDefault:"false"`
 	//Cache max age in secs(use browser cache)
 	MaxAge time.Duration `env:"MAX_AGE" envDefault:"720h"`
 	Etag   int64
 }
 
+// CacheConf holds cache configurations
+type CacheConf struct {
+	Host       string        `env:"HOST" envDefault:"cache:6379"`
+	Prefix     string        `env:"PREFIX" envDefault:"cache"`
+	Password   string        `env:"PASSWORD"`
+	DB         int           `env:"DB"`
+	DefaultTTL time.Duration `env:"DEFAULT_TTL" envDefault:"1h"`
+}
+
+// ControlPanelConf holds Control Panel configurations
+type ControlPanelConf struct {
+	ResultsPerPage int `env:"RESULTS_PER_PAGE" envDefault:"50"`
+}
+
 // InitEtag use current epoc to config etag
-func (chc *CacheConf) InitEtag() int64 {
+func (chc *BrowserCacheConf) InitEtag() int64 {
 	chc.Etag = time.Now().Unix()
 	return chc.Etag
 }
@@ -112,7 +126,7 @@ type AdConf struct {
 	Host                string `env:"HOST" envDefault:"http://10.15.1.78"`
 	Port                string `env:"PORT" envDefault:"19200"`
 	Index               string `env:"PATH" envDefault:"ads"`
-	ImageServerURL      string `env:"IMAGE_SERVER_URL" envDefault:"https://img.yapo.cl/%s/%s/%010d.jpg"`
+	ImageServerURL      string `env:"IMAGE_SERVER_URL" envDefault:"https://img.yapo.cl/%s/%s/%s.jpg"`
 	CurrencySymbol      string `env:"CURRENCY_SYMBOL" envDefault:"$"`
 	UnitOfAccountSymbol string `env:"UNIT_OF_ACCOUNT_SYMBOL" envDefault:"UF"`
 	MaxAdsToDisplay     int    `env:"MAX_ADS_TO_DISPLAY" envDefault:"15"`
@@ -120,16 +134,18 @@ type AdConf struct {
 
 // Config holds all configuration for the service
 type Config struct {
-	ServiceConf    ServiceConf    `env:"SERVICE_"`
-	PrometheusConf PrometheusConf `env:"PROMETHEUS_"`
-	LoggerConf     LoggerConf     `env:"LOGGER_"`
-	Runtime        RuntimeConfig  `env:"APP_"`
-	GomsClientConf GomsClientConf `env:"GOMS_"`
-	EtcdConf       EtcdConf       `env:"ETCD_"`
-	CorsConf       CorsConf       `env:"CORS_"`
-	CacheConf      CacheConf      `env:"CACHE_"`
-	DatabaseConf   DatabaseConf   `env:"DATABASE_"`
-	AdConf         AdConf         `env:"AD_"`
+	ServiceConf      ServiceConf      `env:"SERVICE_"`
+	PrometheusConf   PrometheusConf   `env:"PROMETHEUS_"`
+	LoggerConf       LoggerConf       `env:"LOGGER_"`
+	Runtime          RuntimeConfig    `env:"APP_"`
+	GomsClientConf   GomsClientConf   `env:"GOMS_"`
+	EtcdConf         EtcdConf         `env:"ETCD_"`
+	CorsConf         CorsConf         `env:"CORS_"`
+	BrowserCacheConf BrowserCacheConf `env:"BROWSER_CACHE_"`
+	CacheConf        CacheConf        `env:"CACHE_"`
+	DatabaseConf     DatabaseConf     `env:"DATABASE_"`
+	AdConf           AdConf           `env:"AD_"`
+	ControlPanelConf ControlPanelConf `env:"CP_"`
 }
 
 // LoadFromEnv loads the config data from the environment variables

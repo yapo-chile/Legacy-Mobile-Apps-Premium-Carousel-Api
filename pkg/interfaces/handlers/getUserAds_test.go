@@ -47,10 +47,8 @@ func (m *mockGetAdInteractor) GetAd(listID string) (domain.Ad, error) {
 func TestGetUserAdsHandlerOK(t *testing.T) {
 	mInteractor := &mockGetUserAdsInteractor{}
 	mGetAdInteractor := &mockGetAdInteractor{}
-
 	mGetAdInteractor.On("GetAd", mock.AnythingOfType("string")).
 		Return(domain.Ad{ID: "123", UserID: "465"}, nil)
-
 	mInteractor.On("GetUserAds", mock.AnythingOfType("string"),
 		mock.AnythingOfType("[]string")).
 		Return(domain.Ads{{ID: "321", UserID: "465"}}, nil)
@@ -62,7 +60,6 @@ func TestGetUserAdsHandlerOK(t *testing.T) {
 	input.ListID = "123"
 	getter := MakeMockInputGetter(&input, nil)
 	r := h.Execute(getter)
-
 	expected := &goutils.Response{
 		Code: http.StatusOK,
 		Body: getUserRequestOutput{
@@ -76,10 +73,8 @@ func TestGetUserAdsHandlerOK(t *testing.T) {
 func TestGetUserAdsHandlerWithUF(t *testing.T) {
 	mInteractor := &mockGetUserAdsInteractor{}
 	mGetAdInteractor := &mockGetAdInteractor{}
-
 	mGetAdInteractor.On("GetAd", mock.AnythingOfType("string")).
 		Return(domain.Ad{ID: "123", UserID: "465"}, nil)
-
 	mInteractor.On("GetUserAds", mock.AnythingOfType("string"),
 		mock.AnythingOfType("[]string")).
 		Return(domain.Ads{{ID: "321", UserID: "465", Currency: "uf"}}, nil)
@@ -92,7 +87,6 @@ func TestGetUserAdsHandlerWithUF(t *testing.T) {
 	input.ListID = "123"
 	getter := MakeMockInputGetter(&input, nil)
 	r := h.Execute(getter)
-
 	expected := &goutils.Response{
 		Code: http.StatusOK,
 		Body: getUserRequestOutput{
@@ -107,10 +101,8 @@ func TestGetUserAdsHandlerWithUF(t *testing.T) {
 func TestGetUserAdsHandlerNoAds(t *testing.T) {
 	mInteractor := &mockGetUserAdsInteractor{}
 	mGetAdInteractor := &mockGetAdInteractor{}
-
 	mGetAdInteractor.On("GetAd", mock.AnythingOfType("string")).
 		Return(domain.Ad{ID: "123", UserID: "465"}, nil)
-
 	mInteractor.On("GetUserAds", mock.AnythingOfType("string"),
 		mock.AnythingOfType("[]string")).
 		Return(domain.Ads{}, nil)
@@ -122,7 +114,6 @@ func TestGetUserAdsHandlerNoAds(t *testing.T) {
 	input.ListID = "123"
 	getter := MakeMockInputGetter(&input, nil)
 	r := h.Execute(getter)
-
 	expected := &goutils.Response{
 		Code: http.StatusNoContent,
 	}
@@ -134,10 +125,8 @@ func TestGetUserAdsHandlerNoAds(t *testing.T) {
 func TestGetUserAdsHandlerErrorGettingUserAds(t *testing.T) {
 	mInteractor := &mockGetUserAdsInteractor{}
 	mGetAdInteractor := &mockGetAdInteractor{}
-
 	mGetAdInteractor.On("GetAd", mock.AnythingOfType("string")).
 		Return(domain.Ad{ID: "123", UserID: "465"}, nil)
-
 	mInteractor.On("GetUserAds", mock.AnythingOfType("string"),
 		mock.AnythingOfType("[]string")).
 		Return(domain.Ads{}, fmt.Errorf("e"))
@@ -149,7 +138,6 @@ func TestGetUserAdsHandlerErrorGettingUserAds(t *testing.T) {
 	input.ListID = "123"
 	getter := MakeMockInputGetter(&input, nil)
 	r := h.Execute(getter)
-
 	expected := &goutils.Response{
 		Code: http.StatusNoContent,
 	}
@@ -161,10 +149,8 @@ func TestGetUserAdsHandlerErrorGettingUserAds(t *testing.T) {
 func TestGetUserAdsHandlerErrorGettingAd(t *testing.T) {
 	mInteractor := &mockGetUserAdsInteractor{}
 	mGetAdInteractor := &mockGetAdInteractor{}
-
 	mGetAdInteractor.On("GetAd", mock.AnythingOfType("string")).
 		Return(domain.Ad{ID: "123", UserID: "465"}, fmt.Errorf("e"))
-
 	h := GetUserAdsHandler{
 		Interactor:      mInteractor,
 		GetAdInteractor: mGetAdInteractor,
@@ -173,7 +159,6 @@ func TestGetUserAdsHandlerErrorGettingAd(t *testing.T) {
 	input.ListID = "123"
 	getter := MakeMockInputGetter(&input, nil)
 	r := h.Execute(getter)
-
 	expected := &goutils.Response{
 		Code: http.StatusNoContent,
 	}
@@ -195,7 +180,6 @@ func TestGetUserAdsHandlerErrorBadInput(t *testing.T) {
 		Code: http.StatusNoContent,
 	})
 	r := h.Execute(getter)
-
 	expected := &goutils.Response{
 		Code: http.StatusNoContent,
 	}

@@ -76,3 +76,8 @@ export PROVIDER_PORT=8080
 export PACTS_PATH=./pacts
 
 export ETCD_HOST=http://10.15.1.78:56146
+export DATABASE_HOST=10.15.1.78
+export DATABASE_PORT=16422
+export DATABASE_MIGRATIONS_FOLDER=docker/migrations
+
+export CACHE_HOST=10.15.1.78:16522

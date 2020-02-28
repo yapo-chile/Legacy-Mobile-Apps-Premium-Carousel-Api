@@ -87,10 +87,10 @@ func (repo *adRepo) GetUserAds(userID string, cpConfig usecases.CpConfig) (domai
 				"Params.Type", "Params.Version"))
 	}
 
-	if cpConfig.PriceRangeFrom > 0 || cpConfig.PriceRangeTo > 0 {
+	if cpConfig.PriceRange > 0 {
 		must = append(must,
 			repo.handler.NewRangeQuery("Price",
-				cpConfig.PriceRangeFrom, cpConfig.PriceRangeTo))
+				cpConfig.PriceRange, 0))
 	}
 	if len(cpConfig.Exclude) > 0 {
 		mustNot = append(mustNot,
@@ -212,7 +212,7 @@ func (repo *adRepo) fillImage(ID int) domain.Image {
 
 // makeLimit determines the real limit based on configuration
 func (repo *adRepo) makeLimit(cpConfig usecases.CpConfig) int {
-	if cpConfig.Limit > 0 {
+	if cpConfig.Limit > 0 && cpConfig.Limit < repo.maxAdsToDisplay {
 		return cpConfig.Limit
 	}
 	return repo.maxAdsToDisplay
