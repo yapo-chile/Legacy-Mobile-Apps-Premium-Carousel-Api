@@ -198,13 +198,13 @@ func main() { //nolint: funlen
 					{
 						Name:    "Get user ads",
 						Method:  "GET",
-						Pattern: "/ads/{listID:[0-9]+}",
+						Pattern: "/related/{listID:[0-9]+}",
 						Handler: &getUserAdsHandler,
 					},
 					{
 						Name:    "Add product",
 						Method:  "POST",
-						Pattern: "/assign",
+						Pattern: "/assigns",
 						Handler: &addUserProductHandler,
 					},
 					{
@@ -214,15 +214,15 @@ func main() { //nolint: funlen
 						Handler: &getUserProductsHandler,
 					},
 					{
-						Name:    "Set config",
+						Name:    "Set user product config",
 						Method:  "PUT",
-						Pattern: "/assign/{ID:[0-9]+}",
+						Pattern: "/assigns/{ID:[0-9]+}",
 						Handler: &setConfigHandler,
 					},
 					{
-						Name:    "Set partial config",
+						Name:    "Set partial user product config",
 						Method:  "PATCH",
-						Pattern: "/assign/{ID:[0-9]+}",
+						Pattern: "/assigns/{ID:[0-9]+}",
 						Handler: &setPartialConfigHandler,
 					},
 				},
