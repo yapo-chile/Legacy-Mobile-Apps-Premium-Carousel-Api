@@ -81,11 +81,11 @@ func (repo *productRepo) GetUserProducts(email string,
 	var result DbResult
 	if email == "" {
 		result, err = repo.handler.Query(
-			query+` WHERE TRUE order by p.expired_at desc OFFSET $1 LIMIT $2`,
+			query+` WHERE TRUE order by p.id desc OFFSET $1 LIMIT $2`,
 			(repo.resultsPerPage * (page - 1)), repo.resultsPerPage)
 	} else {
 		result, err = repo.handler.Query(
-			query+` WHERE user_email = $1 order by p.expired_at desc OFFSET $2 LIMIT $3`,
+			query+` WHERE user_email = $1 order by p.id desc OFFSET $2 LIMIT $3`,
 			email, (repo.resultsPerPage * (page - 1)), repo.resultsPerPage)
 	}
 	if err != nil {
