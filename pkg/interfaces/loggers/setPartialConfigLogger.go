@@ -7,11 +7,11 @@ type setPartialConfigLogger struct {
 }
 
 func (l *setPartialConfigLogger) LogWarnSettingCache(userID string, err error) {
-	l.logger.Warn("Error setting product cache userID: %s error: %+v", userID, err)
+	l.logger.Warn("unable to set product cache userID: %s - %+v", userID, err)
 }
 
 func (l *setPartialConfigLogger) LogErrorSettingPartialConfig(userProductID int, err error) {
-	l.logger.Error("Error setting partial config userProductID: %s error: %+v", userProductID, err)
+	l.logger.Error("error setting partial config for userProductID: %s - %+v", userProductID, err)
 }
 
 // MakeSetPartialConfigLogger sets up a SetPartialConfigLogger instrumented

@@ -7,11 +7,11 @@ type setConfigLogger struct {
 }
 
 func (l *setConfigLogger) LogWarnSettingCache(userID string, err error) {
-	l.logger.Warn("Error setting product cache userID: %s error: %+v", userID, err)
+	l.logger.Warn("unable to set product cache userID: %s - %+v", userID, err)
 }
 
 func (l *setConfigLogger) LogErrorSettingConfig(userProductID int, err error) {
-	l.logger.Error("Error setting config to userProductID: %d error: %+v", userProductID, err)
+	l.logger.Error("error setting config for userProductID: %d - %+v", userProductID, err)
 }
 
 // MakeSetConfigLogger sets up a SetConfigLogger instrumented

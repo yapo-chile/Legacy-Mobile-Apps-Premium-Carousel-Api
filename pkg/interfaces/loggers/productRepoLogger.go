@@ -7,7 +7,7 @@ type productRepoLogger struct {
 }
 
 func (l *productRepoLogger) LogWarnPartialConfigNotSupported(name, value string) {
-	l.logger.Warn("Partial config %s: %s not supported", name, value)
+	l.logger.Warn("partial config %s: %s not supported", name, value)
 }
 
 // MakeProductRepositoryLogger sets up a ProductRepositoryLogger instrumented
