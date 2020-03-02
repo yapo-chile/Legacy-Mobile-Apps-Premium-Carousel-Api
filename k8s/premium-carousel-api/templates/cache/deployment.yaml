@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cache
+  name: {{ include "premium-carousel-api.name" . }}-cache
   namespace: {{ .Release.Namespace }}
   labels:
 {{ include "premium-carousel-api.labels" . | indent 4 }}
@@ -21,10 +21,8 @@ spec:
         options:
           - name: ndots
             value: "1"
-      imagePullSecrets:
-        - name: {{ .Values.cache.image.pullSecret }}
       containers:
-        - name: cache
+        - name: {{ include "premium-carousel-api.name" . }}-cache
           image: "{{ .Values.cache.image.repository }}:{{ .Values.cache.image.tag }}"
           imagePullPolicy: {{ .Values.cache.image.pullPolicy }}
           ports:

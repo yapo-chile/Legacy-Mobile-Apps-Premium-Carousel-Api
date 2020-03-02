@@ -15,5 +15,4 @@ data:
   LOGGER_LOG_LEVEL: "{{ .Values.core.logger.logLevel }}"
   AD_IMAGE_SERVER_URL: "{{ .Values.core.ad.imageServerURL }}"
   CACHE_HOST: "{{ .Values.core.cache.host}}"
-  DATABASE_HOST : "{{ .Values.core.database.host }}"
-  DATABASE_PORT : "{{ .Values.core.database.port }}"
+  DATABASE_NAME : "{{ .Values.core.database.name }}"

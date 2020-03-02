@@ -24,6 +24,9 @@ core:
     port: 80
     prometheus_port: 8877
 
+  database:
+    name: "premium-carousel-db"
+
   prometheus:
     enabled: "true"
     port: "8877"
@@ -36,6 +39,8 @@ core:
     liveness:
       initialDelaySeconds: 5
       periodSeconds: 3600
+    
+    
 
 ingress:
   enabled: true
@@ -51,7 +56,6 @@ cache:
     repository: redis
     tag: 3.2.11-alpine
     pullPolicy: IfNotPresent
-    pullSecrets: []
 
   nameOverride: ""
   fullnameOverride: ""
