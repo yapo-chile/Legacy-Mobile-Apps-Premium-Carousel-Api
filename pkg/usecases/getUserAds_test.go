@@ -22,7 +22,12 @@ func (m *mockProductRepo) GetUserActiveProduct(userID string,
 	return args.Get(0).(Product), args.Error(1)
 }
 
-func (m *mockProductRepo) GetUserProducts(email string, page int) ([]Product, int, int, error) {
+func (m *mockProductRepo) GetUserProducts(page int) ([]Product, int, int, error) {
+	args := m.Called(page)
+	return args.Get(0).([]Product), args.Int(1), args.Int(2), args.Error(3)
+}
+
+func (m *mockProductRepo) GetUserProductsByEmail(email string, page int) ([]Product, int, int, error) {
 	args := m.Called(email, page)
 	return args.Get(0).([]Product), args.Int(1), args.Int(2), args.Error(3)
 }
@@ -33,7 +38,12 @@ func (m *mockProductRepo) AddUserProduct(userID, email, comment string, productT
 	return args.Get(0).(Product), args.Error(1)
 }
 
-func (m *mockProductRepo) GetUserProductsTotal(email string) (total int) {
+func (m *mockProductRepo) GetUserProductsTotal() (total int) {
+	args := m.Called()
+	return args.Int(0)
+}
+
+func (m *mockProductRepo) GetUserProductsTotalByEmail(email string) (total int) {
 	args := m.Called(email)
 	return args.Int(0)
 }
@@ -127,7 +137,7 @@ func TestGetUserAdsOkWithoutCache(t *testing.T) {
 	mLogger := &mockgetUserAdsLogger{}
 	interactor := MakeGetUserAdsInteractor(mAdRepo, mProductRepo,
 		mCacheRepo, mLogger, time.Hour)
-	cpConfig := CpConfig{Categories: []int{2020}, Limit: 2}
+	cpConfig := CpConfig{Categories: []int{2020}, Limit: 2, PriceRange: 200}
 	tAds := domain.Ads{
 		{ID: "1", Subject: "Mi auto", UserID: "123"},
 		{ID: "2", Subject: "Mi auto 2", UserID: "123"},
@@ -152,6 +162,38 @@ func TestGetUserAdsOkWithoutCache(t *testing.T) {
 	expected := tAds
 	assert.NoError(t, err)
 	assert.Equal(t, expected, ads)
+	mProductRepo.AssertExpectations(t)
+	mAdRepo.AssertExpectations(t)
+	mCacheRepo.AssertExpectations(t)
+	mLogger.AssertExpectations(t)
+}
+
+func TestGetUserAdsOkWithoutCacheAndInactiveProduct(t *testing.T) {
+	mProductRepo := &mockProductRepo{}
+	mAdRepo := &mockAdRepo{}
+	mCacheRepo := &mockCacheRepo{}
+	mLogger := &mockgetUserAdsLogger{}
+	interactor := MakeGetUserAdsInteractor(mAdRepo, mProductRepo,
+		mCacheRepo, mLogger, time.Hour)
+
+	mCacheRepo.On("GetCache", mock.AnythingOfType("string"), ProductCacheType).
+		Return([]byte{}, fmt.Errorf("cache not found"))
+	mLogger.On("LogWarnGettingCache", mock.Anything, mock.Anything)
+	mLogger.On("LogInfoActiveProductNotFound", mock.Anything, mock.Anything)
+	mLogger.On("LogWarnSettingCache", mock.Anything, mock.Anything)
+	mProductRepo.On("GetUserActiveProduct", mock.AnythingOfType("string"),
+		PremiumCarousel).Return(Product{}, fmt.Errorf("err"))
+
+	product := Product{UserID: "123", Status: InactiveProduct}
+
+	mCacheRepo.On("SetCache", "user:123:PREMIUM_CAROUSEL",
+		ProductCacheType,
+		product,
+		time.Hour).
+		Return(fmt.Errorf("error setting cache"))
+	_, err := interactor.GetUserAds(domain.Ad{UserID: "123"})
+
+	assert.Error(t, err)
 	mProductRepo.AssertExpectations(t)
 	mAdRepo.AssertExpectations(t)
 	mCacheRepo.AssertExpectations(t)

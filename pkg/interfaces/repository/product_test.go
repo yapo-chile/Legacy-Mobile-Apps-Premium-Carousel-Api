@@ -95,7 +95,7 @@ func TestGetUserProductsTotalOk(t *testing.T) {
 	mResult.On("Next").Return(true).Once()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{123})
 	repo := MakeProductRepository(mockDB, 10, mLogger)
-	result := repo.GetUserProductsTotal("123")
+	result := repo.GetUserProductsTotal()
 	assert.Equal(t, 123, result)
 	mockDB.AssertExpectations(t)
 	mResult.AssertExpectations(t)
@@ -111,8 +111,96 @@ func TestGetUserProductsTotalError(t *testing.T) {
 		mock.AnythingOfType("[]interface {}"),
 	).Return(mResult, fmt.Errorf("e"))
 	repo := MakeProductRepository(mockDB, 10, mLogger)
-	result := repo.GetUserProductsTotal("123")
+	result := repo.GetUserProductsTotal()
 	assert.Equal(t, 0, result)
+	mockDB.AssertExpectations(t)
+	mResult.AssertExpectations(t)
+	mLogger.AssertExpectations(t)
+}
+
+func TestGetUserProductsTotalByEmailOk(t *testing.T) {
+	mockDB := &dbHandlerMock{}
+	mResult := &mockResult{}
+	mLogger := &mockProductRepoLogger{}
+	mockDB.On("Query",
+		mock.AnythingOfType("string"),
+		mock.AnythingOfType("[]interface {}"),
+	).Return(mResult, nil)
+	mResult.On("Close").Return(nil)
+	mResult.On("Next").Return(true).Once()
+	mResult.On("Scan", mock.Anything).Return([]interface{}{123})
+	repo := MakeProductRepository(mockDB, 10, mLogger)
+	result := repo.GetUserProductsTotalByEmail("123@123.cl")
+	assert.Equal(t, 123, result)
+	mockDB.AssertExpectations(t)
+	mResult.AssertExpectations(t)
+	mLogger.AssertExpectations(t)
+}
+
+func TestGetUserProductsTotalByEmailError(t *testing.T) {
+	mockDB := &dbHandlerMock{}
+	mResult := &mockResult{}
+	mLogger := &mockProductRepoLogger{}
+	mockDB.On("Query",
+		mock.AnythingOfType("string"),
+		mock.AnythingOfType("[]interface {}"),
+	).Return(mResult, fmt.Errorf("e"))
+	repo := MakeProductRepository(mockDB, 10, mLogger)
+	result := repo.GetUserProductsTotalByEmail("123@test.cl")
+	assert.Equal(t, 0, result)
+	mockDB.AssertExpectations(t)
+	mResult.AssertExpectations(t)
+	mLogger.AssertExpectations(t)
+}
+
+func TestGetUserProductsByEmailOk(t *testing.T) {
+	mockDB := &dbHandlerMock{}
+	mResult := &mockResult{}
+	mLogger := &mockProductRepoLogger{}
+	repo := MakeProductRepository(mockDB, 10, mLogger)
+
+	mResult.On("Close").Return(nil)
+	// Get Products Total mocks
+	mockDB.On("Query",
+		mock.AnythingOfType("string"),
+		mock.AnythingOfType("[]interface {}"),
+	).Return(mResult, nil).Once()
+	mResult.On("Next").Return(true).Once()
+	mResult.On("Scan", mock.Anything).Return([]interface{}{11}).Once()
+	// get products query
+	mockDB.On("Query",
+		mock.AnythingOfType("string"),
+		mock.Anything,
+	).Return(mResult, nil).Once()
+	mResult.On("Next").Return(true).Once()
+	mResult.On("Next").Return(false).Once()
+	testTime := time.Now()
+	mResult.On("Scan", mock.Anything).Return([]interface{}{
+		11, usecases.PremiumCarousel, "1", "test@mail.com", usecases.ActiveProduct,
+		testTime, testTime, []string{"categories=2020,1020"}, "comentario"}).Once()
+
+	result, currentPage,
+		totalPages, err := repo.GetUserProductsByEmail("test@email.com", 0)
+	expected := []usecases.Product{
+		{
+			ID:        11,
+			Type:      usecases.PremiumCarousel,
+			UserID:    "1",
+			Email:     "test@mail.com",
+			Status:    usecases.ActiveProduct,
+			ExpiredAt: testTime,
+			CreatedAt: testTime,
+			Config: usecases.CpConfig{
+				Categories: []int{2020, 1020},
+				Exclude:    []string{},
+			},
+			Comment: "comentario",
+		},
+	}
+	assert.Equal(t, 1, currentPage)
+	assert.Equal(t, 2, totalPages)
+	assert.Equal(t, expected, result)
+	assert.NoError(t, err)
 	mockDB.AssertExpectations(t)
 	mResult.AssertExpectations(t)
 	mLogger.AssertExpectations(t)
@@ -141,64 +229,11 @@ func TestGetUserProductsOk(t *testing.T) {
 	mResult.On("Next").Return(false).Once()
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
-		11, usecases.PremiumCarousel, "1", "test@mail.com", usecases.ActiveProduct,
-		testTime, testTime, []string{"categories=2020,1020"}, "comentario"}).Once()
-
-	result, currentPage,
-		totalPages, err := repo.GetUserProducts("test@email.com", 0)
-	expected := []usecases.Product{
-		{
-			ID:        11,
-			Type:      usecases.PremiumCarousel,
-			UserID:    "1",
-			Email:     "test@mail.com",
-			Status:    usecases.ActiveProduct,
-			ExpiredAt: testTime,
-			CreatedAt: testTime,
-			Config: usecases.CpConfig{
-				Categories: []int{2020, 1020},
-				Exclude:    []string{},
-			},
-			Comment: "comentario",
-		},
-	}
-	assert.Equal(t, 1, currentPage)
-	assert.Equal(t, 2, totalPages)
-	assert.Equal(t, expected, result)
-	assert.NoError(t, err)
-	mockDB.AssertExpectations(t)
-	mResult.AssertExpectations(t)
-	mLogger.AssertExpectations(t)
-}
-
-func TestGetUserProductsOkEmptyEmail(t *testing.T) {
-	mockDB := &dbHandlerMock{}
-	mResult := &mockResult{}
-	mLogger := &mockProductRepoLogger{}
-	repo := MakeProductRepository(mockDB, 10, mLogger)
-
-	mResult.On("Close").Return(nil)
-	// Get Products Total mocks
-	mockDB.On("Query",
-		mock.AnythingOfType("string"),
-		mock.AnythingOfType("[]interface {}"),
-	).Return(mResult, nil).Once()
-	mResult.On("Next").Return(true).Once()
-	mResult.On("Scan", mock.Anything).Return([]interface{}{11}).Once()
-	// get products query
-	mockDB.On("Query",
-		mock.AnythingOfType("string"),
-		mock.Anything,
-	).Return(mResult, nil).Once()
-	mResult.On("Next").Return(true).Once()
-	mResult.On("Next").Return(false).Once()
-	testTime := time.Now()
-	mResult.On("Scan", mock.Anything).Return([]interface{}{
 		11, usecases.PremiumCarousel, "1", "", usecases.ActiveProduct,
 		testTime, testTime, []string{"categories=2020,1020"}, "comentario"}).Once()
 
 	result, currentPage,
-		totalPages, err := repo.GetUserProducts("", 0)
+		totalPages, err := repo.GetUserProducts(0)
 	expected := []usecases.Product{
 		{
 			ID:        11,
@@ -233,12 +268,56 @@ func TestGetUserProductsZeroResults(t *testing.T) {
 		mock.AnythingOfType("[]interface {}"),
 	).Return(mResult, fmt.Errorf("e")).Once()
 	result, currentPage,
-		totalPages, err := repo.GetUserProducts("test@email.com", 0)
+		totalPages, err := repo.GetUserProducts(0)
 	expected := []usecases.Product{}
 	assert.Equal(t, 1, currentPage)
 	assert.Equal(t, 0, totalPages)
 	assert.Equal(t, expected, result)
 	assert.NoError(t, err)
+	mockDB.AssertExpectations(t)
+	mResult.AssertExpectations(t)
+	mLogger.AssertExpectations(t)
+}
+
+func TestGetUserProductsByEmailZeroResults(t *testing.T) {
+	mockDB := &dbHandlerMock{}
+	mResult := &mockResult{}
+	mLogger := &mockProductRepoLogger{}
+	repo := MakeProductRepository(mockDB, 10, mLogger)
+	mockDB.On("Query",
+		mock.AnythingOfType("string"),
+		mock.AnythingOfType("[]interface {}"),
+	).Return(mResult, fmt.Errorf("e")).Once()
+	result, currentPage,
+		totalPages, err := repo.GetUserProductsByEmail("test@email.com", 0)
+	expected := []usecases.Product{}
+	assert.Equal(t, 1, currentPage)
+	assert.Equal(t, 0, totalPages)
+	assert.Equal(t, expected, result)
+	assert.NoError(t, err)
+	mockDB.AssertExpectations(t)
+	mResult.AssertExpectations(t)
+	mLogger.AssertExpectations(t)
+}
+
+func TestGetUserProductsByEmailQueryError(t *testing.T) {
+	mockDB := &dbHandlerMock{}
+	mResult := &mockResult{}
+	mLogger := &mockProductRepoLogger{}
+	repo := MakeProductRepository(mockDB, 10, mLogger)
+	mResult.On("Close").Return(nil)
+	mockDB.On("Query",
+		mock.AnythingOfType("string"),
+		mock.AnythingOfType("[]interface {}"),
+	).Return(mResult, nil).Once()
+	mResult.On("Next").Return(true).Once()
+	mResult.On("Scan", mock.Anything).Return([]interface{}{11}).Once()
+	mockDB.On("Query",
+		mock.AnythingOfType("string"),
+		mock.Anything,
+	).Return(mResult, fmt.Errorf("err")).Once()
+	_, _, _, err := repo.GetUserProductsByEmail("test@email.com", 0)
+	assert.Error(t, err)
 	mockDB.AssertExpectations(t)
 	mResult.AssertExpectations(t)
 	mLogger.AssertExpectations(t)
@@ -260,7 +339,7 @@ func TestGetUserProductsQueryError(t *testing.T) {
 		mock.AnythingOfType("string"),
 		mock.Anything,
 	).Return(mResult, fmt.Errorf("err")).Once()
-	_, _, _, err := repo.GetUserProducts("test@email.com", 0)
+	_, _, _, err := repo.GetUserProducts(0)
 	assert.Error(t, err)
 	mockDB.AssertExpectations(t)
 	mResult.AssertExpectations(t)

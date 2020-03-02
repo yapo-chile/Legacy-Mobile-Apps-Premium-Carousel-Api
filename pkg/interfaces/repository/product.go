@@ -34,16 +34,23 @@ func MakeProductRepository(handler DbHandler, resultsPerPage int,
 }
 
 // GetUserProductsTotal get the total of user products
-func (repo *productRepo) GetUserProductsTotal(email string) (total int) {
-	var result DbResult
-	var err error
-	if email == "" {
-		result, err = repo.handler.Query(`SELECT COUNT(*) as total FROM
+func (repo *productRepo) GetUserProductsTotal() (total int) {
+	result, err := repo.handler.Query(`SELECT COUNT(*) as total FROM
 		user_product`)
-	} else {
-		result, err = repo.handler.Query(`SELECT COUNT(*) as total FROM
-			user_product WHERE user_email=$1`, email)
+	if err != nil {
+		return 0
 	}
+	defer result.Close()
+	if result.Next() {
+		result.Scan(&total)
+	}
+	return total
+}
+
+// GetUserProductsTotal get the total of user products
+func (repo *productRepo) GetUserProductsTotalByEmail(email string) (total int) {
+	result, err := repo.handler.Query(`SELECT COUNT(*) as total FROM
+			user_product WHERE user_email=$1`, email)
 	if err != nil {
 		return 0
 	}
@@ -55,13 +62,13 @@ func (repo *productRepo) GetUserProductsTotal(email string) (total int) {
 }
 
 // GetUserProducts get a list of user products with pagination
-func (repo *productRepo) GetUserProducts(email string,
+func (repo *productRepo) GetUserProducts(
 	page int) (products []usecases.Product, currentPage int,
 	totalPages int, err error) {
 	if page < 1 {
 		page = 1
 	}
-	total := repo.GetUserProductsTotal(email)
+	total := repo.GetUserProductsTotal()
 	if total < 1 {
 		return []usecases.Product{}, page, 0, nil
 	}
@@ -69,7 +76,8 @@ func (repo *productRepo) GetUserProducts(email string,
 	if (total % repo.resultsPerPage) > 0 {
 		totalPages++
 	}
-	query := `SELECT
+	result, err := repo.handler.Query(
+		`SELECT
 		p.id, p.product_type, p.user_id, p.user_email, p.status, p.expired_at,
 		p.created_at,
 		ARRAY(
@@ -77,17 +85,57 @@ func (repo *productRepo) GetUserProducts(email string,
 			FROM user_product_config WHERE user_product_id = p.id
 		) AS config_params,
 		p.comment
-	FROM user_product as p`
-	var result DbResult
-	if email == "" {
-		result, err = repo.handler.Query(
-			query+` WHERE TRUE order by p.id desc OFFSET $1 LIMIT $2`,
-			(repo.resultsPerPage * (page - 1)), repo.resultsPerPage)
-	} else {
-		result, err = repo.handler.Query(
-			query+` WHERE user_email = $1 order by p.id desc OFFSET $2 LIMIT $3`,
-			email, (repo.resultsPerPage * (page - 1)), repo.resultsPerPage)
+		FROM user_product as p
+		WHERE TRUE
+		ORDER BY p.id DESC
+		OFFSET $1 LIMIT $2`,
+		(repo.resultsPerPage * (page - 1)), repo.resultsPerPage)
+	if err != nil {
+		return []usecases.Product{}, 0, 0, err
 	}
+	defer result.Close()
+	for result.Next() {
+		product := usecases.Product{}
+		rawConfig := []string{}
+		result.Scan(&product.ID, &product.Type, &product.UserID, &product.Email,
+			&product.Status, &product.ExpiredAt, &product.CreatedAt,
+			(*pq.StringArray)(&rawConfig), &product.Comment)
+		config, _ := repo.parseConfig(rawConfig)
+		product.Config = config
+		products = append(products, product)
+	}
+	return products, page, totalPages, nil
+}
+
+// GetUserProducts get a list of user products by email with pagination
+func (repo *productRepo) GetUserProductsByEmail(email string,
+	page int) (products []usecases.Product, currentPage int,
+	totalPages int, err error) {
+	if page < 1 {
+		page = 1
+	}
+	total := repo.GetUserProductsTotalByEmail(email)
+	if total < 1 {
+		return []usecases.Product{}, page, 0, nil
+	}
+	totalPages = (total / repo.resultsPerPage)
+	if (total % repo.resultsPerPage) > 0 {
+		totalPages++
+	}
+	result, err := repo.handler.Query(
+		`SELECT
+		p.id, p.product_type, p.user_id, p.user_email, p.status, p.expired_at,
+		p.created_at,
+		ARRAY(
+			SELECT user_product_config.name || '=' || user_product_config.value
+			FROM user_product_config WHERE user_product_id = p.id
+		) AS config_params,
+		p.comment
+		FROM user_product as p
+		WHERE user_email = $1
+		ORDER BY p.id DESC
+		OFFSET $2 LIMIT $3`,
+		email, (repo.resultsPerPage * (page - 1)), repo.resultsPerPage)
 	if err != nil {
 		return []usecases.Product{}, 0, 0, err
 	}
