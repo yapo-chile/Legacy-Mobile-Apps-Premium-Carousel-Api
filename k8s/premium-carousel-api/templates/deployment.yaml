@@ -58,22 +58,22 @@ spec:
             - name: DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: premium-carousel-api-secret
+                  name: secret-premium-carousel-api
                   key: password
             - name: DATABASE_USER
               valueFrom:
                 secretKeyRef:
-                  name: premium-carousel-api-secret
+                  name: secret-premium-carousel-api
                   key: username
             - name: DATABASE_HOST
               valueFrom:
                 secretKeyRef:
-                  name: premium-carousel-api-secret
+                  name: secret-premium-carousel-api
                   key: host
             - name: DATABASE_PORT
               valueFrom:
                 secretKeyRef:
-                  name: premium-carousel-api-secret
+                  name: secret-premium-carousel-api
                   key: port
       {{- with .Values.nodeSelector }}
       nodeSelector:
