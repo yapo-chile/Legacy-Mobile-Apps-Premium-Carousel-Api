@@ -104,6 +104,7 @@ func TestAddUserProductHandlerError(t *testing.T) {
 		UserID:    123,
 		Email:     "test@test.cl",
 		ExpiredAt: time.Now().Add(time.Hour * 24 * 365),
+		Exclude:   "1234",
 	}
 	getter := MakeMockInputGetter(&input, nil)
 	r := h.Execute(getter)

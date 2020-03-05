@@ -65,7 +65,7 @@ func (h *AddUserProductHandler) Execute(ig InputGetter) *goutils.Response {
 	}
 	config := usecases.CpConfig{
 		Categories:         h.getCategories(in.Categories),
-		Exclude:            strings.Split(in.Exclude, ","),
+		Exclude:            h.getExclude(in.Exclude),
 		CustomQuery:        in.CustomQuery,
 		Limit:              in.Limit,
 		PriceRange:         in.PriceRange,
@@ -92,12 +92,21 @@ func (h *AddUserProductHandler) Execute(ig InputGetter) *goutils.Response {
 	}
 }
 
-func (h *AddUserProductHandler) getCategories(raw string) []int {
-	categories := []int{}
+func (h *AddUserProductHandler) getCategories(raw string) (categories []int) {
+	if raw == "" {
+		return []int{}
+	}
 	categoriesArr := strings.Split(raw, ",")
 	for _, c := range categoriesArr {
 		cat, _ := strconv.Atoi(c)
 		categories = append(categories, cat)
 	}
 	return categories
+}
+
+func (h *AddUserProductHandler) getExclude(raw string) []string {
+	if raw == "" {
+		return []string{}
+	}
+	return strings.Split(raw, ",")
 }

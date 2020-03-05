@@ -69,6 +69,7 @@ func TestSetConfigHandlerOK(t *testing.T) {
 		UserProductID: 123,
 		Categories:    "2000,1000,3000",
 		ExpiredAt:     time.Now().Add(time.Hour * 24 * 365),
+		Exclude:       "12345",
 	}
 	getter := MakeMockInputGetter(&input, nil)
 	r := h.Execute(getter)

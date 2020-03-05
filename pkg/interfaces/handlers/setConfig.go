@@ -72,13 +72,12 @@ func (h *SetConfigHandler) Execute(ig InputGetter) *goutils.Response {
 	}
 	config := usecases.CpConfig{
 		Categories:         h.getCategories(in.Categories),
-		Exclude:            strings.Split(in.Exclude, ","),
+		Exclude:            h.getExclude(in.Exclude),
 		CustomQuery:        in.CustomQuery,
 		Limit:              in.Limit,
 		PriceRange:         in.PriceRange,
 		FillGapsWithRandom: in.FillGapsWithRandom,
 	}
-
 	if err := h.Interactor.SetConfig(in.UserProductID,
 		config, in.ExpiredAt); err != nil {
 		return &goutils.Response{
@@ -97,12 +96,21 @@ func (h *SetConfigHandler) Execute(ig InputGetter) *goutils.Response {
 	}
 }
 
-func (h *SetConfigHandler) getCategories(raw string) []int {
-	categories := []int{}
+func (h *SetConfigHandler) getCategories(raw string) (categories []int) {
+	if raw == "" {
+		return []int{}
+	}
 	categoriesArr := strings.Split(raw, ",")
 	for _, c := range categoriesArr {
 		cat, _ := strconv.Atoi(c)
 		categories = append(categories, cat)
 	}
 	return categories
+}
+
+func (h *SetConfigHandler) getExclude(raw string) []string {
+	if raw == "" {
+		return []string{}
+	}
+	return strings.Split(raw, ",")
 }
