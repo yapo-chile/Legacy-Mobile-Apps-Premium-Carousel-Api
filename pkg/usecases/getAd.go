@@ -38,11 +38,7 @@ func MakeGetAdInteractor(adRepo AdRepository,
 
 // GetAd gets ad by given listID
 func (interactor *getAdInteractor) GetAd(listID string) (ad domain.Ad, err error) {
-	rawCachedAd, cacheError := interactor.cacheRepo.GetCache(
-		strings.Join([]string{"ad", listID}, ":"), MinifiedAdDataType)
-	if cacheError == nil {
-		cacheError = json.Unmarshal(rawCachedAd, &ad)
-	}
+	ad, cacheError := interactor.getCache(listID)
 	if cacheError == nil {
 		return ad, nil
 	}
@@ -52,11 +48,27 @@ func (interactor *getAdInteractor) GetAd(listID string) (ad domain.Ad, err error
 		interactor.logger.LogErrorGettingAd(listID, err)
 		return domain.Ad{}, err
 	}
-	cacheError = interactor.cacheRepo.SetCache(
-		strings.Join([]string{"ad", listID}, ":"),
-		MinifiedAdDataType, ad, interactor.cacheTTL)
+	interactor.refreshCache(ad)
+	return ad, nil
+}
+
+func (interactor *getAdInteractor) getCache(listID string) (ad domain.Ad, cacheError error) {
+	rawCachedAd, cacheError := interactor.cacheRepo.GetCache(
+		strings.Join([]string{"ad", listID}, ":"), MinifiedAdDataType)
+	if cacheError == nil {
+		cacheError = json.Unmarshal(rawCachedAd, &ad)
+	}
 	if cacheError != nil {
-		interactor.logger.LogWarnSettingCache(listID, cacheError)
+		return domain.Ad{}, cacheError
 	}
 	return ad, nil
+}
+
+func (interactor *getAdInteractor) refreshCache(ad domain.Ad) {
+	cacheError := interactor.cacheRepo.SetCache(
+		strings.Join([]string{"ad", ad.ID}, ":"),
+		MinifiedAdDataType, ad, interactor.cacheTTL)
+	if cacheError != nil {
+		interactor.logger.LogWarnSettingCache(ad.ID, cacheError)
+	}
 }

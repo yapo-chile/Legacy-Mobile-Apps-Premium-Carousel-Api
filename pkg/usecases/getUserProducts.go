@@ -17,7 +17,8 @@ type getUserProductsInteractor struct {
 
 // GetUserProductsLogger logs GetUserProducts events
 type GetUserProductsLogger interface {
-	LogErrorGettingUserProducts(email string, err error)
+	LogErrorGettingUserProducts(err error)
+	LogErrorGettingUserProductsByEmail(email string, err error)
 }
 
 // MakeGetUserProductsInteractor creates a new instance of GetUserProductsInteractor
@@ -29,11 +30,20 @@ func MakeGetUserProductsInteractor(productRepo ProductRepository,
 // GetUserProducts gets all user products using pagination
 func (interactor *getUserProductsInteractor) GetUserProducts(email string,
 	page int) (products []Product, currentPage int, totalPages int, err error) {
-	products, currentPage, totalPages, err = interactor.productRepo.
-		GetUserProducts(email, page)
-	if err != nil {
-		interactor.logger.LogErrorGettingUserProducts(email, err)
-		return []Product{}, 0, 0, fmt.Errorf("error loading products: %+v", err)
+	if email == "" {
+		products, currentPage, totalPages, err = interactor.productRepo.
+			GetUserProducts(page)
+		if err != nil {
+			interactor.logger.LogErrorGettingUserProducts(err)
+			return []Product{}, 0, 0, fmt.Errorf("error loading products: %+v", err)
+		}
+	} else {
+		products, currentPage, totalPages, err = interactor.productRepo.
+			GetUserProductsByEmail(email, page)
+		if err != nil {
+			interactor.logger.LogErrorGettingUserProductsByEmail(email, err)
+			return []Product{}, 0, 0, fmt.Errorf("error loading products: %+v", err)
+		}
 	}
 	return
 }

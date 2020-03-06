@@ -115,6 +115,9 @@ func (e *elasticsearch) NewIDsQuery(ids ...string) repository.Query {
 func (e *elasticsearch) NewCategoryFilter(categoryIDs ...int) repository.Query {
 	inputShould := []elastic.Query{}
 	for _, cat := range categoryIDs {
+		if cat > 9999 || cat < 1000 {
+			continue
+		}
 		if (cat % 1000) == 0 {
 			inputShould = append(inputShould,
 				elastic.NewRangeQuery("CategoryID").Gte(cat).Lt(cat+1000))

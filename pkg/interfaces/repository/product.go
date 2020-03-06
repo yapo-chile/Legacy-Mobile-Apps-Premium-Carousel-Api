@@ -15,20 +15,42 @@ import (
 type productRepo struct {
 	handler        DbHandler
 	resultsPerPage int
+	logger         ProductRepositoryLogger
+}
+
+// ProductRepositoryLogger logs product repository events
+type ProductRepositoryLogger interface {
+	LogWarnPartialConfigNotSupported(name, value string)
 }
 
 // MakeProductRepository creates a new instance of ProductRepository
-func MakeProductRepository(handler DbHandler, resultsPerPage int) usecases.ProductRepository {
+func MakeProductRepository(handler DbHandler, resultsPerPage int,
+	logger ProductRepositoryLogger) usecases.ProductRepository {
 	return &productRepo{
 		handler:        handler,
 		resultsPerPage: resultsPerPage,
+		logger:         logger,
 	}
 }
 
 // GetUserProductsTotal get the total of user products
-func (repo *productRepo) GetUserProductsTotal(email string) (total int) {
+func (repo *productRepo) GetUserProductsTotal() (total int) {
 	result, err := repo.handler.Query(`SELECT COUNT(*) as total FROM
-	user_product WHERE user_email=$1`, email)
+		user_product`)
+	if err != nil {
+		return 0
+	}
+	defer result.Close()
+	if result.Next() {
+		result.Scan(&total)
+	}
+	return total
+}
+
+// GetUserProductsTotal get the total of user products
+func (repo *productRepo) GetUserProductsTotalByEmail(email string) (total int) {
+	result, err := repo.handler.Query(`SELECT COUNT(*) as total FROM
+			user_product WHERE user_email=$1`, email)
 	if err != nil {
 		return 0
 	}
@@ -40,13 +62,13 @@ func (repo *productRepo) GetUserProductsTotal(email string) (total int) {
 }
 
 // GetUserProducts get a list of user products with pagination
-func (repo *productRepo) GetUserProducts(email string,
+func (repo *productRepo) GetUserProducts(
 	page int) (products []usecases.Product, currentPage int,
 	totalPages int, err error) {
 	if page < 1 {
 		page = 1
 	}
-	total := repo.GetUserProductsTotal(email)
+	total := repo.GetUserProductsTotal()
 	if total < 1 {
 		return []usecases.Product{}, page, 0, nil
 	}
@@ -54,8 +76,8 @@ func (repo *productRepo) GetUserProducts(email string,
 	if (total % repo.resultsPerPage) > 0 {
 		totalPages++
 	}
-	result, err := repo.handler.Query(`
-	SELECT
+	result, err := repo.handler.Query(
+		`SELECT
 		p.id, p.product_type, p.user_id, p.user_email, p.status, p.expired_at,
 		p.created_at,
 		ARRAY(
@@ -63,8 +85,56 @@ func (repo *productRepo) GetUserProducts(email string,
 			FROM user_product_config WHERE user_product_id = p.id
 		) AS config_params,
 		p.comment
-	FROM user_product as p
-	WHERE  user_email = $1 order by p.expired_at desc OFFSET $2 LIMIT $3`,
+		FROM user_product as p
+		WHERE TRUE
+		ORDER BY p.id DESC
+		OFFSET $1 LIMIT $2`,
+		(repo.resultsPerPage * (page - 1)), repo.resultsPerPage)
+	if err != nil {
+		return []usecases.Product{}, 0, 0, err
+	}
+	defer result.Close()
+	for result.Next() {
+		product := usecases.Product{}
+		rawConfig := []string{}
+		result.Scan(&product.ID, &product.Type, &product.UserID, &product.Email,
+			&product.Status, &product.ExpiredAt, &product.CreatedAt,
+			(*pq.StringArray)(&rawConfig), &product.Comment)
+		config, _ := repo.parseConfig(rawConfig)
+		product.Config = config
+		products = append(products, product)
+	}
+	return products, page, totalPages, nil
+}
+
+// GetUserProducts get a list of user products by email with pagination
+func (repo *productRepo) GetUserProductsByEmail(email string,
+	page int) (products []usecases.Product, currentPage int,
+	totalPages int, err error) {
+	if page < 1 {
+		page = 1
+	}
+	total := repo.GetUserProductsTotalByEmail(email)
+	if total < 1 {
+		return []usecases.Product{}, page, 0, nil
+	}
+	totalPages = (total / repo.resultsPerPage)
+	if (total % repo.resultsPerPage) > 0 {
+		totalPages++
+	}
+	result, err := repo.handler.Query(
+		`SELECT
+		p.id, p.product_type, p.user_id, p.user_email, p.status, p.expired_at,
+		p.created_at,
+		ARRAY(
+			SELECT user_product_config.name || '=' || user_product_config.value
+			FROM user_product_config WHERE user_product_id = p.id
+		) AS config_params,
+		p.comment
+		FROM user_product as p
+		WHERE user_email = $1
+		ORDER BY p.id DESC
+		OFFSET $2 LIMIT $3`,
 		email, (repo.resultsPerPage * (page - 1)), repo.resultsPerPage)
 	if err != nil {
 		return []usecases.Product{}, 0, 0, err
@@ -97,6 +167,39 @@ func (repo *productRepo) GetUserActiveProduct(userID string,
 	FROM user_product as p
 	WHERE  p.status = 'ACTIVE' AND p.user_id = $1 and p.product_type = $2`,
 		userID, productType)
+	if err != nil {
+		return usecases.Product{}, err
+	}
+	defer result.Close()
+	product := usecases.Product{}
+	var configArr []string
+	if result.Next() {
+		result.Scan(&product.ID, &product.Type, &product.UserID, &product.Email,
+			&product.Status, &product.ExpiredAt, &product.CreatedAt,
+			(*pq.StringArray)(&configArr), &product.Comment)
+	}
+
+	config, err := repo.parseConfig(configArr)
+	if err != nil {
+		return usecases.Product{}, err
+	}
+	product.Config = config
+	return product, nil
+}
+
+// GetUserActiveProduct gets active product for an specific userProductID
+func (repo *productRepo) GetUserProductByID(userProductID int) (usecases.Product, error) {
+	result, err := repo.handler.Query(`SELECT
+	p.id, p.product_type, p.user_id, p.user_email, p.status, p.expired_at,
+	p.created_at,
+	ARRAY(
+		SELECT user_product_config.name || '=' || user_product_config.value
+		FROM user_product_config WHERE user_product_id = id
+	) AS config_params,
+	p.comment
+	FROM user_product as p
+	WHERE  p.id = $1`,
+		userProductID)
 	if err != nil {
 		return usecases.Product{}, err
 	}
@@ -173,20 +276,20 @@ func (repo *productRepo) AddUserProduct(userID, email, comment string,
 		return usecases.Product{}, err
 	}
 	defer result.Close()
-	var productID int
+	var userProductID int
 	var createdAt time.Time
 	if result.Next() {
-		result.Scan(&productID, &createdAt)
+		result.Scan(&userProductID, &createdAt)
 	} else {
 		return usecases.Product{},
-			fmt.Errorf("next error: getting productID from database")
+			fmt.Errorf("next error: getting userProductID from database")
 	}
-	err = repo.addConfig(productID, config)
+	err = repo.SetConfig(userProductID, config)
 	if err != nil {
 		return usecases.Product{}, err
 	}
 	return usecases.Product{
-		ID:        productID,
+		ID:        userProductID,
 		Type:      productType,
 		Email:     email,
 		UserID:    userID,
@@ -198,25 +301,80 @@ func (repo *productRepo) AddUserProduct(userID, email, comment string,
 	}, nil
 }
 
-// addConfig adds configuration to Product
-func (repo *productRepo) addConfig(productID int, config usecases.CpConfig) error {
-	params := [][]string{
-		[]string{"($1, $2, $3)", "categories", strings.Trim(strings.Join(
-			strings.Fields(fmt.Sprint(config.Categories)), ","), "[]")},
-		[]string{"($4, $5, $6)", "limit", strconv.Itoa(config.Limit)},
-		[]string{"($7, $8, $9)", "custom_query", config.CustomQuery},
-		[]string{"($10, $11, $12)", "exclude", strings.Join(config.Exclude, ",")},
-		[]string{"($13, $14, $15)", "price_range", strconv.Itoa(config.PriceRange)},
-		[]string{"($16, $17, $18)", "gaps_with_random", fmt.Sprintf("%t", config.FillGapsWithRandom)},
+// SetConfig adds configuration to Product
+func (repo *productRepo) SetConfig(userProductID int, config usecases.CpConfig) error {
+	values := makeConfigValues(userProductID, config)
+	insertValues, positions := []interface{}{}, []string{}
+	counter := 0
+	for _, v := range values {
+		temp := []string{}
+		for range v {
+			counter++
+			temp = append(temp, fmt.Sprintf("$%d", counter))
+		}
+		positions = append(positions, "("+strings.Join(temp, ",")+")")
+		insertValues = append(insertValues, []interface{}{v[0], v[1], v[2]}...)
 	}
-	values, positions := []interface{}{}, []string{}
-	for _, v := range params {
-		positions = append(positions, v[0])
-		values = append(values, []interface{}{productID, v[1], v[2]}...)
-	}
-
 	return repo.handler.Insert(
-		fmt.Sprintf(`INSERT INTO user_product_config(user_product_id, name, value) VALUES %s`,
+		fmt.Sprintf(`INSERT INTO user_product_config(user_product_id, name, value) VALUES %s
+			ON CONFLICT (user_product_id, name) DO UPDATE set value=excluded.value`,
 			strings.Join(positions, ", ")),
-		values...)
+		insertValues...)
+}
+
+func makeConfigValues(userProductID int, config usecases.CpConfig) (values [][]interface{}) {
+	return [][]interface{}{
+		[]interface{}{userProductID, "categories", strings.Trim(strings.Join(
+			strings.Fields(fmt.Sprint(config.Categories)), ","), "[]")},
+		[]interface{}{userProductID, "limit", strconv.Itoa(config.Limit)},
+		[]interface{}{userProductID, "custom_query", config.CustomQuery},
+		[]interface{}{userProductID, "exclude", strings.Join(config.Exclude, ",")},
+		[]interface{}{userProductID, "price_range", strconv.Itoa(config.PriceRange)},
+		[]interface{}{userProductID, "gaps_with_random", fmt.Sprintf("%t", config.FillGapsWithRandom)},
+	}
+}
+
+// SetConfig adds configuration to Product
+func (repo *productRepo) SetPartialConfig(userProductID int, configMap map[string]interface{}) error {
+	for name, value := range configMap {
+		switch name {
+		case "status":
+			if err := repo.SetStatus(userProductID,
+				usecases.ProductStatus(value.(string))); err != nil {
+				return err
+			}
+		default:
+			repo.logger.LogWarnPartialConfigNotSupported(name,
+				fmt.Sprintf("%+v", value))
+		}
+	}
+	return nil
+}
+
+// SetStatus sets the user product status
+func (repo *productRepo) SetStatus(userProductID int, status usecases.ProductStatus) error {
+	result, err := repo.handler.
+		Query(
+			`UPDATE user_product SET status=$1 WHERE id=$2`,
+			status,
+			userProductID,
+		)
+	if err != nil {
+		return err
+	}
+	return result.Close()
+}
+
+// SetStatus sets the user product status
+func (repo *productRepo) SetExpiration(userProductID int, expiredAt time.Time) error {
+	result, err := repo.handler.
+		Query(
+			`UPDATE user_product SET expired_at=$1 WHERE id=$2`,
+			expiredAt,
+			userProductID,
+		)
+	if err != nil {
+		return err
+	}
+	return result.Close()
 }

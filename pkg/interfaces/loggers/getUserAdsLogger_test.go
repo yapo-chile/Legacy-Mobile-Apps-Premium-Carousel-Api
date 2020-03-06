@@ -11,7 +11,7 @@ func TestGetUserAdsLogger(t *testing.T) {
 	l := MakeGetUserAdsLogger(m)
 	l.LogWarnGettingCache("", nil)
 	l.LogWarnSettingCache("", nil)
-	l.LogInfoActiveProductNotFound("")
+	l.LogInfoActiveProductNotFound("", usecases.Product{})
 	l.LogInfoProductExpired("", usecases.Product{})
 	l.LogErrorGettingUserAdsData("", nil)
 	m.AssertExpectations(t)

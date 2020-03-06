@@ -103,7 +103,9 @@ func main() { //nolint: funlen
 
 	productRepo := repository.MakeProductRepository(
 		dbHandler,
-		conf.ControlPanelConf.ResultsPerPage)
+		conf.ControlPanelConf.ResultsPerPage,
+		loggers.MakeProductRepositoryLogger(logger),
+	)
 
 	getUserAdsInteractor := usecases.MakeGetUserAdsInteractor(
 		adRepo,
@@ -124,6 +126,20 @@ func main() { //nolint: funlen
 		productRepo,
 		cacheRepo,
 		loggers.MakeAddUserProductLogger(logger),
+		conf.CacheConf.DefaultTTL,
+	)
+
+	setPartialConfigInteractor := usecases.MakeSetPartialConfigInteractor(
+		productRepo,
+		cacheRepo,
+		loggers.MakeSetPartialConfigLogger(logger),
+		conf.CacheConf.DefaultTTL,
+	)
+
+	setConfigInteractor := usecases.MakeSetConfigInteractor(
+		productRepo,
+		cacheRepo,
+		loggers.MakeSetConfigLogger(logger),
 		conf.CacheConf.DefaultTTL,
 	)
 
@@ -148,6 +164,13 @@ func main() { //nolint: funlen
 		Interactor: getUserProductsInteractor,
 	}
 
+	setPartialConfigHandler := handlers.SetPartialConfigHandler{
+		Interactor: setPartialConfigInteractor,
+	}
+
+	setConfigHandler := handlers.SetConfigHandler{
+		Interactor: setConfigInteractor,
+	}
 	// HealthHandler
 	var healthHandler handlers.HealthHandler
 
@@ -175,20 +198,32 @@ func main() { //nolint: funlen
 					{
 						Name:    "Get user ads",
 						Method:  "GET",
-						Pattern: "/ads/{listID:[0-9]+}",
+						Pattern: "/related/{listID:[0-9]+}",
 						Handler: &getUserAdsHandler,
 					},
 					{
 						Name:    "Add product",
 						Method:  "POST",
-						Pattern: "/product",
+						Pattern: "/assigns",
 						Handler: &addUserProductHandler,
 					},
 					{
 						Name:    "Get user products",
 						Method:  "GET",
-						Pattern: "/products",
+						Pattern: "/assigns",
 						Handler: &getUserProductsHandler,
+					},
+					{
+						Name:    "Set user product config",
+						Method:  "PUT",
+						Pattern: "/assigns/{ID:[0-9]+}",
+						Handler: &setConfigHandler,
+					},
+					{
+						Name:    "Set partial user product config",
+						Method:  "PATCH",
+						Pattern: "/assigns/{ID:[0-9]+}",
+						Handler: &setPartialConfigHandler,
 					},
 				},
 			},

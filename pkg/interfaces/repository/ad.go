@@ -90,7 +90,7 @@ func (repo *adRepo) GetUserAds(userID string, cpConfig usecases.CpConfig) (domai
 	if cpConfig.PriceRange > 0 {
 		must = append(must,
 			repo.handler.NewRangeQuery("Price",
-				cpConfig.PriceRange, 0))
+				cpConfig.PriceFrom, cpConfig.PriceTo))
 	}
 	if len(cpConfig.Exclude) > 0 {
 		mustNot = append(mustNot,

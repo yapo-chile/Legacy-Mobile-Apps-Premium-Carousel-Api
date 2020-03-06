@@ -20,12 +20,19 @@ type AdRepository interface {
 
 // ProductRepository interface to allows config repository operations
 type ProductRepository interface {
-	GetUserProducts(email string, page int) ([]Product, int, int, error)
+	GetUserProducts(page int) ([]Product, int, int, error)
+	GetUserProductsByEmail(email string, page int) ([]Product, int, int, error)
 	AddUserProduct(userID, email, comment string, productType ProductType,
 		expiredAt time.Time, config CpConfig) (Product, error)
 	GetUserActiveProduct(userID string,
 		productType ProductType) (Product, error)
-	GetUserProductsTotal(email string) (total int)
+	GetUserProductsTotal() (total int)
+	GetUserProductsTotalByEmail(email string) (total int)
+	GetUserProductByID(userProductID int) (Product, error)
+	SetConfig(userProductID int, config CpConfig) error
+	SetPartialConfig(userProductID int, configMap map[string]interface{}) error
+	SetExpiration(userProductID int, expiredAt time.Time) error
+	SetStatus(userProductID int, status ProductStatus) error
 }
 
 // CacheType defines the user cache type
@@ -52,6 +59,8 @@ type CpConfig struct {
 	CustomQuery        string
 	Limit              int
 	PriceRange         int
+	PriceFrom          int
+	PriceTo            int
 	FillGapsWithRandom bool
 }
 

@@ -69,7 +69,7 @@ func TestAddUserProductHandlerOK(t *testing.T) {
 		Interactor: mInteractor,
 	}
 	input := addUserProductHandlerInput{
-		UserID:     "123",
+		UserID:     123,
 		Email:      "test@test.cl",
 		Categories: "2000,1000,3000",
 		ExpiredAt:  time.Now().Add(time.Hour * 24 * 365),
@@ -101,15 +101,18 @@ func TestAddUserProductHandlerError(t *testing.T) {
 		Interactor: mInteractor,
 	}
 	input := addUserProductHandlerInput{
-		UserID:    "123",
+		UserID:    123,
 		Email:     "test@test.cl",
 		ExpiredAt: time.Now().Add(time.Hour * 24 * 365),
+		Exclude:   "1234",
 	}
 	getter := MakeMockInputGetter(&input, nil)
 	r := h.Execute(getter)
 	expected := &goutils.Response{
 		Code: http.StatusBadRequest,
-		Body: fmt.Sprintf(`{"error": "%+v"}`, err),
+		Body: goutils.GenericError{
+			ErrorMessage: fmt.Sprintf(`%+v`, err),
+		},
 	}
 	assert.Equal(t, expected, r)
 	mInteractor.AssertExpectations(t)
@@ -121,7 +124,7 @@ func TestAddUserProductHandlerBadExpiredAtTime(t *testing.T) {
 		Interactor: mInteractor,
 	}
 	input := addUserProductHandlerInput{
-		UserID:    "123",
+		UserID:    123,
 		Email:     "test@test.cl",
 		ExpiredAt: time.Now().Add(-1 * time.Hour * 24 * 365),
 	}
@@ -129,8 +132,10 @@ func TestAddUserProductHandlerBadExpiredAtTime(t *testing.T) {
 	r := h.Execute(getter)
 	expected := &goutils.Response{
 		Code: http.StatusBadRequest,
-		Body: fmt.Sprintf(`{"error": "bad expiration date: %+v"`,
-			input.ExpiredAt),
+		Body: goutils.GenericError{
+			ErrorMessage: fmt.Sprintf(`bad expiration date: %+v`,
+				input.ExpiredAt),
+		},
 	}
 	assert.Equal(t, expected, r)
 	mInteractor.AssertExpectations(t)
