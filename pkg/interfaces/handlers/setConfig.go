@@ -24,8 +24,6 @@ type SetConfigLogger interface{}
 // setConfigHandlerInput is the handler expected input
 type setConfigHandlerInput struct {
 	UserProductID      int       `path:"ID"`
-	UserID             int       `json:"user_id"`
-	Email              string    `json:"email"`
 	Categories         string    `json:"categories"`
 	Exclude            string    `json:"exclude"`
 	CustomQuery        string    `json:"keywords"`
