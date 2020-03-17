@@ -24,6 +24,8 @@ type SetConfigLogger interface{}
 // setConfigHandlerInput is the handler expected input
 type setConfigHandlerInput struct {
 	UserProductID      int       `path:"ID"`
+	UserID             int       `json:"user_id"`
+	Email              string    `json:"email"`
 	Categories         string    `json:"categories"`
 	Exclude            string    `json:"exclude"`
 	CustomQuery        string    `json:"keywords"`
@@ -42,6 +44,7 @@ type setConfigRequestOutput struct {
 func (*SetConfigHandler) Input(ir InputRequest) HandlerInput {
 	input := setConfigHandlerInput{}
 	ir.Set(&input).FromJSONBody().FromPath()
+	fmt.Printf(`set config input: %+v`, input)
 	return &input
 }
 
