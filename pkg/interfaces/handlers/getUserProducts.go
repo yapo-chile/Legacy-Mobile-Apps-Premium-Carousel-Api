@@ -42,7 +42,7 @@ type productsOutput struct {
 	Comment            string    `json:"comment"`
 	CustomQuery        string    `json:"keywords"`
 	PriceRange         int       `json:"price_range"`
-	FillGapsWithRandom bool      `json:"fill_gaps"`
+	FillGapsWithRandom bool      `json:"fill_random"`
 }
 
 type metadata struct {
