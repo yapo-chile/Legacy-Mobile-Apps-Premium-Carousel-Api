@@ -42,7 +42,6 @@ type setConfigRequestOutput struct {
 func (*SetConfigHandler) Input(ir InputRequest) HandlerInput {
 	input := setConfigHandlerInput{}
 	ir.Set(&input).FromJSONBody().FromPath()
-	fmt.Printf(`set config input: %+v`, input)
 	return &input
 }
 
