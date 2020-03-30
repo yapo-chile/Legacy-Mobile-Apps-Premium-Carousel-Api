@@ -30,7 +30,7 @@ func TestSetConfigOK(t *testing.T) {
 	mProductRepo.On("SetExpiration", mock.AnythingOfType("int"),
 		mock.Anything).Return(nil)
 	mProductRepo.On("SetConfig", mock.AnythingOfType("int"),
-		mock.AnythingOfType("CpConfig")).
+		mock.AnythingOfType("ProductParams")).
 		Return(nil)
 	mProductRepo.On("GetUserProductByID", mock.AnythingOfType("int")).
 		Return(Product{}, nil)
@@ -39,7 +39,7 @@ func TestSetConfigOK(t *testing.T) {
 		mock.AnythingOfType("Product"),
 		mock.Anything).
 		Return(nil)
-	err := interactor.SetConfig(1, CpConfig{}, time.Now().Add(time.Hour))
+	err := interactor.SetConfig(1, ProductParams{}, time.Now().Add(time.Hour))
 	assert.NoError(t, err)
 	mCacheRepo.AssertExpectations(t)
 	mLogger.AssertExpectations(t)
@@ -56,7 +56,7 @@ func TestSetConfigErrorOnSetExpiration(t *testing.T) {
 		mock.Anything).Return(fmt.Errorf("err"))
 	mLogger.On("LogErrorSettingConfig",
 		mock.AnythingOfType("int"), mock.Anything)
-	err := interactor.SetConfig(1, CpConfig{}, time.Now().Add(time.Hour))
+	err := interactor.SetConfig(1, ProductParams{}, time.Now().Add(time.Hour))
 	assert.Error(t, err)
 	mCacheRepo.AssertExpectations(t)
 	mLogger.AssertExpectations(t)
@@ -72,11 +72,11 @@ func TestSetConfigOKErrorOnSetConfig(t *testing.T) {
 	mProductRepo.On("SetExpiration", mock.AnythingOfType("int"),
 		mock.Anything).Return(nil)
 	mProductRepo.On("SetConfig", mock.AnythingOfType("int"),
-		mock.AnythingOfType("CpConfig")).
+		mock.AnythingOfType("ProductParams")).
 		Return(fmt.Errorf("err"))
 	mLogger.On("LogErrorSettingConfig",
 		mock.AnythingOfType("int"), mock.Anything)
-	err := interactor.SetConfig(1, CpConfig{}, time.Now().Add(time.Hour))
+	err := interactor.SetConfig(1, ProductParams{}, time.Now().Add(time.Hour))
 	assert.Error(t, err)
 	mCacheRepo.AssertExpectations(t)
 	mLogger.AssertExpectations(t)
@@ -92,7 +92,7 @@ func TestSetConfigOKErrorOnGetUserProductByID(t *testing.T) {
 	mProductRepo.On("SetExpiration", mock.AnythingOfType("int"),
 		mock.Anything).Return(nil)
 	mProductRepo.On("SetConfig", mock.AnythingOfType("int"),
-		mock.AnythingOfType("CpConfig")).
+		mock.AnythingOfType("ProductParams")).
 		Return(nil)
 	mProductRepo.On("GetUserProductByID", mock.AnythingOfType("int")).
 		Return(Product{}, fmt.Errorf("err"))
@@ -103,7 +103,7 @@ func TestSetConfigOKErrorOnGetUserProductByID(t *testing.T) {
 		Return(fmt.Errorf("err"))
 	mLogger.On("LogWarnSettingCache",
 		mock.AnythingOfType("string"), mock.Anything)
-	err := interactor.SetConfig(1, CpConfig{}, time.Now().Add(time.Hour))
+	err := interactor.SetConfig(1, ProductParams{}, time.Now().Add(time.Hour))
 	assert.NoError(t, err)
 	mCacheRepo.AssertExpectations(t)
 	mLogger.AssertExpectations(t)

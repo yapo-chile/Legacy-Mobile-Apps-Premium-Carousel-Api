@@ -33,7 +33,7 @@ type mockSetConfigInteractor struct {
 }
 
 func (m *mockSetConfigInteractor) SetConfig(userProductID int,
-	config usecases.CpConfig, expiredAt time.Time) error {
+	config usecases.ProductParams, expiredAt time.Time) error {
 	args := m.Called(userProductID, config, expiredAt)
 	return args.Error(0)
 }
@@ -59,7 +59,7 @@ func TestSetConfigHandlerOK(t *testing.T) {
 	mInteractor := &mockSetConfigInteractor{}
 	mInteractor.On("SetConfig",
 		mock.AnythingOfType("int"),
-		mock.AnythingOfType("usecases.CpConfig"),
+		mock.AnythingOfType("usecases.ProductParams"),
 		mock.AnythingOfType("time.Time"),
 	).Return(nil)
 	h := SetConfigHandler{
@@ -88,7 +88,7 @@ func TestSetConfigHandlerError(t *testing.T) {
 	mInteractor := &mockSetConfigInteractor{}
 	mInteractor.On("SetConfig",
 		mock.AnythingOfType("int"),
-		mock.AnythingOfType("usecases.CpConfig"),
+		mock.AnythingOfType("usecases.ProductParams"),
 		mock.AnythingOfType("time.Time"),
 	).Return(err)
 	h := SetConfigHandler{

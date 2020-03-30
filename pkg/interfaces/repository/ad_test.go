@@ -155,7 +155,7 @@ func TestGetUserAdsOK(t *testing.T) {
 	}
 
 	userAds, err := interactor.GetUserAds("",
-		usecases.CpConfig{
+		usecases.ProductParams{
 			Categories:  []int{1234, 2345},
 			Exclude:     []string{"123"},
 			CustomQuery: "erizo",
@@ -226,7 +226,7 @@ func TestGetUserAdsWithFilledGaps(t *testing.T) {
 	}
 
 	userAds, err := interactor.GetUserAds("",
-		usecases.CpConfig{
+		usecases.ProductParams{
 			Categories:         []int{1234, 2345},
 			Exclude:            []string{"123"},
 			CustomQuery:        "erizo",
@@ -295,7 +295,7 @@ func TestGetUserAdsZeroResults(t *testing.T) {
 	}
 
 	_, err := interactor.GetUserAds("",
-		usecases.CpConfig{
+		usecases.ProductParams{
 			Categories:  []int{1234, 2345},
 			Exclude:     []string{"123"},
 			CustomQuery: "erizo",
@@ -351,7 +351,7 @@ func TestGetUserAdsSearchError(t *testing.T) {
 	}
 
 	_, err := interactor.GetUserAds("",
-		usecases.CpConfig{
+		usecases.ProductParams{
 			Categories:  []int{1234, 2345},
 			Exclude:     []string{"123"},
 			CustomQuery: "erizo",

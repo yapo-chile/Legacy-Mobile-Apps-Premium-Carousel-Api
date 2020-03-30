@@ -9,6 +9,7 @@ import (
 
 	"github.com/Yapo/goutils"
 
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
 )
 
@@ -26,7 +27,8 @@ type setConfigHandlerInput struct {
 	UserProductID      int       `path:"ID"`
 	Categories         string    `json:"categories"`
 	Exclude            string    `json:"exclude"`
-	CustomQuery        string    `json:"keywords"`
+	Keywords           string    `json:"keywords"`
+	Comment            string    `json:"comment"`
 	Limit              int       `json:"limit"`
 	PriceRange         int       `json:"price_range"`
 	ExpiredAt          time.Time `json:"expiration"`
@@ -70,10 +72,11 @@ func (h *SetConfigHandler) Execute(ig InputGetter) *goutils.Response {
 			},
 		}
 	}
-	config := usecases.CpConfig{
+	config := domain.ProductParams{
 		Categories:         h.getCategories(in.Categories),
-		Exclude:            h.getExclude(in.Exclude),
-		CustomQuery:        in.CustomQuery,
+		Exclude:            h.getCommaSeparedArr(in.Exclude),
+		Keywords:           h.getCommaSeparedArr(in.Keywords),
+		Comment:            in.Comment,
 		Limit:              in.Limit,
 		PriceRange:         in.PriceRange,
 		FillGapsWithRandom: in.FillGapsWithRandom,
@@ -108,7 +111,7 @@ func (h *SetConfigHandler) getCategories(raw string) (categories []int) {
 	return categories
 }
 
-func (h *SetConfigHandler) getExclude(raw string) []string {
+func (h *SetConfigHandler) getCommaSeparedArr(raw string) []string {
 	if raw == "" {
 		return []string{}
 	}

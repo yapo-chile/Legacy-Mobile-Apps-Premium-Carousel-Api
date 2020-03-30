@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/Yapo/goutils"
@@ -40,7 +41,7 @@ type productsOutput struct {
 	ExpiredAt          time.Time `json:"expiration"`
 	CreatedAt          time.Time `json:"creation"`
 	Comment            string    `json:"comment"`
-	CustomQuery        string    `json:"keywords"`
+	Keywords           string    `json:"keywords"`
 	PriceRange         int       `json:"price_range"`
 	FillGapsWithRandom bool      `json:"fill_random"`
 }
@@ -83,8 +84,8 @@ func (h *GetUserProductsHandler) Execute(ig InputGetter) *goutils.Response {
 			Type:               string(v.Type),
 			ExpiredAt:          v.ExpiredAt,
 			CreatedAt:          v.CreatedAt,
-			Comment:            v.Comment,
-			CustomQuery:        v.Config.CustomQuery,
+			Comment:            v.Config.Comment,
+			Keywords:           strings.Join(v.Config.Keywords, ","),
 			PriceRange:         v.Config.PriceRange,
 			FillGapsWithRandom: v.Config.FillGapsWithRandom,
 		}

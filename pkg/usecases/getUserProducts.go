@@ -2,11 +2,13 @@ package usecases
 
 import (
 	"fmt"
+
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
 )
 
 // GetUserProductsInteractor wraps GetUserProducts operations
 type GetUserProductsInteractor interface {
-	GetUserProducts(email string, page int) ([]Product, int, int, error)
+	GetUserProducts(email string, page int) ([]domain.Product, int, int, error)
 }
 
 // getUserProductsInteractor defines the interactor for GetUserProducts usecase
@@ -29,20 +31,20 @@ func MakeGetUserProductsInteractor(productRepo ProductRepository,
 
 // GetUserProducts gets all user products using pagination
 func (interactor *getUserProductsInteractor) GetUserProducts(email string,
-	page int) (products []Product, currentPage int, totalPages int, err error) {
+	page int) (products []domain.Product, currentPage int, totalPages int, err error) {
 	if email == "" {
 		products, currentPage, totalPages, err = interactor.productRepo.
 			GetUserProducts(page)
 		if err != nil {
 			interactor.logger.LogErrorGettingUserProducts(err)
-			return []Product{}, 0, 0, fmt.Errorf("error loading products: %+v", err)
+			return []domain.Product{}, 0, 0, fmt.Errorf("error loading products: %+v", err)
 		}
 	} else {
 		products, currentPage, totalPages, err = interactor.productRepo.
 			GetUserProductsByEmail(email, page)
 		if err != nil {
 			interactor.logger.LogErrorGettingUserProductsByEmail(email, err)
-			return []Product{}, 0, 0, fmt.Errorf("error loading products: %+v", err)
+			return []domain.Product{}, 0, 0, fmt.Errorf("error loading products: %+v", err)
 		}
 	}
 	return

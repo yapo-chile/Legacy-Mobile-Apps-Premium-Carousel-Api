@@ -33,7 +33,7 @@ type mockAddUserProductInteractor struct {
 
 func (m *mockAddUserProductInteractor) AddUserProduct(userID string, email string,
 	comment string, productType usecases.ProductType, expiredAt time.Time,
-	config usecases.CpConfig) error {
+	config usecases.ProductParams) error {
 	args := m.Called(userID, email, comment, productType, expiredAt, config)
 	return args.Error(0)
 }
@@ -63,7 +63,7 @@ func TestAddUserProductHandlerOK(t *testing.T) {
 		mock.AnythingOfType("string"),
 		usecases.PremiumCarousel,
 		mock.AnythingOfType("time.Time"),
-		mock.AnythingOfType("usecases.CpConfig"),
+		mock.AnythingOfType("usecases.ProductParams"),
 	).Return(nil)
 	h := AddUserProductHandler{
 		Interactor: mInteractor,
@@ -95,7 +95,7 @@ func TestAddUserProductHandlerError(t *testing.T) {
 		mock.AnythingOfType("string"),
 		usecases.PremiumCarousel,
 		mock.AnythingOfType("time.Time"),
-		mock.AnythingOfType("usecases.CpConfig"),
+		mock.AnythingOfType("usecases.ProductParams"),
 	).Return(err)
 	h := AddUserProductHandler{
 		Interactor: mInteractor,

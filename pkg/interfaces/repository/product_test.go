@@ -190,7 +190,7 @@ func TestGetUserProductsByEmailOk(t *testing.T) {
 			Status:    usecases.ActiveProduct,
 			ExpiredAt: testTime,
 			CreatedAt: testTime,
-			Config: usecases.CpConfig{
+			Config: usecases.ProductParams{
 				Categories: []int{2020, 1020},
 				Exclude:    []string{},
 			},
@@ -242,7 +242,7 @@ func TestGetUserProductsOk(t *testing.T) {
 			Status:    usecases.ActiveProduct,
 			ExpiredAt: testTime,
 			CreatedAt: testTime,
-			Config: usecases.CpConfig{
+			Config: usecases.ProductParams{
 				Categories: []int{2020, 1020},
 				Exclude:    []string{},
 			},
@@ -373,7 +373,7 @@ func TestGetUserActiveProductOk(t *testing.T) {
 		Status:    usecases.ActiveProduct,
 		ExpiredAt: testTime,
 		CreatedAt: testTime,
-		Config: usecases.CpConfig{
+		Config: usecases.ProductParams{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
 		},
@@ -446,7 +446,7 @@ func TestAddUserProductOk(t *testing.T) {
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
 		11, testTime}).Once()
 	result, err := repo.AddUserProduct("1", "test@mail.com", "comentario",
-		usecases.PremiumCarousel, testTime, usecases.CpConfig{
+		usecases.PremiumCarousel, testTime, usecases.ProductParams{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
 		})
@@ -458,7 +458,7 @@ func TestAddUserProductOk(t *testing.T) {
 		Status:    usecases.ActiveProduct,
 		ExpiredAt: testTime,
 		CreatedAt: testTime,
-		Config: usecases.CpConfig{
+		Config: usecases.ProductParams{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
 		},
@@ -478,7 +478,7 @@ func TestAddUserProductBadUserId(t *testing.T) {
 	repo := MakeProductRepository(mockDB, 10, mLogger)
 	testTime := time.Now()
 	_, err := repo.AddUserProduct("aaaaaa", "test@mail.com", "comentario",
-		usecases.PremiumCarousel, testTime, usecases.CpConfig{
+		usecases.PremiumCarousel, testTime, usecases.ProductParams{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
 		})
@@ -499,7 +499,7 @@ func TestAddUserProductQueryError(t *testing.T) {
 	).Return(mResult, fmt.Errorf("err")).Once()
 	testTime := time.Now()
 	_, err := repo.AddUserProduct("1", "test@mail.com", "comentario",
-		usecases.PremiumCarousel, testTime, usecases.CpConfig{
+		usecases.PremiumCarousel, testTime, usecases.ProductParams{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
 		})
@@ -522,7 +522,7 @@ func TestAddUserProductNextError(t *testing.T) {
 	mResult.On("Next").Return(false).Once()
 	testTime := time.Now()
 	_, err := repo.AddUserProduct("1", "test@mail.com", "comentario",
-		usecases.PremiumCarousel, testTime, usecases.CpConfig{
+		usecases.PremiumCarousel, testTime, usecases.ProductParams{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
 		})
@@ -551,7 +551,7 @@ func TestAddUserProductAddConfigError(t *testing.T) {
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
 		11, testTime}).Once()
 	_, err := repo.AddUserProduct("1", "test@mail.com", "comentario",
-		usecases.PremiumCarousel, testTime, usecases.CpConfig{
+		usecases.PremiumCarousel, testTime, usecases.ProductParams{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
 		})
@@ -587,7 +587,7 @@ func TestGetUserProductByIDOK(t *testing.T) {
 		Status:    usecases.ActiveProduct,
 		ExpiredAt: testTime,
 		CreatedAt: testTime,
-		Config: usecases.CpConfig{
+		Config: usecases.ProductParams{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
 		},

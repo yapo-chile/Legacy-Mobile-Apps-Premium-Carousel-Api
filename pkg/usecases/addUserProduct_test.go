@@ -38,10 +38,10 @@ func TestAddProductOk(t *testing.T) {
 		mock.AnythingOfType("string"),
 		PremiumCarousel,
 		mock.AnythingOfType("time.Time"),
-		mock.AnythingOfType("usecases.CpConfig"),
+		mock.AnythingOfType("usecases.ProductParams"),
 	).Return(product, nil)
 	err := interactor.AddUserProduct("", "", "", PremiumCarousel,
-		time.Time{}, CpConfig{})
+		time.Time{}, ProductParams{})
 	assert.NoError(t, err)
 	mProductRepo.AssertExpectations(t)
 	mCacheRepo.AssertExpectations(t)
@@ -61,10 +61,10 @@ func TestAddProductErrorAddingProduct(t *testing.T) {
 		mock.AnythingOfType("string"),
 		PremiumCarousel,
 		mock.AnythingOfType("time.Time"),
-		mock.AnythingOfType("usecases.CpConfig"),
+		mock.AnythingOfType("usecases.ProductParams"),
 	).Return(product, fmt.Errorf("err"))
 	err := interactor.AddUserProduct("", "", "", PremiumCarousel,
-		time.Time{}, CpConfig{})
+		time.Time{}, ProductParams{})
 	assert.Error(t, err)
 	mProductRepo.AssertExpectations(t)
 	mCacheRepo.AssertExpectations(t)
@@ -89,10 +89,10 @@ func TestAddProductOkErrorSettingCache(t *testing.T) {
 		mock.AnythingOfType("string"),
 		PremiumCarousel,
 		mock.AnythingOfType("time.Time"),
-		mock.AnythingOfType("usecases.CpConfig"),
+		mock.AnythingOfType("usecases.ProductParams"),
 	).Return(product, nil)
 	err := interactor.AddUserProduct("", "", "", PremiumCarousel,
-		time.Time{}, CpConfig{})
+		time.Time{}, ProductParams{})
 	assert.NoError(t, err)
 	mProductRepo.AssertExpectations(t)
 	mCacheRepo.AssertExpectations(t)

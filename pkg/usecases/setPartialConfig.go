@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
 )
 
 // SetPartialConfigInteractor wraps SetPartialConfig operations
@@ -51,7 +53,7 @@ func (interactor *setPartialConfigInteractor) SetPartialConfig(userProductID int
 	return nil
 }
 
-func (interactor *setPartialConfigInteractor) refreshCache(product Product) {
+func (interactor *setPartialConfigInteractor) refreshCache(product domain.Product) {
 	cacheError := interactor.cacheRepo.
 		SetCache(strings.Join([]string{"user", product.UserID, string(product.Type)}, ":"),
 			ProductCacheType, product, interactor.cacheTTL)

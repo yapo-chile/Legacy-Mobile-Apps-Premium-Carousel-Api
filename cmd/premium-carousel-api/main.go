@@ -101,6 +101,10 @@ func main() { //nolint: funlen
 		conf.CacheConf.DefaultTTL,
 	)
 
+	purchaseRepo := repository.MakePurchaseRepository(
+		dbHandler,
+	)
+
 	productRepo := repository.MakeProductRepository(
 		dbHandler,
 		conf.ControlPanelConf.ResultsPerPage,
@@ -113,6 +117,7 @@ func main() { //nolint: funlen
 		cacheRepo,
 		loggers.MakeGetUserAdsLogger(logger),
 		conf.CacheConf.DefaultTTL,
+		conf.AdConf.MinAdsToDisplay,
 	)
 
 	getAdInteractor := usecases.MakeGetAdInteractor(
@@ -124,6 +129,7 @@ func main() { //nolint: funlen
 
 	addUserProductInteractor := usecases.MakeAddUserProductInteractor(
 		productRepo,
+		purchaseRepo,
 		cacheRepo,
 		loggers.MakeAddUserProductLogger(logger),
 		conf.CacheConf.DefaultTTL,

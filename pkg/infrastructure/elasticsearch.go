@@ -85,7 +85,7 @@ func (e *elasticsearch) NewRangeQuery(name string, from, to int) repository.Quer
 }
 
 func (e *elasticsearch) NewBoolQuery(must []repository.Query,
-	mustNot []repository.Query) repository.Query {
+	mustNot []repository.Query, should []repository.Query) repository.Query {
 	inputMust := []elastic.Query{}
 	for _, q := range must {
 		inputMust = append(inputMust, q.(elastic.Query))
@@ -94,7 +94,12 @@ func (e *elasticsearch) NewBoolQuery(must []repository.Query,
 	for _, q := range mustNot {
 		inputMustNot = append(inputMustNot, q.(elastic.Query))
 	}
-	return elastic.NewBoolQuery().Must(inputMust...).MustNot(inputMustNot...)
+	inputShould := []elastic.Query{}
+	for _, q := range should {
+		inputShould = append(inputShould, q.(elastic.Query))
+	}
+	return elastic.NewBoolQuery().Must(inputMust...).MustNot(inputMustNot...).
+		Should(inputShould...)
 }
 
 func (e *elasticsearch) NewFunctionScoreQuery(query repository.Query, boost float64,
