@@ -7,6 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
 )
 
 type mockSetConfigLogger struct {
@@ -33,13 +35,13 @@ func TestSetConfigOK(t *testing.T) {
 		mock.AnythingOfType("ProductParams")).
 		Return(nil)
 	mProductRepo.On("GetUserProductByID", mock.AnythingOfType("int")).
-		Return(Product{}, nil)
+		Return(domain.Product{}, nil)
 	mCacheRepo.On("SetCache", mock.AnythingOfType("string"),
 		ProductCacheType,
 		mock.AnythingOfType("Product"),
 		mock.Anything).
 		Return(nil)
-	err := interactor.SetConfig(1, ProductParams{}, time.Now().Add(time.Hour))
+	err := interactor.SetConfig(1, domain.ProductParams{}, time.Now().Add(time.Hour))
 	assert.NoError(t, err)
 	mCacheRepo.AssertExpectations(t)
 	mLogger.AssertExpectations(t)
@@ -56,7 +58,7 @@ func TestSetConfigErrorOnSetExpiration(t *testing.T) {
 		mock.Anything).Return(fmt.Errorf("err"))
 	mLogger.On("LogErrorSettingConfig",
 		mock.AnythingOfType("int"), mock.Anything)
-	err := interactor.SetConfig(1, ProductParams{}, time.Now().Add(time.Hour))
+	err := interactor.SetConfig(1, domain.ProductParams{}, time.Now().Add(time.Hour))
 	assert.Error(t, err)
 	mCacheRepo.AssertExpectations(t)
 	mLogger.AssertExpectations(t)
@@ -76,7 +78,7 @@ func TestSetConfigOKErrorOnSetConfig(t *testing.T) {
 		Return(fmt.Errorf("err"))
 	mLogger.On("LogErrorSettingConfig",
 		mock.AnythingOfType("int"), mock.Anything)
-	err := interactor.SetConfig(1, ProductParams{}, time.Now().Add(time.Hour))
+	err := interactor.SetConfig(1, domain.ProductParams{}, time.Now().Add(time.Hour))
 	assert.Error(t, err)
 	mCacheRepo.AssertExpectations(t)
 	mLogger.AssertExpectations(t)
@@ -95,7 +97,7 @@ func TestSetConfigOKErrorOnGetUserProductByID(t *testing.T) {
 		mock.AnythingOfType("ProductParams")).
 		Return(nil)
 	mProductRepo.On("GetUserProductByID", mock.AnythingOfType("int")).
-		Return(Product{}, fmt.Errorf("err"))
+		Return(domain.Product{}, fmt.Errorf("err"))
 	mCacheRepo.On("SetCache", mock.AnythingOfType("string"),
 		ProductCacheType,
 		mock.AnythingOfType("Product"),
@@ -103,7 +105,7 @@ func TestSetConfigOKErrorOnGetUserProductByID(t *testing.T) {
 		Return(fmt.Errorf("err"))
 	mLogger.On("LogWarnSettingCache",
 		mock.AnythingOfType("string"), mock.Anything)
-	err := interactor.SetConfig(1, ProductParams{}, time.Now().Add(time.Hour))
+	err := interactor.SetConfig(1, domain.ProductParams{}, time.Now().Add(time.Hour))
 	assert.NoError(t, err)
 	mCacheRepo.AssertExpectations(t)
 	mLogger.AssertExpectations(t)

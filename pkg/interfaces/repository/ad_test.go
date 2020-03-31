@@ -8,14 +8,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
 )
 
 type mockSearch struct {
 	mock.Mock
 }
 
-func (m *mockSearch) NewMultiMatchQuery(text interface{}, typ string, fields ...string) Query {
+func (m *mockSearch) NewMultiMatchQuery(text interface{},
+	typ string, fields ...string) Query {
 	args := m.Called(text, typ, fields)
 	return args.Get(0).(Query)
 }
@@ -36,8 +36,9 @@ func (m *mockSearch) NewFunctionScoreQuery(query Query, boost float64,
 	return args.Get(0).(Query)
 }
 
-func (m *mockSearch) NewBoolQuery(must []Query, mustNot []Query) Query {
-	args := m.Called(must, mustNot)
+func (m *mockSearch) NewBoolQuery(must []Query, mustNot []Query,
+	should []Query) Query {
+	args := m.Called(must, mustNot, should)
 	return args.Get(0).(Query)
 }
 
@@ -131,7 +132,8 @@ func TestGetUserAdsOK(t *testing.T) {
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("int"),
 	).Return(mQuery)
-	mSearch.On("NewBoolQuery", mock.Anything, mock.Anything).Return(mQuery)
+	mSearch.On("NewBoolQuery", mock.Anything, mock.Anything,
+		mock.Anything).Return(mQuery)
 	mSearch.On("NewFunctionScoreQuery",
 		mock.Anything,
 		mock.AnythingOfType("float64"),
@@ -155,11 +157,11 @@ func TestGetUserAdsOK(t *testing.T) {
 	}
 
 	userAds, err := interactor.GetUserAds("",
-		usecases.ProductParams{
-			Categories:  []int{1234, 2345},
-			Exclude:     []string{"123"},
-			CustomQuery: "erizo",
-			PriceRange:  1,
+		domain.ProductParams{
+			Categories: []int{1234, 2345},
+			Exclude:    []string{"123"},
+			Keywords:   []string{"key1"},
+			PriceRange: 1,
 		})
 
 	expected := domain.Ads{
@@ -198,7 +200,8 @@ func TestGetUserAdsWithFilledGaps(t *testing.T) {
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("int"),
 	).Return(mQuery)
-	mSearch.On("NewBoolQuery", mock.Anything, mock.Anything).Return(mQuery)
+	mSearch.On("NewBoolQuery", mock.Anything, mock.Anything,
+		mock.Anything).Return(mQuery)
 	mSearch.On("NewFunctionScoreQuery",
 		mock.Anything,
 		mock.AnythingOfType("float64"),
@@ -226,10 +229,10 @@ func TestGetUserAdsWithFilledGaps(t *testing.T) {
 	}
 
 	userAds, err := interactor.GetUserAds("",
-		usecases.ProductParams{
+		domain.ProductParams{
 			Categories:         []int{1234, 2345},
 			Exclude:            []string{"123"},
-			CustomQuery:        "erizo",
+			Keywords:           []string{"key1"},
 			PriceRange:         1,
 			FillGapsWithRandom: true,
 			Limit:              2,
@@ -273,7 +276,8 @@ func TestGetUserAdsZeroResults(t *testing.T) {
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("int"),
 	).Return(mQuery)
-	mSearch.On("NewBoolQuery", mock.Anything, mock.Anything).Return(mQuery)
+	mSearch.On("NewBoolQuery", mock.Anything, mock.Anything,
+		mock.Anything).Return(mQuery)
 	mSearch.On("NewFunctionScoreQuery",
 		mock.Anything,
 		mock.AnythingOfType("float64"),
@@ -295,11 +299,11 @@ func TestGetUserAdsZeroResults(t *testing.T) {
 	}
 
 	_, err := interactor.GetUserAds("",
-		usecases.ProductParams{
-			Categories:  []int{1234, 2345},
-			Exclude:     []string{"123"},
-			CustomQuery: "erizo",
-			PriceRange:  1,
+		domain.ProductParams{
+			Categories: []int{1234, 2345},
+			Exclude:    []string{"123"},
+			Keywords:   []string{"key1"},
+			PriceRange: 1,
 		})
 
 	assert.Error(t, err)
@@ -333,7 +337,8 @@ func TestGetUserAdsSearchError(t *testing.T) {
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("int"),
 	).Return(mQuery)
-	mSearch.On("NewBoolQuery", mock.Anything, mock.Anything).Return(mQuery)
+	mSearch.On("NewBoolQuery", mock.Anything, mock.Anything,
+		mock.Anything).Return(mQuery)
 	mSearch.On("NewFunctionScoreQuery",
 		mock.Anything,
 		mock.AnythingOfType("float64"),
@@ -351,11 +356,11 @@ func TestGetUserAdsSearchError(t *testing.T) {
 	}
 
 	_, err := interactor.GetUserAds("",
-		usecases.ProductParams{
-			Categories:  []int{1234, 2345},
-			Exclude:     []string{"123"},
-			CustomQuery: "erizo",
-			PriceRange:  1,
+		domain.ProductParams{
+			Categories: []int{1234, 2345},
+			Exclude:    []string{"123"},
+			Keywords:   []string{"key1"},
+			PriceRange: 1,
 		})
 
 	assert.Error(t, err)

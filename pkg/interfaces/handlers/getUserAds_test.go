@@ -69,6 +69,7 @@ func TestGetUserAdsHandlerOK(t *testing.T) {
 	mInteractor.AssertExpectations(t)
 	mGetAdInteractor.AssertExpectations(t)
 }
+
 func TestGetUserAdsHandlerWithUF(t *testing.T) {
 	mInteractor := &mockGetUserAdsInteractor{}
 	mGetAdInteractor := &mockGetAdInteractor{}

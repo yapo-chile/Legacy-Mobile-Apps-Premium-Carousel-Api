@@ -9,8 +9,7 @@ import (
 	"github.com/Yapo/goutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
 )
 
 func TestSetConfigHandlerInput(t *testing.T) {
@@ -33,7 +32,7 @@ type mockSetConfigInteractor struct {
 }
 
 func (m *mockSetConfigInteractor) SetConfig(userProductID int,
-	config usecases.ProductParams, expiredAt time.Time) error {
+	config domain.ProductParams, expiredAt time.Time) error {
 	args := m.Called(userProductID, config, expiredAt)
 	return args.Error(0)
 }
@@ -59,7 +58,7 @@ func TestSetConfigHandlerOK(t *testing.T) {
 	mInteractor := &mockSetConfigInteractor{}
 	mInteractor.On("SetConfig",
 		mock.AnythingOfType("int"),
-		mock.AnythingOfType("usecases.ProductParams"),
+		mock.AnythingOfType("domain.ProductParams"),
 		mock.AnythingOfType("time.Time"),
 	).Return(nil)
 	h := SetConfigHandler{
@@ -88,7 +87,7 @@ func TestSetConfigHandlerError(t *testing.T) {
 	mInteractor := &mockSetConfigInteractor{}
 	mInteractor.On("SetConfig",
 		mock.AnythingOfType("int"),
-		mock.AnythingOfType("usecases.ProductParams"),
+		mock.AnythingOfType("domain.ProductParams"),
 		mock.AnythingOfType("time.Time"),
 	).Return(err)
 	h := SetConfigHandler{
@@ -96,7 +95,6 @@ func TestSetConfigHandlerError(t *testing.T) {
 	}
 	input := setConfigHandlerInput{
 		UserProductID: 123,
-		Categories:    "2000,1000,3000",
 		ExpiredAt:     time.Now().Add(time.Hour * 24 * 365),
 	}
 	getter := MakeMockInputGetter(&input, nil)

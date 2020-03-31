@@ -9,3 +9,4 @@ DROP TYPE enum_purchase_type;
 DROP TYPE enum_product_type;
 DROP TYPE enum_user_product_status;
 DROP TYPE enum_user_product_config_name;
+DROP TYPE enum_purchase_status;

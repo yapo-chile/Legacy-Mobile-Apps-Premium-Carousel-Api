@@ -7,6 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
 )
 
 type mockSetPartialConfigLogger struct {
@@ -30,7 +32,7 @@ func TestSetPartialConfigOK(t *testing.T) {
 	mProductRepo.On("SetPartialConfig", mock.AnythingOfType("int"),
 		mock.Anything).Return(nil)
 	mProductRepo.On("GetUserProductByID", mock.AnythingOfType("int")).
-		Return(Product{}, nil)
+		Return(domain.Product{}, nil)
 	mCacheRepo.On("SetCache", mock.AnythingOfType("string"),
 		ProductCacheType,
 		mock.AnythingOfType("Product"),
@@ -71,7 +73,7 @@ func TestSetPartialConfigErrorGettingProduct(t *testing.T) {
 	mProductRepo.On("SetPartialConfig", mock.AnythingOfType("int"),
 		mock.Anything).Return(nil)
 	mProductRepo.On("GetUserProductByID", mock.AnythingOfType("int")).
-		Return(Product{}, fmt.Errorf("err"))
+		Return(domain.Product{}, fmt.Errorf("err"))
 	err := interactor.SetPartialConfig(1, map[string]interface{}{})
 	assert.Error(t, err)
 	mCacheRepo.AssertExpectations(t)
@@ -88,7 +90,7 @@ func TestSetPartialConfigErrorSettingCache(t *testing.T) {
 	mProductRepo.On("SetPartialConfig", mock.AnythingOfType("int"),
 		mock.Anything).Return(nil)
 	mProductRepo.On("GetUserProductByID", mock.AnythingOfType("int")).
-		Return(Product{}, nil)
+		Return(domain.Product{}, nil)
 	mCacheRepo.On("SetCache", mock.AnythingOfType("string"),
 		ProductCacheType,
 		mock.AnythingOfType("Product"),

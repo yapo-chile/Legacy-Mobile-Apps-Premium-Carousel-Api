@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
 )
 
 func TestGetUserProductsHandlerInput(t *testing.T) {
@@ -31,9 +31,9 @@ type mockGetUserProductsInteractor struct {
 }
 
 func (m *mockGetUserProductsInteractor) GetUserProducts(email string,
-	page int) ([]usecases.Product, int, int, error) {
+	page int) ([]domain.Product, int, int, error) {
 	args := m.Called(email, page)
-	return args.Get(0).([]usecases.Product), args.Int(1), args.Int(2), args.Error(3)
+	return args.Get(0).([]domain.Product), args.Int(1), args.Int(2), args.Error(3)
 }
 
 func TestGetUserProductsHandlerErrorBadInput(t *testing.T) {
@@ -58,7 +58,7 @@ func TestGetUserProductsHandlerOK(t *testing.T) {
 	mInteractor := &mockGetUserProductsInteractor{}
 	mInteractor.On("GetUserProducts", mock.AnythingOfType("string"),
 		mock.AnythingOfType("int")).
-		Return([]usecases.Product{{ID: 123}}, 1, 1, nil)
+		Return([]domain.Product{{ID: 123}}, 1, 1, nil)
 	h := GetUserProductsHandler{
 		Interactor: mInteractor,
 	}
@@ -84,7 +84,7 @@ func TestGetUserProductsHandlerError(t *testing.T) {
 	err := fmt.Errorf("err")
 	mInteractor.On("GetUserProducts", mock.AnythingOfType("string"),
 		mock.AnythingOfType("int")).
-		Return([]usecases.Product{}, 0, 0, err)
+		Return([]domain.Product{}, 0, 0, err)
 	h := GetUserProductsHandler{
 		Interactor: mInteractor,
 	}
