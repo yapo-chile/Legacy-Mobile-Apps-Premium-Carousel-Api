@@ -109,29 +109,6 @@ func TestSetConfigHandlerError(t *testing.T) {
 	mInteractor.AssertExpectations(t)
 }
 
-func TestSetConfigHandlerBadExpiredAtTime(t *testing.T) {
-	mInteractor := &mockSetConfigInteractor{}
-	h := SetConfigHandler{
-		Interactor: mInteractor,
-	}
-	input := setConfigHandlerInput{
-		UserProductID: 123,
-		Categories:    "2000,1000,3000",
-		ExpiredAt:     time.Now().Add(time.Hour * 24 * -365),
-	}
-	getter := MakeMockInputGetter(&input, nil)
-	r := h.Execute(getter)
-	expected := &goutils.Response{
-		Code: http.StatusBadRequest,
-		Body: goutils.GenericError{
-			ErrorMessage: fmt.Sprintf(`bad expiration date: %+v`,
-				input.ExpiredAt),
-		},
-	}
-	assert.Equal(t, expected, r)
-	mInteractor.AssertExpectations(t)
-}
-
 func TestSetConfigHandlerBadUserProductID(t *testing.T) {
 	mInteractor := &mockSetConfigInteractor{}
 	h := SetConfigHandler{

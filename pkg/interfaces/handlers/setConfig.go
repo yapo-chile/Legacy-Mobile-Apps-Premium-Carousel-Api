@@ -63,15 +63,6 @@ func (h *SetConfigHandler) Execute(ig InputGetter) *goutils.Response {
 			},
 		}
 	}
-	if in.ExpiredAt.Before(time.Now()) {
-		return &goutils.Response{
-			Code: http.StatusBadRequest,
-			Body: goutils.GenericError{
-				ErrorMessage: fmt.Sprintf(`bad expiration date: %+v`,
-					in.ExpiredAt),
-			},
-		}
-	}
 	config := domain.ProductParams{
 		Categories:         h.getCategories(in.Categories),
 		Exclude:            h.getCommaSeparedArr(in.Exclude),

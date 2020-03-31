@@ -83,8 +83,8 @@ func (repo *productRepo) GetUserProducts(
 		p.created_at, pur.id, pur.purchase_number, pur.purchase_type,
 		pur.purchase_status, pur.price, pur.created_at,
 		ARRAY(
-			SELECT user_product_config.name || '=' || user_product_config.value
-			FROM user_product_config WHERE user_product_id = p.id
+			SELECT user_product_param.name || '=' || user_product_param.value
+			FROM user_product_param WHERE user_product_id = p.id
 		) AS config_params
 		FROM user_product as p
 		JOIN purchase as pur ON (p.purchase_id = pur.id)
@@ -132,8 +132,8 @@ func (repo *productRepo) GetUserProductsByEmail(email string,
 		p.created_at, pur.id, pur.purchase_number, pur.purchase_type,
 		pur.purchase_status, pur.price, pur.created_at,
 		ARRAY(
-			SELECT user_product_config.name || '=' || user_product_config.value
-			FROM user_product_config WHERE user_product_id = p.id
+			SELECT user_product_param.name || '=' || user_product_param.value
+			FROM user_product_param WHERE user_product_id = p.id
 		) AS config_params
 		FROM user_product as p
 		JOIN purchase as pur ON (p.purchase_id = pur.id)
@@ -168,8 +168,8 @@ func (repo *productRepo) GetUserActiveProduct(userID string,
 	p.created_at, pur.id, pur.purchase_number, pur.purchase_type,  pur.purchase_status,
 	pur.price, pur.created_at,
 	ARRAY(
-		SELECT user_product_config.name || '=' || user_product_config.value
-		FROM user_product_config WHERE user_product_id = p.id
+		SELECT user_product_param.name || '=' || user_product_param.value
+		FROM user_product_param WHERE user_product_id = p.id
 	) AS config_params
 	FROM user_product as p
 	JOIN purchase as pur ON (p.purchase_id = pur.id)
@@ -202,11 +202,11 @@ func (repo *productRepo) GetUserActiveProduct(userID string,
 func (repo *productRepo) GetUserProductByID(userProductID int) (domain.Product, error) {
 	result, err := repo.handler.Query(`SELECT
 	p.id, p.product_type, p.user_id, p.user_email, p.status, p.expired_at,
-	p.created_at, pur.id, pur.purchase_number, pur.purchase_type, pur.purchase_status
+	p.created_at, pur.id, pur.purchase_number, pur.purchase_type, pur.purchase_status,
 	pur.price, pur.created_at,
 	ARRAY(
-		SELECT user_product_config.name || '=' || user_product_config.value
-		FROM user_product_config WHERE user_product_id = p.id
+		SELECT user_product_param.name || '=' || user_product_param.value
+		FROM user_product_param WHERE user_product_id = p.id
 	) AS config_params
 	FROM user_product as p
 	JOIN purchase as pur ON (p.purchase_id = pur.id)
@@ -334,7 +334,7 @@ func (repo *productRepo) SetConfig(userProductID int, config domain.ProductParam
 		insertValues = append(insertValues, []interface{}{v[0], v[1], v[2]}...)
 	}
 	return repo.handler.Insert(
-		fmt.Sprintf(`INSERT INTO user_product_config(user_product_id, name, value) VALUES %s
+		fmt.Sprintf(`INSERT INTO user_product_param(user_product_id, name, value) VALUES %s
 			ON CONFLICT (user_product_id, name) DO UPDATE set value=excluded.value`,
 			strings.Join(positions, ", ")),
 		insertValues...)

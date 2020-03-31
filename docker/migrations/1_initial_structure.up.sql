@@ -8,7 +8,7 @@ CREATE TYPE enum_user_product_status AS ENUM (
     'EXPIRED'
 );
 
-CREATE TYPE enum_user_product_config_name AS ENUM (
+CREATE TYPE enum_user_product_param_name AS ENUM (
     'categories',
     'limit',
     'keywords',
@@ -56,9 +56,9 @@ CREATE unique index user_product_unique_active_product on user_product(product_t
 CREATE unique index user_product_unique_active_product_per_email on user_product(product_type, user_email, status)
     where status = 'ACTIVE';
 
-CREATE TABLE IF NOT EXISTS user_product_config(
+CREATE TABLE IF NOT EXISTS user_product_param(
     user_product_id INTEGER REFERENCES user_product(id),
-    name            enum_user_product_config_name NOT NULL,
+    name            enum_user_product_param_name NOT NULL,
     value           TEXT,
     unique (user_product_id, name)
 );
