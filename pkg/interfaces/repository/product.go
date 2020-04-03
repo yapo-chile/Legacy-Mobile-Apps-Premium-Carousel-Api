@@ -161,7 +161,7 @@ func (repo *productRepo) GetUserProductsByEmail(email string,
 }
 
 // GetUserActiveProduct gets active product for an specific userID
-func (repo *productRepo) GetUserActiveProduct(userID string,
+func (repo *productRepo) GetUserActiveProduct(userID int,
 	productType domain.ProductType) (domain.Product, error) {
 	result, err := repo.handler.Query(`SELECT
 	p.id, p.product_type, p.user_id, p.user_email, p.status, p.expired_at,
@@ -276,19 +276,15 @@ func (repo *productRepo) parseConfig(rawConfig []string) (domain.ProductParams, 
 }
 
 // CreateUserProduct creates a new product for user
-func (repo *productRepo) CreateUserProduct(userID, email string,
+func (repo *productRepo) CreateUserProduct(userID int, email string,
 	purchase domain.Purchase, productType domain.ProductType, expiredAt time.Time,
 	config domain.ProductParams) (domain.Product, error) {
-	userIDint, err := strconv.Atoi(userID)
-	if err != nil {
-		return domain.Product{}, err
-	}
 	result, err := repo.handler.Query(
 		`INSERT INTO user_product(product_type, status, user_id, user_email,
 			purchase_id, expired_at)
 			VALUES (
 				$1, 'ACTIVE', $2, $3, $4, $5
-			) RETURNING id, created_at`, productType, userIDint, email, purchase.ID,
+			) RETURNING id, created_at`, productType, userID, email, purchase.ID,
 		expiredAt)
 	if err != nil {
 		return domain.Product{}, err

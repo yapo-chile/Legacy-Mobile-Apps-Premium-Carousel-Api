@@ -3,6 +3,7 @@ package usecases
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -26,12 +27,12 @@ type getUserAdsInteractor struct {
 
 // GetUserAdsLogger logs getUserAds events
 type GetUserAdsLogger interface {
-	LogNotEnoughAds(userID string)
-	LogWarnGettingCache(userID string, err error)
-	LogWarnSettingCache(userID string, err error)
-	LogErrorGettingUserAdsData(userID string, err error)
-	LogInfoProductExpired(userID string, product domain.Product)
-	LogInfoActiveProductNotFound(userID string, product domain.Product)
+	LogNotEnoughAds(userID int)
+	LogWarnGettingCache(userID int, err error)
+	LogWarnSettingCache(userID int, err error)
+	LogErrorGettingUserAdsData(userID int, err error)
+	LogInfoProductExpired(userID int, product domain.Product)
+	LogInfoActiveProductNotFound(userID int, product domain.Product)
 }
 
 // MakeGetUserAdsInteractor creates a new instance of GetUserAdsInteractor
@@ -57,7 +58,7 @@ func (interactor *getUserAdsInteractor) GetUserAds(currentAdview domain.Ad) (ads
 	}
 	if product.Status != domain.ActiveProduct {
 		interactor.logger.LogInfoActiveProductNotFound(userID, product)
-		return domain.Ads{}, fmt.Errorf("Product %v for user %s", product.Status, userID)
+		return domain.Ads{}, fmt.Errorf("Product %v for user %d", product.Status, userID)
 	}
 	if product.ExpiredAt.Before(time.Now()) {
 		product.Status = domain.ExpiredProduct
@@ -65,6 +66,8 @@ func (interactor *getUserAdsInteractor) GetUserAds(currentAdview domain.Ad) (ads
 		interactor.refreshCache(product)
 		return domain.Ads{}, interactor.productRepo.SetStatus(product.ID, product.Status)
 	}
+	product.Config.Categories = append([]int{currentAdview.CategoryID},
+		product.Config.Categories...)
 	product.Config.Exclude = append(product.Config.Exclude, currentAdview.ID)
 	if product.Config.PriceRange > 0 {
 		product.Config.PriceFrom = int(currentAdview.Price) - product.Config.PriceRange
@@ -77,14 +80,14 @@ func (interactor *getUserAdsInteractor) GetUserAds(currentAdview domain.Ad) (ads
 	}
 	if interactor.minAdsToDisplay > 0 && len(ads) < interactor.minAdsToDisplay {
 		interactor.logger.LogNotEnoughAds(userID)
-		return domain.Ads{}, fmt.Errorf("user %s does not have enough active ads", userID)
+		return domain.Ads{}, fmt.Errorf("user %d does not have enough active ads", userID)
 	}
 	return ads, nil
 }
 
 func (interactor *getUserAdsInteractor) refreshCache(product domain.Product) {
 	cacheError := interactor.cacheRepo.SetCache(
-		strings.Join([]string{"user", product.UserID,
+		strings.Join([]string{"user", strconv.Itoa(product.UserID),
 			string(domain.PremiumCarousel)}, ":"),
 		ProductCacheType,
 		product,
@@ -94,10 +97,10 @@ func (interactor *getUserAdsInteractor) refreshCache(product domain.Product) {
 	}
 }
 
-func (interactor *getUserAdsInteractor) getCache(userID string) (product domain.Product,
+func (interactor *getUserAdsInteractor) getCache(userID int) (product domain.Product,
 	cacheError error) {
 	rawCachedProduct, cacheError := interactor.cacheRepo.GetCache(
-		strings.Join([]string{"user", userID,
+		strings.Join([]string{"user", strconv.Itoa(userID),
 			string(domain.PremiumCarousel)}, ":"),
 		ProductCacheType)
 	if cacheError == nil {

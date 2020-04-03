@@ -15,7 +15,7 @@ type GomsRepository interface {
 
 // AdRepository allows get ads data
 type AdRepository interface {
-	GetUserAds(userID string,
+	GetUserAds(userID int,
 		productParams domain.ProductParams) (domain.Ads, error)
 	GetAd(listID string) (domain.Ad, error)
 }
@@ -35,10 +35,10 @@ type ProductRepository interface {
 	GetUserProducts(page int) ([]domain.Product, int, int, error)
 	GetUserProductsByEmail(email string, page int) ([]domain.Product,
 		int, int, error)
-	CreateUserProduct(userID, email string,
+	CreateUserProduct(userID int, email string,
 		purchase domain.Purchase, productType domain.ProductType,
 		expiredAt time.Time, config domain.ProductParams) (domain.Product, error)
-	GetUserActiveProduct(userID string,
+	GetUserActiveProduct(userID int,
 		productType domain.ProductType) (domain.Product, error)
 	GetUserProductsTotal() (total int)
 	GetUserProductsTotalByEmail(email string) (total int)

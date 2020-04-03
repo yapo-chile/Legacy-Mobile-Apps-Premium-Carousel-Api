@@ -7,9 +7,9 @@ type Ad struct {
 	// ID defines the ListID
 	ID string
 	// UserID is the seller userID
-	UserID string
+	UserID int
 	// CategoryID defines the CategoryID
-	CategoryID string
+	CategoryID int
 	// Subject defines the ad title
 	Subject string
 	// Price represents the ad price
@@ -90,7 +90,7 @@ const (
 type Product struct {
 	ID        int
 	Type      ProductType
-	UserID    string
+	UserID    int
 	Email     string
 	Purchase  Purchase
 	Status    ProductStatus

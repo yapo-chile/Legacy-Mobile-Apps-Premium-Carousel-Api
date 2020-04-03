@@ -86,7 +86,7 @@ func (h *AddUserProductHandler) Execute(ig InputGetter) *goutils.Response {
 			},
 		}
 	}
-	err = h.Interactor.AddUserProduct(strconv.Itoa(in.UserID), in.Email,
+	err = h.Interactor.AddUserProduct(in.UserID, in.Email,
 		in.PurchaseOrder, in.PurchasePrice, purchaseType,
 		domain.PremiumCarousel, in.ExpiredAt, config)
 	if err != nil {

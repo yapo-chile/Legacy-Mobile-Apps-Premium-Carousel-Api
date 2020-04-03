@@ -69,7 +69,7 @@ type Media struct {
 
 // GetUserAds gets user active ads from search repository using config to
 // match similar ads
-func (repo *adRepo) GetUserAds(userID string, productParams domain.ProductParams) (domain.Ads, error) {
+func (repo *adRepo) GetUserAds(userID int, productParams domain.ProductParams) (domain.Ads, error) {
 	limit := repo.makeLimit(productParams)
 	termQuery := repo.handler.NewTermQuery("UserID", userID)
 	must, mustNot := []Query{termQuery}, []Query{}
@@ -117,7 +117,7 @@ func (repo *adRepo) GetUserAds(userID string, productParams domain.ProductParams
 
 	if len(ads) == 0 {
 		return domain.Ads{}, fmt.Errorf("The specified "+
-			"userID: %s don't return results elasticsearch",
+			"userID: %d don't return results elasticsearch",
 			userID)
 	}
 
@@ -126,7 +126,7 @@ func (repo *adRepo) GetUserAds(userID string, productParams domain.ProductParams
 
 // fillGapsWithRandom fill gaps in case of the limit is less than required ads by config.
 // This method only works if config 'fillGapsWithRandom' is enabled
-func (repo *adRepo) fillGapsWithRandom(userID string, delta int, ads domain.Ads,
+func (repo *adRepo) fillGapsWithRandom(userID int, delta int, ads domain.Ads,
 	productParams domain.ProductParams) domain.Ads {
 	exclude := []string{}
 	for _, ad := range ads {
@@ -134,6 +134,7 @@ func (repo *adRepo) fillGapsWithRandom(userID string, delta int, ads domain.Ads,
 	}
 	extraAds, _ := repo.GetUserAds(userID, domain.ProductParams{
 		Exclude:            append(exclude, productParams.Exclude...),
+		Categories:         productParams.Categories,
 		FillGapsWithRandom: false,
 		Limit:              delta,
 	})
@@ -173,8 +174,8 @@ func (repo *adRepo) fillAd(result SearchOutput) domain.Ad {
 	regionName := repo.regionsConf.Get(regionKey)
 	return domain.Ad{
 		ID:         strconv.Itoa(result.ListID),
-		UserID:     strconv.Itoa(result.UserID),
-		CategoryID: strconv.Itoa(result.CategoryID),
+		UserID:     result.UserID,
+		CategoryID: result.CategoryID,
 		Subject:    result.Subject,
 		Price:      result.Price,
 		Currency:   result.Params.Currency,

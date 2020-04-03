@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -10,7 +11,7 @@ import (
 
 // AddUserProductInteractor wraps AddUserProduct operations
 type AddUserProductInteractor interface {
-	AddUserProduct(userID, email string,
+	AddUserProduct(userID int, email string,
 		purchaseNumber, purchasePrice int, purchaseType domain.PurchaseType,
 		productType domain.ProductType, expiredAt time.Time,
 		config domain.ProductParams) error
@@ -27,8 +28,8 @@ type addUserProductInteractor struct {
 
 // AddUserProductLogger logs AddUserProduct events
 type AddUserProductLogger interface {
-	LogErrorAddingProduct(userID string, err error)
-	LogWarnSettingCache(userID string, err error)
+	LogErrorAddingProduct(userID int, err error)
+	LogWarnSettingCache(userID int, err error)
 }
 
 // MakeAddUserProductInteractor creates a new instance of AddUserProductInteractor
@@ -42,7 +43,7 @@ func MakeAddUserProductInteractor(productRepo ProductRepository,
 }
 
 // AddUserProduct associates a new product to user
-func (interactor *addUserProductInteractor) AddUserProduct(userID, email string,
+func (interactor *addUserProductInteractor) AddUserProduct(userID int, email string,
 	purchaseNumber, purchasePrice int, purchaseType domain.PurchaseType,
 	productType domain.ProductType, expiredAt time.Time,
 	config domain.ProductParams) error {
@@ -73,7 +74,7 @@ func (interactor *addUserProductInteractor) AddUserProduct(userID, email string,
 }
 
 // validate validates conditions to create a product for user
-func (interactor *addUserProductInteractor) validate(userID string,
+func (interactor *addUserProductInteractor) validate(userID int,
 	productType domain.ProductType) error {
 	_, err := interactor.productRepo.GetUserActiveProduct(userID, productType)
 	if err != ErrProductNotFound {
@@ -90,7 +91,7 @@ func (interactor *addUserProductInteractor) validate(userID string,
 func (interactor *addUserProductInteractor) refreshCache(product domain.Product) {
 	cacheError := interactor.cacheRepo.
 		SetCache(strings.Join([]string{"user",
-			product.UserID, string(domain.PremiumCarousel)}, ":"),
+			strconv.Itoa(product.UserID), string(domain.PremiumCarousel)}, ":"),
 			ProductCacheType, product, interactor.cacheTTL)
 	if cacheError != nil {
 		interactor.logger.LogWarnSettingCache(product.UserID, cacheError)

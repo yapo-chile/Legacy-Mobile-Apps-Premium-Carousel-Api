@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/Yapo/goutils"
 
@@ -102,7 +103,7 @@ func (h *GetUserAdsHandler) fillResponse(ads domain.Ads) []adsOutput {
 			Title:    ad.Subject,
 			Price:    ad.Price,
 			Currency: ad.Currency,
-			Category: ad.CategoryID,
+			Category: strconv.Itoa(ad.CategoryID),
 			Image: imageOutput{
 				Full:   ad.Image.Full,
 				Medium: ad.Image.Medium,

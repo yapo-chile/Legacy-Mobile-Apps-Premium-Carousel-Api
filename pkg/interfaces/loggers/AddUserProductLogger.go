@@ -6,12 +6,12 @@ type addUserProductLogger struct {
 	logger Logger
 }
 
-func (l *addUserProductLogger) LogWarnSettingCache(userID string, err error) {
-	l.logger.Warn("not able to set product cache userID: %s - %+v", userID, err)
+func (l *addUserProductLogger) LogWarnSettingCache(userID int, err error) {
+	l.logger.Warn("not able to set product cache userID: %d - %+v", userID, err)
 }
 
-func (l *addUserProductLogger) LogErrorAddingProduct(userID string, err error) {
-	l.logger.Error("Error adding product to userID: %s error: %+v", userID, err)
+func (l *addUserProductLogger) LogErrorAddingProduct(userID int, err error) {
+	l.logger.Error("Error adding product to userID: %d error: %+v", userID, err)
 }
 
 // MakeAddUserProductLogger sets up a AddUserProductLogger instrumented

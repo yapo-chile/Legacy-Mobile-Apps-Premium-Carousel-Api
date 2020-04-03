@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -25,7 +26,7 @@ type setConfigInteractor struct {
 // SetConfigLogger logs SetConfig events
 type SetConfigLogger interface {
 	LogErrorSettingConfig(userProductID int, err error)
-	LogWarnSettingCache(userID string, err error)
+	LogWarnSettingCache(userID int, err error)
 }
 
 // MakeSetConfigInteractor creates a new instance of SetConfigInteractor
@@ -59,7 +60,7 @@ func (interactor *setConfigInteractor) SetConfig(userProductID int,
 
 func (interactor *setConfigInteractor) refreshCache(product domain.Product) {
 	cacheError := interactor.cacheRepo.
-		SetCache(strings.Join([]string{"user", product.UserID, string(product.Type)}, ":"),
+		SetCache(strings.Join([]string{"user", strconv.Itoa(product.UserID), string(product.Type)}, ":"),
 			ProductCacheType, product, interactor.cacheTTL)
 	if cacheError != nil {
 		interactor.logger.LogWarnSettingCache(product.UserID, cacheError)

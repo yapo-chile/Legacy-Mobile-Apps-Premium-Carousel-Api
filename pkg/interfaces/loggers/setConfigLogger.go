@@ -6,8 +6,8 @@ type setConfigLogger struct {
 	logger Logger
 }
 
-func (l *setConfigLogger) LogWarnSettingCache(userID string, err error) {
-	l.logger.Warn("unable to set product cache userID: %s - %+v", userID, err)
+func (l *setConfigLogger) LogWarnSettingCache(userID int, err error) {
+	l.logger.Warn("unable to set product cache userID: %d - %+v", userID, err)
 }
 
 func (l *setConfigLogger) LogErrorSettingConfig(userProductID int, err error) {

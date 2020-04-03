@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -79,7 +80,7 @@ func (h *GetUserProductsHandler) Execute(ig InputGetter) *goutils.Response {
 		p := productsOutput{
 			ID:                 v.ID,
 			Email:              v.Email,
-			UserID:             v.UserID,
+			UserID:             strconv.Itoa(v.UserID),
 			Status:             string(v.Status),
 			Type:               string(v.Type),
 			ExpiredAt:          v.ExpiredAt,
