@@ -31,9 +31,12 @@ type mockAddUserProductInteractor struct {
 	mock.Mock
 }
 
-func (m *mockAddUserProductInteractor) AddUserProduct(userID int, email string, purchaseNumber, purchasePrice int, purchaseType domain.PurchaseType, productType domain.ProductType, expiredAt time.Time,
-	config domain.ProductParams) error {
-	args := m.Called(userID, email, purchaseNumber, purchasePrice, purchaseType, productType, expiredAt, config)
+func (m *mockAddUserProductInteractor) AddUserProduct(userID int,
+	email string, purchaseNumber, purchasePrice int,
+	purchaseType domain.PurchaseType, productType domain.ProductType,
+	expiredAt time.Time, config domain.ProductParams) error {
+	args := m.Called(userID, email, purchaseNumber, purchasePrice,
+		purchaseType, productType, expiredAt, config)
 	return args.Error(0)
 }
 

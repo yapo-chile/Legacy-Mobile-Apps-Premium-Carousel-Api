@@ -56,7 +56,7 @@ func (repo *purchaseRepo) AcceptPurchase(purchase domain.Purchase) (domain.Purch
 	return purchase, nil
 }
 
-// SetStatus sets the purchase status
+// setStatus sets the purchase status
 func (repo *purchaseRepo) setStatus(purchaseID int, status domain.PurchaseStatus) error {
 	result, err := repo.handler.
 		Query(

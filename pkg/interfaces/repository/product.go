@@ -77,17 +77,7 @@ func (repo *productRepo) GetUserProducts(
 	if (total % repo.resultsPerPage) > 0 {
 		totalPages++
 	}
-	result, err := repo.handler.Query(
-		`SELECT
-		p.id, p.product_type, p.user_id, p.user_email, p.status, p.expired_at,
-		p.created_at, pur.id, pur.purchase_number, pur.purchase_type,
-		pur.purchase_status, pur.price, pur.created_at,
-		ARRAY(
-			SELECT user_product_param.name || '=' || user_product_param.value
-			FROM user_product_param WHERE user_product_id = p.id
-		) AS config_params
-		FROM user_product as p
-		JOIN purchase as pur ON (p.purchase_id = pur.id)
+	result, err := repo.makeUserProductQuery(`
 		WHERE TRUE
 		ORDER BY p.id DESC
 		OFFSET $1 LIMIT $2`,
@@ -111,6 +101,23 @@ func (repo *productRepo) GetUserProducts(
 	return products, page, totalPages, nil
 }
 
+func (repo *productRepo) makeUserProductQuery(conditions string,
+	params ...interface{}) (DbResult, error) {
+	return repo.handler.Query(`
+		SELECT
+			p.id, p.product_type, p.user_id, p.user_email, p.status, p.expired_at,
+			p.created_at, pur.id, pur.purchase_number, pur.purchase_type,
+			pur.purchase_status, pur.price, pur.created_at,
+			ARRAY(
+				SELECT user_product_param.name || '=' || user_product_param.value
+				FROM user_product_param WHERE user_product_id = p.id
+			) AS config_params
+		FROM user_product as p
+		JOIN purchase as pur ON (p.purchase_id = pur.id) `+
+		conditions, params...,
+	)
+}
+
 // GetUserProducts get a list of user products by email with pagination
 func (repo *productRepo) GetUserProductsByEmail(email string,
 	page int) (products []domain.Product, currentPage int,
@@ -126,21 +133,12 @@ func (repo *productRepo) GetUserProductsByEmail(email string,
 	if (total % repo.resultsPerPage) > 0 {
 		totalPages++
 	}
-	result, err := repo.handler.Query(
-		`SELECT
-		p.id, p.product_type, p.user_id, p.user_email, p.status, p.expired_at,
-		p.created_at, pur.id, pur.purchase_number, pur.purchase_type,
-		pur.purchase_status, pur.price, pur.created_at,
-		ARRAY(
-			SELECT user_product_param.name || '=' || user_product_param.value
-			FROM user_product_param WHERE user_product_id = p.id
-		) AS config_params
-		FROM user_product as p
-		JOIN purchase as pur ON (p.purchase_id = pur.id)
-		WHERE user_email = $1
+	result, err := repo.makeUserProductQuery(
+		`WHERE user_email = $1
 		ORDER BY p.id DESC
 		OFFSET $2 LIMIT $3`,
-		email, (repo.resultsPerPage * (page - 1)), repo.resultsPerPage)
+		email, (repo.resultsPerPage * (page - 1)),
+		repo.resultsPerPage)
 	if err != nil {
 		return []domain.Product{}, 0, 0, err
 	}
@@ -163,17 +161,9 @@ func (repo *productRepo) GetUserProductsByEmail(email string,
 // GetUserActiveProduct gets active product for an specific userID
 func (repo *productRepo) GetUserActiveProduct(userID int,
 	productType domain.ProductType) (domain.Product, error) {
-	result, err := repo.handler.Query(`SELECT
-	p.id, p.product_type, p.user_id, p.user_email, p.status, p.expired_at,
-	p.created_at, pur.id, pur.purchase_number, pur.purchase_type,  pur.purchase_status,
-	pur.price, pur.created_at,
-	ARRAY(
-		SELECT user_product_param.name || '=' || user_product_param.value
-		FROM user_product_param WHERE user_product_id = p.id
-	) AS config_params
-	FROM user_product as p
-	JOIN purchase as pur ON (p.purchase_id = pur.id)
-	WHERE  p.status = 'ACTIVE' AND p.user_id = $1 and p.product_type = $2`,
+	result, err := repo.makeUserProductQuery(`
+		WHERE  p.status = 'ACTIVE'
+		AND p.user_id = $1 AND p.product_type = $2`,
 		userID, productType)
 	if err != nil {
 		return domain.Product{}, err
@@ -200,18 +190,8 @@ func (repo *productRepo) GetUserActiveProduct(userID int,
 
 // GetUserActiveProduct gets active product for an specific userProductID
 func (repo *productRepo) GetUserProductByID(userProductID int) (domain.Product, error) {
-	result, err := repo.handler.Query(`SELECT
-	p.id, p.product_type, p.user_id, p.user_email, p.status, p.expired_at,
-	p.created_at, pur.id, pur.purchase_number, pur.purchase_type, pur.purchase_status,
-	pur.price, pur.created_at,
-	ARRAY(
-		SELECT user_product_param.name || '=' || user_product_param.value
-		FROM user_product_param WHERE user_product_id = p.id
-	) AS config_params
-	FROM user_product as p
-	JOIN purchase as pur ON (p.purchase_id = pur.id)
-	WHERE  p.id = $1`,
-		userProductID)
+	result, err := repo.makeUserProductQuery(`
+		WHERE  p.id = $1`, userProductID)
 	if err != nil {
 		return domain.Product{}, err
 	}
