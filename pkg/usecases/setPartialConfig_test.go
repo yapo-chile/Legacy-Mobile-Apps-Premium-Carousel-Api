@@ -19,7 +19,7 @@ func (m *mockSetPartialConfigLogger) LogErrorSettingPartialConfig(userProductID 
 	m.Called(userProductID, err)
 }
 
-func (m *mockSetPartialConfigLogger) LogWarnSettingCache(UserID string, err error) {
+func (m *mockSetPartialConfigLogger) LogWarnSettingCache(UserID int, err error) {
 	m.Called(UserID, err)
 }
 
@@ -68,7 +68,7 @@ func TestSetPartialConfigErrorGettingProduct(t *testing.T) {
 	mLogger := &mockSetPartialConfigLogger{}
 	interactor := MakeSetPartialConfigInteractor(mProductRepo,
 		mCacheRepo, mLogger, time.Hour)
-	mLogger.On("LogWarnSettingCache", mock.AnythingOfType("string"),
+	mLogger.On("LogWarnSettingCache", mock.Anything,
 		mock.Anything)
 	mProductRepo.On("SetPartialConfig", mock.AnythingOfType("int"),
 		mock.Anything).Return(nil)
@@ -96,7 +96,7 @@ func TestSetPartialConfigErrorSettingCache(t *testing.T) {
 		mock.AnythingOfType("Product"),
 		mock.Anything).
 		Return(fmt.Errorf("err"))
-	mLogger.On("LogWarnSettingCache", mock.AnythingOfType("string"),
+	mLogger.On("LogWarnSettingCache", mock.Anything,
 		mock.Anything)
 	err := interactor.SetPartialConfig(1, map[string]interface{}{})
 	assert.NoError(t, err)

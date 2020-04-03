@@ -176,7 +176,7 @@ func TestGetUserProductsByEmailOk(t *testing.T) {
 	mResult.On("Next").Return(false).Once()
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
-		11, domain.PremiumCarousel, "1", "test@mail.com", domain.ActiveProduct,
+		11, domain.PremiumCarousel, 1, "test@mail.com", domain.ActiveProduct,
 		testTime, testTime, 0, 0, domain.AdminPurchase, domain.AcceptedPurchase,
 		100, testTime, []string{"categories=2020,1020",
 			"keywords=a,b,c", "comment=comentario"}}).Once()
@@ -187,7 +187,7 @@ func TestGetUserProductsByEmailOk(t *testing.T) {
 		{
 			ID:        11,
 			Type:      domain.PremiumCarousel,
-			UserID:    "1",
+			UserID:    1,
 			Email:     "test@mail.com",
 			Status:    domain.ActiveProduct,
 			ExpiredAt: testTime,
@@ -240,7 +240,7 @@ func TestGetUserProductsOk(t *testing.T) {
 	mResult.On("Next").Return(false).Once()
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
-		11, domain.PremiumCarousel, "1", "test@mail.com", domain.ActiveProduct,
+		11, domain.PremiumCarousel, 1, "test@mail.com", domain.ActiveProduct,
 		testTime, testTime, 0, 0, domain.AdminPurchase, domain.AcceptedPurchase,
 		100, testTime, []string{"categories=2020,1020",
 			"keywords=a,b,c", "comment=comentario"}}).Once()
@@ -250,7 +250,7 @@ func TestGetUserProductsOk(t *testing.T) {
 		{
 			ID:        11,
 			Type:      domain.PremiumCarousel,
-			UserID:    "1",
+			UserID:    1,
 			Email:     "test@mail.com",
 			Status:    domain.ActiveProduct,
 			ExpiredAt: testTime,
@@ -381,16 +381,16 @@ func TestGetUserActiveProductOk(t *testing.T) {
 	mResult.On("Next").Return(true).Once()
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
-		11, domain.PremiumCarousel, "1", "test@mail.com", domain.ActiveProduct,
+		11, domain.PremiumCarousel, 1, "test@mail.com", domain.ActiveProduct,
 		testTime, testTime, 0, 0, domain.AdminPurchase, domain.AcceptedPurchase,
 		100, testTime, []string{"categories=2020,1020",
 			"keywords=a,b,c", "comment=comentario"}}).Once()
-	result, err := repo.GetUserActiveProduct("test@email.com",
+	result, err := repo.GetUserActiveProduct(1,
 		domain.PremiumCarousel)
 	expected := domain.Product{
 		ID:        11,
 		Type:      domain.PremiumCarousel,
-		UserID:    "1",
+		UserID:    1,
 		Email:     "test@mail.com",
 		Status:    domain.ActiveProduct,
 		ExpiredAt: testTime,
@@ -428,7 +428,7 @@ func TestGetUserActiveProductErrorProductNotFound(t *testing.T) {
 		mock.Anything,
 	).Return(mResult, nil).Once()
 	mResult.On("Next").Return(false).Once()
-	_, err := repo.GetUserActiveProduct("test@email.com",
+	_, err := repo.GetUserActiveProduct(1,
 		domain.PremiumCarousel)
 
 	assert.Error(t, err)
@@ -446,7 +446,7 @@ func TestGetUserActiveProductError(t *testing.T) {
 		mock.AnythingOfType("string"),
 		mock.Anything,
 	).Return(mResult, fmt.Errorf("err")).Once()
-	_, err := repo.GetUserActiveProduct("test@email.com",
+	_, err := repo.GetUserActiveProduct(1,
 		domain.PremiumCarousel)
 	assert.Error(t, err)
 	mockDB.AssertExpectations(t)
@@ -467,10 +467,10 @@ func TestGetUserActiveProductErrorNoConfig(t *testing.T) {
 	mResult.On("Next").Return(true).Once()
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
-		11, domain.PremiumCarousel, "1", "test@mail.com", domain.ActiveProduct,
+		11, domain.PremiumCarousel, 1, "test@mail.com", domain.ActiveProduct,
 		testTime, testTime, 0, 0, domain.AdminPurchase, domain.AcceptedPurchase,
 		100, testTime, []string{}}).Once()
-	_, err := repo.GetUserActiveProduct("test@email.com",
+	_, err := repo.GetUserActiveProduct(1,
 		domain.PremiumCarousel)
 	assert.Error(t, err)
 	mockDB.AssertExpectations(t)
@@ -496,7 +496,7 @@ func TestCreateUserProductOk(t *testing.T) {
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
 		11, testTime}).Once()
-	result, err := repo.CreateUserProduct("1", "test@mail.com", domain.Purchase{},
+	result, err := repo.CreateUserProduct(1, "test@mail.com", domain.Purchase{},
 		domain.PremiumCarousel, testTime, domain.ProductParams{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
@@ -504,7 +504,7 @@ func TestCreateUserProductOk(t *testing.T) {
 	expected := domain.Product{
 		ID:        11,
 		Type:      domain.PremiumCarousel,
-		UserID:    "1",
+		UserID:    1,
 		Email:     "test@mail.com",
 		Status:    domain.ActiveProduct,
 		ExpiredAt: testTime,
@@ -522,23 +522,6 @@ func TestCreateUserProductOk(t *testing.T) {
 	mLogger.AssertExpectations(t)
 }
 
-func TestCreateUserProductBadUserId(t *testing.T) {
-	mockDB := &dbHandlerMock{}
-	mResult := &mockResult{}
-	mLogger := &mockProductRepoLogger{}
-	repo := MakeProductRepository(mockDB, 10, mLogger)
-	testTime := time.Now()
-	_, err := repo.CreateUserProduct("aaaaaa", "test@mail.com", domain.Purchase{},
-		domain.PremiumCarousel, testTime, domain.ProductParams{
-			Categories: []int{2020, 1020},
-			Exclude:    []string{"11111", "22222"},
-		})
-	assert.Error(t, err)
-	mockDB.AssertExpectations(t)
-	mResult.AssertExpectations(t)
-	mLogger.AssertExpectations(t)
-}
-
 func TestCreateUserProductQueryError(t *testing.T) {
 	mockDB := &dbHandlerMock{}
 	mResult := &mockResult{}
@@ -549,7 +532,7 @@ func TestCreateUserProductQueryError(t *testing.T) {
 		mock.Anything,
 	).Return(mResult, fmt.Errorf("err")).Once()
 	testTime := time.Now()
-	_, err := repo.CreateUserProduct("1", "test@mail.com", domain.Purchase{},
+	_, err := repo.CreateUserProduct(1, "test@mail.com", domain.Purchase{},
 		domain.PremiumCarousel, testTime, domain.ProductParams{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
@@ -572,7 +555,7 @@ func TestCreateUserProductNextError(t *testing.T) {
 	mResult.On("Close").Return(nil).Once()
 	mResult.On("Next").Return(false).Once()
 	testTime := time.Now()
-	_, err := repo.CreateUserProduct("1", "test@mail.com", domain.Purchase{},
+	_, err := repo.CreateUserProduct(1, "test@mail.com", domain.Purchase{},
 		domain.PremiumCarousel, testTime, domain.ProductParams{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
@@ -601,7 +584,7 @@ func TestCreateUserProductAddConfigError(t *testing.T) {
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
 		11, testTime}).Once()
-	_, err := repo.CreateUserProduct("1", "test@mail.com", domain.Purchase{},
+	_, err := repo.CreateUserProduct(1, "test@mail.com", domain.Purchase{},
 		domain.PremiumCarousel, testTime, domain.ProductParams{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
@@ -625,7 +608,7 @@ func TestGetUserProductByIDOK(t *testing.T) {
 	mResult.On("Next").Return(true).Once()
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
-		11, domain.PremiumCarousel, "1", "test@mail.com", domain.ActiveProduct,
+		11, domain.PremiumCarousel, 1, "test@mail.com", domain.ActiveProduct,
 		testTime, testTime, 0, 0, domain.AdminPurchase, domain.AcceptedPurchase,
 		100, testTime, []string{"categories=2020,1020",
 			"keywords=a,b,c", "exclude=1,2,3", "comment=comentario"}}).Once()
@@ -633,7 +616,7 @@ func TestGetUserProductByIDOK(t *testing.T) {
 	expected := domain.Product{
 		ID:        11,
 		Type:      domain.PremiumCarousel,
-		UserID:    "1",
+		UserID:    1,
 		Email:     "test@mail.com",
 		Status:    domain.ActiveProduct,
 		ExpiredAt: testTime,
@@ -689,7 +672,7 @@ func TestGetUserProductByIDParseConfigError(t *testing.T) {
 	mResult.On("Next").Return(true).Once()
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
-		11, domain.PremiumCarousel, "1", "test@mail.com", domain.ActiveProduct,
+		11, domain.PremiumCarousel, 1, "test@mail.com", domain.ActiveProduct,
 		testTime, testTime, 0, 0, domain.AdminPurchase, domain.AcceptedPurchase,
 		100, testTime, []string{}}).Once()
 	_, err := repo.GetUserProductByID(11)

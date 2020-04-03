@@ -30,11 +30,11 @@ type mockAddUserProductLogger struct {
 	mock.Mock
 }
 
-func (m *mockAddUserProductLogger) LogErrorAddingProduct(UserID string, err error) {
+func (m *mockAddUserProductLogger) LogErrorAddingProduct(UserID int, err error) {
 	m.Called(UserID, err)
 }
 
-func (m *mockAddUserProductLogger) LogWarnSettingCache(UserID string, err error) {
+func (m *mockAddUserProductLogger) LogWarnSettingCache(UserID int, err error) {
 	m.Called(UserID, err)
 }
 
@@ -56,11 +56,11 @@ func TestAddProductOk(t *testing.T) {
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("domain.PurchaseType")).Return(domain.Purchase{}, nil)
 	mProductRepo.On("GetUserActiveProduct",
-		mock.AnythingOfType("string"),
+		mock.AnythingOfType("int"),
 		mock.AnythingOfType("domain.ProductType")).Return(domain.Product{},
 		ErrProductNotFound)
 	mProductRepo.On("CreateUserProduct",
-		mock.AnythingOfType("string"),
+		mock.AnythingOfType("int"),
 		mock.AnythingOfType("string"),
 		mock.AnythingOfType("domain.Purchase"),
 		domain.PremiumCarousel,
@@ -69,7 +69,7 @@ func TestAddProductOk(t *testing.T) {
 	).Return(product, nil)
 	mPurchaseRepo.On("AcceptPurchase",
 		mock.AnythingOfType("domain.Purchase")).Return(domain.Purchase{}, nil)
-	err := interactor.AddUserProduct("", "", 0, 0, domain.AdminPurchase,
+	err := interactor.AddUserProduct(0, "", 0, 0, domain.AdminPurchase,
 		domain.PremiumCarousel, time.Time{}, domain.ProductParams{})
 	assert.NoError(t, err)
 	mProductRepo.AssertExpectations(t)
@@ -88,11 +88,11 @@ func TestAddProductValidateError(t *testing.T) {
 
 	mLogger.On("LogErrorAddingProduct", mock.Anything, mock.Anything)
 	mProductRepo.On("GetUserActiveProduct",
-		mock.AnythingOfType("string"),
+		mock.AnythingOfType("int"),
 		mock.AnythingOfType("domain.ProductType")).Return(domain.Product{},
 		nil)
 
-	err := interactor.AddUserProduct("", "", 0, 0, domain.AdminPurchase,
+	err := interactor.AddUserProduct(0, "", 0, 0, domain.AdminPurchase,
 		domain.PremiumCarousel, time.Time{}, domain.ProductParams{})
 	assert.Error(t, err)
 	mProductRepo.AssertExpectations(t)
@@ -115,11 +115,11 @@ func TestAddProductCreatePurchaseError(t *testing.T) {
 		mock.AnythingOfType("domain.PurchaseType")).
 		Return(domain.Purchase{}, fmt.Errorf("err"))
 	mProductRepo.On("GetUserActiveProduct",
-		mock.AnythingOfType("string"),
+		mock.AnythingOfType("int"),
 		mock.AnythingOfType("domain.ProductType")).Return(domain.Product{},
 		ErrProductNotFound)
 
-	err := interactor.AddUserProduct("", "", 0, 0, domain.AdminPurchase,
+	err := interactor.AddUserProduct(0, "", 0, 0, domain.AdminPurchase,
 		domain.PremiumCarousel, time.Time{}, domain.ProductParams{})
 	assert.Error(t, err)
 	mProductRepo.AssertExpectations(t)
@@ -142,11 +142,11 @@ func TestAddProductAcceptPurchaseError(t *testing.T) {
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("domain.PurchaseType")).Return(domain.Purchase{}, nil)
 	mProductRepo.On("GetUserActiveProduct",
-		mock.AnythingOfType("string"),
+		mock.AnythingOfType("int"),
 		mock.AnythingOfType("domain.ProductType")).Return(domain.Product{},
 		ErrProductNotFound)
 	mProductRepo.On("CreateUserProduct",
-		mock.AnythingOfType("string"),
+		mock.AnythingOfType("int"),
 		mock.AnythingOfType("string"),
 		mock.AnythingOfType("domain.Purchase"),
 		domain.PremiumCarousel,
@@ -156,7 +156,7 @@ func TestAddProductAcceptPurchaseError(t *testing.T) {
 	mPurchaseRepo.On("AcceptPurchase",
 		mock.AnythingOfType("domain.Purchase")).
 		Return(domain.Purchase{}, fmt.Errorf("err"))
-	err := interactor.AddUserProduct("", "", 0, 0, domain.AdminPurchase,
+	err := interactor.AddUserProduct(0, "", 0, 0, domain.AdminPurchase,
 		domain.PremiumCarousel, time.Time{}, domain.ProductParams{})
 	assert.Error(t, err)
 	mProductRepo.AssertExpectations(t)
@@ -175,7 +175,7 @@ func TestAddProductErrorAddingProduct(t *testing.T) {
 		mCacheRepo, mLogger, 0)
 	mLogger.On("LogErrorAddingProduct", mock.Anything, mock.Anything)
 	mProductRepo.On("GetUserActiveProduct",
-		mock.AnythingOfType("string"),
+		mock.AnythingOfType("int"),
 		mock.AnythingOfType("domain.ProductType")).Return(domain.Product{},
 		ErrProductNotFound)
 	mPurchaseRepo.On("CreatePurchase",
@@ -183,14 +183,14 @@ func TestAddProductErrorAddingProduct(t *testing.T) {
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("domain.PurchaseType")).Return(domain.Purchase{}, nil)
 	mProductRepo.On("CreateUserProduct",
-		mock.AnythingOfType("string"),
+		mock.AnythingOfType("int"),
 		mock.AnythingOfType("string"),
 		mock.AnythingOfType("domain.Purchase"),
 		domain.PremiumCarousel,
 		mock.AnythingOfType("time.Time"),
 		mock.AnythingOfType("domain.ProductParams"),
 	).Return(product, fmt.Errorf("err"))
-	err := interactor.AddUserProduct("", "", 0, 0, domain.AdminPurchase,
+	err := interactor.AddUserProduct(0, "", 0, 0, domain.AdminPurchase,
 		domain.PremiumCarousel, time.Time{}, domain.ProductParams{})
 	assert.Error(t, err)
 	mProductRepo.AssertExpectations(t)
@@ -214,7 +214,7 @@ func TestAddProductOkErrorSettingCache(t *testing.T) {
 		mock.Anything).
 		Return(fmt.Errorf("err"))
 	mProductRepo.On("GetUserActiveProduct",
-		mock.AnythingOfType("string"),
+		mock.AnythingOfType("int"),
 		mock.AnythingOfType("domain.ProductType")).Return(domain.Product{},
 		ErrProductNotFound)
 	mPurchaseRepo.On("CreatePurchase",
@@ -222,7 +222,7 @@ func TestAddProductOkErrorSettingCache(t *testing.T) {
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("domain.PurchaseType")).Return(domain.Purchase{}, nil)
 	mProductRepo.On("CreateUserProduct",
-		mock.AnythingOfType("string"),
+		mock.AnythingOfType("int"),
 		mock.AnythingOfType("string"),
 		mock.AnythingOfType("domain.Purchase"),
 		domain.PremiumCarousel,
@@ -231,7 +231,7 @@ func TestAddProductOkErrorSettingCache(t *testing.T) {
 	).Return(product, nil)
 	mPurchaseRepo.On("AcceptPurchase",
 		mock.AnythingOfType("domain.Purchase")).Return(domain.Purchase{}, nil)
-	err := interactor.AddUserProduct("", "", 0, 0, domain.AdminPurchase,
+	err := interactor.AddUserProduct(0, "", 0, 0, domain.AdminPurchase,
 		domain.PremiumCarousel, time.Time{}, domain.ProductParams{})
 	assert.NoError(t, err)
 	mProductRepo.AssertExpectations(t)

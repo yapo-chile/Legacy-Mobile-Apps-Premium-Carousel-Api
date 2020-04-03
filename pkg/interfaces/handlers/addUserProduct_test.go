@@ -31,7 +31,7 @@ type mockAddUserProductInteractor struct {
 	mock.Mock
 }
 
-func (m *mockAddUserProductInteractor) AddUserProduct(userID string, email string, purchaseNumber, purchasePrice int, purchaseType domain.PurchaseType, productType domain.ProductType, expiredAt time.Time,
+func (m *mockAddUserProductInteractor) AddUserProduct(userID int, email string, purchaseNumber, purchasePrice int, purchaseType domain.PurchaseType, productType domain.ProductType, expiredAt time.Time,
 	config domain.ProductParams) error {
 	args := m.Called(userID, email, purchaseNumber, purchasePrice, purchaseType, productType, expiredAt, config)
 	return args.Error(0)
@@ -57,7 +57,7 @@ func TestAddUserProductHandlerErrorBadInput(t *testing.T) {
 func TestAddUserProductHandlerOK(t *testing.T) {
 	mInteractor := &mockAddUserProductInteractor{}
 	mInteractor.On("AddUserProduct",
-		mock.AnythingOfType("string"),
+		mock.AnythingOfType("int"),
 		mock.AnythingOfType("string"),
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("int"),
@@ -110,7 +110,7 @@ func TestAddUserProductHandlerError(t *testing.T) {
 	err := fmt.Errorf("err")
 	mInteractor := &mockAddUserProductInteractor{}
 	mInteractor.On("AddUserProduct",
-		mock.AnythingOfType("string"),
+		mock.AnythingOfType("int"),
 		mock.AnythingOfType("string"),
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("int"),

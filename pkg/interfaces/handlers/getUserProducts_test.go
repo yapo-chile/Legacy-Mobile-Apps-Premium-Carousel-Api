@@ -71,7 +71,7 @@ func TestGetUserProductsHandlerOK(t *testing.T) {
 	expected := &goutils.Response{
 		Code: http.StatusOK,
 		Body: getUserProductsRequestOutput{
-			Products: []productsOutput{{ID: 123}},
+			Products: []productsOutput{{ID: 123, UserID: "0"}},
 			Metadata: metadata{CurrentPage: 1, TotalPages: 1},
 		},
 	}

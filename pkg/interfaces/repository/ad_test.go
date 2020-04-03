@@ -156,7 +156,7 @@ func TestGetUserAdsOK(t *testing.T) {
 		regionsConf: mConfig,
 	}
 
-	userAds, err := interactor.GetUserAds("",
+	userAds, err := interactor.GetUserAds(0,
 		domain.ProductParams{
 			Categories: []int{1234, 2345},
 			Exclude:    []string{"123"},
@@ -165,7 +165,7 @@ func TestGetUserAdsOK(t *testing.T) {
 		})
 
 	expected := domain.Ads{
-		{ID: "123", UserID: "2", CategoryID: "2020",
+		{ID: "123", UserID: 2, CategoryID: 2020,
 			Subject: "Autito", URL: "/something/autito_123", IsRelated: true},
 	}
 	assert.NoError(t, err)
@@ -228,7 +228,7 @@ func TestGetUserAdsWithFilledGaps(t *testing.T) {
 		maxAdsToDisplay: 20,
 	}
 
-	userAds, err := interactor.GetUserAds("",
+	userAds, err := interactor.GetUserAds(0,
 		domain.ProductParams{
 			Categories:         []int{1234, 2345},
 			Exclude:            []string{"123"},
@@ -239,9 +239,9 @@ func TestGetUserAdsWithFilledGaps(t *testing.T) {
 		})
 
 	expected := domain.Ads{
-		{ID: "1234", UserID: "2", CategoryID: "2020",
+		{ID: "1234", UserID: 2, CategoryID: 2020,
 			Subject: "Autito", URL: "/something/autito_1234", IsRelated: true},
-		{ID: "123", UserID: "2", CategoryID: "2020",
+		{ID: "123", UserID: 2, CategoryID: 2020,
 			Subject: "Autito", URL: "/something/autito_123", IsRelated: false},
 	}
 	assert.NoError(t, err)
@@ -298,7 +298,7 @@ func TestGetUserAdsZeroResults(t *testing.T) {
 		maxAdsToDisplay: 20,
 	}
 
-	_, err := interactor.GetUserAds("",
+	_, err := interactor.GetUserAds(0,
 		domain.ProductParams{
 			Categories: []int{1234, 2345},
 			Exclude:    []string{"123"},
@@ -355,7 +355,7 @@ func TestGetUserAdsSearchError(t *testing.T) {
 		regionsConf: mConfig,
 	}
 
-	_, err := interactor.GetUserAds("",
+	_, err := interactor.GetUserAds(0,
 		domain.ProductParams{
 			Categories: []int{1234, 2345},
 			Exclude:    []string{"123"},
@@ -415,7 +415,7 @@ func TestGetAdOK(t *testing.T) {
 
 	userAds, err := interactor.GetAd("123")
 
-	expected := domain.Ad{ID: "123", UserID: "2", CategoryID: "2020",
+	expected := domain.Ad{ID: "123", UserID: 2, CategoryID: 2020,
 		Subject: "Autito", URL: "/something/autito_123", IsRelated: true}
 	assert.NoError(t, err)
 	assert.Equal(t, expected, userAds)

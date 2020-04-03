@@ -19,7 +19,7 @@ func (m *mockSetConfigLogger) LogErrorSettingConfig(userProductID int, err error
 	m.Called(userProductID, err)
 }
 
-func (m *mockSetConfigLogger) LogWarnSettingCache(UserID string, err error) {
+func (m *mockSetConfigLogger) LogWarnSettingCache(UserID int, err error) {
 	m.Called(UserID, err)
 }
 
@@ -104,7 +104,7 @@ func TestSetConfigOKErrorOnGetUserProductByID(t *testing.T) {
 		mock.Anything).
 		Return(fmt.Errorf("err"))
 	mLogger.On("LogWarnSettingCache",
-		mock.AnythingOfType("string"), mock.Anything)
+		mock.Anything, mock.Anything)
 	err := interactor.SetConfig(1, domain.ProductParams{}, time.Now().Add(time.Hour))
 	assert.NoError(t, err)
 	mCacheRepo.AssertExpectations(t)
