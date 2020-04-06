@@ -26,7 +26,7 @@ type AddUserProductLogger interface{}
 type addUserProductHandlerInput struct {
 	UserID             int       `json:"user_id"`
 	Email              string    `json:"email"`
-	PurchaseOrder      int       `json:"purchase_order"`
+	PurchaseNumber     int       `json:"purchase_number"`
 	PurchasePrice      int       `json:"purchase_price"`
 	PurchaseType       string    `json:"purchase_type"`
 	Categories         string    `json:"categories"`
@@ -87,7 +87,7 @@ func (h *AddUserProductHandler) Execute(ig InputGetter) *goutils.Response {
 		}
 	}
 	err = h.Interactor.AddUserProduct(in.UserID, in.Email,
-		in.PurchaseOrder, in.PurchasePrice, purchaseType,
+		in.PurchaseNumber, in.PurchasePrice, purchaseType,
 		domain.PremiumCarousel, in.ExpiredAt, config)
 	if err != nil {
 		return &goutils.Response{
