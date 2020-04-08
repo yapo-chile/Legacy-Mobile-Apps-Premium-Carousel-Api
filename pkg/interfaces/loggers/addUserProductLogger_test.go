@@ -7,7 +7,7 @@ import (
 func TestAddUserProductLogger(t *testing.T) {
 	m := &loggerMock{t: t}
 	l := MakeAddUserProductLogger(m)
-	l.LogErrorAddingProduct("", nil)
-	l.LogWarnSettingCache("", nil)
+	l.LogErrorAddingProduct(0, nil)
+	l.LogWarnSettingCache(0, nil)
 	m.AssertExpectations(t)
 }

@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
 )
 
 type mockResult struct {
@@ -176,25 +176,36 @@ func TestGetUserProductsByEmailOk(t *testing.T) {
 	mResult.On("Next").Return(false).Once()
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
-		11, usecases.PremiumCarousel, "1", "test@mail.com", usecases.ActiveProduct,
-		testTime, testTime, []string{"categories=2020,1020"}, "comentario"}).Once()
+		11, domain.PremiumCarousel, 1, "test@mail.com", domain.ActiveProduct,
+		testTime, testTime, 0, 0, domain.AdminPurchase, domain.AcceptedPurchase,
+		100, testTime, []string{"categories=2020,1020",
+			"keywords=a,b,c", "comment=comentario"}}).Once()
 
 	result, currentPage,
 		totalPages, err := repo.GetUserProductsByEmail("test@email.com", 0)
-	expected := []usecases.Product{
+	expected := []domain.Product{
 		{
 			ID:        11,
-			Type:      usecases.PremiumCarousel,
-			UserID:    "1",
+			Type:      domain.PremiumCarousel,
+			UserID:    1,
 			Email:     "test@mail.com",
-			Status:    usecases.ActiveProduct,
+			Status:    domain.ActiveProduct,
 			ExpiredAt: testTime,
 			CreatedAt: testTime,
-			Config: usecases.CpConfig{
+			Purchase: domain.Purchase{
+				ID:        0,
+				Number:    0,
+				Price:     100,
+				Type:      domain.AdminPurchase,
+				Status:    domain.AcceptedPurchase,
+				CreatedAt: testTime,
+			},
+			Config: domain.ProductParams{
 				Categories: []int{2020, 1020},
 				Exclude:    []string{},
+				Keywords:   []string{"a", "b", "c"},
+				Comment:    "comentario",
 			},
-			Comment: "comentario",
 		},
 	}
 	assert.Equal(t, 1, currentPage)
@@ -229,24 +240,35 @@ func TestGetUserProductsOk(t *testing.T) {
 	mResult.On("Next").Return(false).Once()
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
-		11, usecases.PremiumCarousel, "1", "", usecases.ActiveProduct,
-		testTime, testTime, []string{"categories=2020,1020"}, "comentario"}).Once()
-
+		11, domain.PremiumCarousel, 1, "test@mail.com", domain.ActiveProduct,
+		testTime, testTime, 0, 0, domain.AdminPurchase, domain.AcceptedPurchase,
+		100, testTime, []string{"categories=2020,1020",
+			"keywords=a,b,c", "comment=comentario"}}).Once()
 	result, currentPage,
 		totalPages, err := repo.GetUserProducts(0)
-	expected := []usecases.Product{
+	expected := []domain.Product{
 		{
 			ID:        11,
-			Type:      usecases.PremiumCarousel,
-			UserID:    "1",
-			Status:    usecases.ActiveProduct,
+			Type:      domain.PremiumCarousel,
+			UserID:    1,
+			Email:     "test@mail.com",
+			Status:    domain.ActiveProduct,
 			ExpiredAt: testTime,
 			CreatedAt: testTime,
-			Config: usecases.CpConfig{
+			Purchase: domain.Purchase{
+				ID:        0,
+				Number:    0,
+				Price:     100,
+				Type:      domain.AdminPurchase,
+				Status:    domain.AcceptedPurchase,
+				CreatedAt: testTime,
+			},
+			Config: domain.ProductParams{
 				Categories: []int{2020, 1020},
 				Exclude:    []string{},
+				Keywords:   []string{"a", "b", "c"},
+				Comment:    "comentario",
 			},
-			Comment: "comentario",
 		},
 	}
 	assert.Equal(t, 1, currentPage)
@@ -269,7 +291,7 @@ func TestGetUserProductsZeroResults(t *testing.T) {
 	).Return(mResult, fmt.Errorf("e")).Once()
 	result, currentPage,
 		totalPages, err := repo.GetUserProducts(0)
-	expected := []usecases.Product{}
+	expected := []domain.Product{}
 	assert.Equal(t, 1, currentPage)
 	assert.Equal(t, 0, totalPages)
 	assert.Equal(t, expected, result)
@@ -290,7 +312,7 @@ func TestGetUserProductsByEmailZeroResults(t *testing.T) {
 	).Return(mResult, fmt.Errorf("e")).Once()
 	result, currentPage,
 		totalPages, err := repo.GetUserProductsByEmail("test@email.com", 0)
-	expected := []usecases.Product{}
+	expected := []domain.Product{}
 	assert.Equal(t, 1, currentPage)
 	assert.Equal(t, 0, totalPages)
 	assert.Equal(t, expected, result)
@@ -359,28 +381,57 @@ func TestGetUserActiveProductOk(t *testing.T) {
 	mResult.On("Next").Return(true).Once()
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
-		11, usecases.PremiumCarousel, "1",
-		"test@mail.com", usecases.ActiveProduct, testTime, testTime,
-		[]string{"categories=2020,1020",
-			"exclude=11111,22222"}, "comentario"}).Once()
-	result, err := repo.GetUserActiveProduct("test@email.com",
-		usecases.PremiumCarousel)
-	expected := usecases.Product{
+		11, domain.PremiumCarousel, 1, "test@mail.com", domain.ActiveProduct,
+		testTime, testTime, 0, 0, domain.AdminPurchase, domain.AcceptedPurchase,
+		100, testTime, []string{"categories=2020,1020",
+			"keywords=a,b,c", "comment=comentario"}}).Once()
+	result, err := repo.GetUserActiveProduct(1,
+		domain.PremiumCarousel)
+	expected := domain.Product{
 		ID:        11,
-		Type:      usecases.PremiumCarousel,
-		UserID:    "1",
+		Type:      domain.PremiumCarousel,
+		UserID:    1,
 		Email:     "test@mail.com",
-		Status:    usecases.ActiveProduct,
+		Status:    domain.ActiveProduct,
 		ExpiredAt: testTime,
 		CreatedAt: testTime,
-		Config: usecases.CpConfig{
-			Categories: []int{2020, 1020},
-			Exclude:    []string{"11111", "22222"},
+		Purchase: domain.Purchase{
+			ID:        0,
+			Number:    0,
+			Price:     100,
+			Type:      domain.AdminPurchase,
+			Status:    domain.AcceptedPurchase,
+			CreatedAt: testTime,
 		},
-		Comment: "comentario",
+		Config: domain.ProductParams{
+			Categories: []int{2020, 1020},
+			Exclude:    []string{},
+			Keywords:   []string{"a", "b", "c"},
+			Comment:    "comentario",
+		},
 	}
 	assert.Equal(t, expected, result)
 	assert.NoError(t, err)
+	mockDB.AssertExpectations(t)
+	mResult.AssertExpectations(t)
+	mLogger.AssertExpectations(t)
+}
+
+func TestGetUserActiveProductErrorProductNotFound(t *testing.T) {
+	mockDB := &dbHandlerMock{}
+	mResult := &mockResult{}
+	mLogger := &mockProductRepoLogger{}
+	repo := MakeProductRepository(mockDB, 10, mLogger)
+	mResult.On("Close").Return(nil)
+	mockDB.On("Query",
+		mock.AnythingOfType("string"),
+		mock.Anything,
+	).Return(mResult, nil).Once()
+	mResult.On("Next").Return(false).Once()
+	_, err := repo.GetUserActiveProduct(1,
+		domain.PremiumCarousel)
+
+	assert.Error(t, err)
 	mockDB.AssertExpectations(t)
 	mResult.AssertExpectations(t)
 	mLogger.AssertExpectations(t)
@@ -395,8 +446,8 @@ func TestGetUserActiveProductError(t *testing.T) {
 		mock.AnythingOfType("string"),
 		mock.Anything,
 	).Return(mResult, fmt.Errorf("err")).Once()
-	_, err := repo.GetUserActiveProduct("test@email.com",
-		usecases.PremiumCarousel)
+	_, err := repo.GetUserActiveProduct(1,
+		domain.PremiumCarousel)
 	assert.Error(t, err)
 	mockDB.AssertExpectations(t)
 	mResult.AssertExpectations(t)
@@ -416,18 +467,18 @@ func TestGetUserActiveProductErrorNoConfig(t *testing.T) {
 	mResult.On("Next").Return(true).Once()
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
-		11, usecases.PremiumCarousel, "1",
-		"test@mail.com", usecases.ActiveProduct,
-		testTime, testTime, []string{}, "comentario"}).Once()
-	_, err := repo.GetUserActiveProduct("test@email.com",
-		usecases.PremiumCarousel)
+		11, domain.PremiumCarousel, 1, "test@mail.com", domain.ActiveProduct,
+		testTime, testTime, 0, 0, domain.AdminPurchase, domain.AcceptedPurchase,
+		100, testTime, []string{}}).Once()
+	_, err := repo.GetUserActiveProduct(1,
+		domain.PremiumCarousel)
 	assert.Error(t, err)
 	mockDB.AssertExpectations(t)
 	mResult.AssertExpectations(t)
 	mLogger.AssertExpectations(t)
 }
 
-func TestAddUserProductOk(t *testing.T) {
+func TestCreateUserProductOk(t *testing.T) {
 	mockDB := &dbHandlerMock{}
 	mResult := &mockResult{}
 	mLogger := &mockProductRepoLogger{}
@@ -445,24 +496,24 @@ func TestAddUserProductOk(t *testing.T) {
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
 		11, testTime}).Once()
-	result, err := repo.AddUserProduct("1", "test@mail.com", "comentario",
-		usecases.PremiumCarousel, testTime, usecases.CpConfig{
+	result, err := repo.CreateUserProduct(1, "test@mail.com", domain.Purchase{},
+		domain.PremiumCarousel, testTime, domain.ProductParams{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
 		})
-	expected := usecases.Product{
+	expected := domain.Product{
 		ID:        11,
-		Type:      usecases.PremiumCarousel,
-		UserID:    "1",
+		Type:      domain.PremiumCarousel,
+		UserID:    1,
 		Email:     "test@mail.com",
-		Status:    usecases.ActiveProduct,
+		Status:    domain.ActiveProduct,
 		ExpiredAt: testTime,
 		CreatedAt: testTime,
-		Config: usecases.CpConfig{
+		Purchase:  domain.Purchase{},
+		Config: domain.ProductParams{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
 		},
-		Comment: "comentario",
 	}
 	assert.Equal(t, expected, result)
 	assert.NoError(t, err)
@@ -471,24 +522,7 @@ func TestAddUserProductOk(t *testing.T) {
 	mLogger.AssertExpectations(t)
 }
 
-func TestAddUserProductBadUserId(t *testing.T) {
-	mockDB := &dbHandlerMock{}
-	mResult := &mockResult{}
-	mLogger := &mockProductRepoLogger{}
-	repo := MakeProductRepository(mockDB, 10, mLogger)
-	testTime := time.Now()
-	_, err := repo.AddUserProduct("aaaaaa", "test@mail.com", "comentario",
-		usecases.PremiumCarousel, testTime, usecases.CpConfig{
-			Categories: []int{2020, 1020},
-			Exclude:    []string{"11111", "22222"},
-		})
-	assert.Error(t, err)
-	mockDB.AssertExpectations(t)
-	mResult.AssertExpectations(t)
-	mLogger.AssertExpectations(t)
-}
-
-func TestAddUserProductQueryError(t *testing.T) {
+func TestCreateUserProductQueryError(t *testing.T) {
 	mockDB := &dbHandlerMock{}
 	mResult := &mockResult{}
 	mLogger := &mockProductRepoLogger{}
@@ -498,8 +532,8 @@ func TestAddUserProductQueryError(t *testing.T) {
 		mock.Anything,
 	).Return(mResult, fmt.Errorf("err")).Once()
 	testTime := time.Now()
-	_, err := repo.AddUserProduct("1", "test@mail.com", "comentario",
-		usecases.PremiumCarousel, testTime, usecases.CpConfig{
+	_, err := repo.CreateUserProduct(1, "test@mail.com", domain.Purchase{},
+		domain.PremiumCarousel, testTime, domain.ProductParams{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
 		})
@@ -509,7 +543,7 @@ func TestAddUserProductQueryError(t *testing.T) {
 	mLogger.AssertExpectations(t)
 }
 
-func TestAddUserProductNextError(t *testing.T) {
+func TestCreateUserProductNextError(t *testing.T) {
 	mockDB := &dbHandlerMock{}
 	mResult := &mockResult{}
 	mLogger := &mockProductRepoLogger{}
@@ -521,8 +555,8 @@ func TestAddUserProductNextError(t *testing.T) {
 	mResult.On("Close").Return(nil).Once()
 	mResult.On("Next").Return(false).Once()
 	testTime := time.Now()
-	_, err := repo.AddUserProduct("1", "test@mail.com", "comentario",
-		usecases.PremiumCarousel, testTime, usecases.CpConfig{
+	_, err := repo.CreateUserProduct(1, "test@mail.com", domain.Purchase{},
+		domain.PremiumCarousel, testTime, domain.ProductParams{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
 		})
@@ -532,7 +566,7 @@ func TestAddUserProductNextError(t *testing.T) {
 	mLogger.AssertExpectations(t)
 }
 
-func TestAddUserProductAddConfigError(t *testing.T) {
+func TestCreateUserProductAddConfigError(t *testing.T) {
 	mockDB := &dbHandlerMock{}
 	mResult := &mockResult{}
 	mLogger := &mockProductRepoLogger{}
@@ -550,8 +584,8 @@ func TestAddUserProductAddConfigError(t *testing.T) {
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
 		11, testTime}).Once()
-	_, err := repo.AddUserProduct("1", "test@mail.com", "comentario",
-		usecases.PremiumCarousel, testTime, usecases.CpConfig{
+	_, err := repo.CreateUserProduct(1, "test@mail.com", domain.Purchase{},
+		domain.PremiumCarousel, testTime, domain.ProductParams{
 			Categories: []int{2020, 1020},
 			Exclude:    []string{"11111", "22222"},
 		})
@@ -574,24 +608,33 @@ func TestGetUserProductByIDOK(t *testing.T) {
 	mResult.On("Next").Return(true).Once()
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
-		11, usecases.PremiumCarousel, "1",
-		"test@mail.com", usecases.ActiveProduct, testTime, testTime,
-		[]string{"categories=2020,1020",
-			"exclude=11111,22222"}, "comentario"}).Once()
+		11, domain.PremiumCarousel, 1, "test@mail.com", domain.ActiveProduct,
+		testTime, testTime, 0, 0, domain.AdminPurchase, domain.AcceptedPurchase,
+		100, testTime, []string{"categories=2020,1020",
+			"keywords=a,b,c", "exclude=1,2,3", "comment=comentario"}}).Once()
 	result, err := repo.GetUserProductByID(11)
-	expected := usecases.Product{
+	expected := domain.Product{
 		ID:        11,
-		Type:      usecases.PremiumCarousel,
-		UserID:    "1",
+		Type:      domain.PremiumCarousel,
+		UserID:    1,
 		Email:     "test@mail.com",
-		Status:    usecases.ActiveProduct,
+		Status:    domain.ActiveProduct,
 		ExpiredAt: testTime,
 		CreatedAt: testTime,
-		Config: usecases.CpConfig{
-			Categories: []int{2020, 1020},
-			Exclude:    []string{"11111", "22222"},
+		Purchase: domain.Purchase{
+			ID:        0,
+			Number:    0,
+			Price:     100,
+			Type:      domain.AdminPurchase,
+			Status:    domain.AcceptedPurchase,
+			CreatedAt: testTime,
 		},
-		Comment: "comentario",
+		Config: domain.ProductParams{
+			Categories: []int{2020, 1020},
+			Exclude:    []string{"1", "2", "3"},
+			Keywords:   []string{"a", "b", "c"},
+			Comment:    "comentario",
+		},
 	}
 	assert.Equal(t, expected, result)
 	assert.NoError(t, err)
@@ -629,9 +672,9 @@ func TestGetUserProductByIDParseConfigError(t *testing.T) {
 	mResult.On("Next").Return(true).Once()
 	testTime := time.Now()
 	mResult.On("Scan", mock.Anything).Return([]interface{}{
-		11, usecases.PremiumCarousel, "1",
-		"test@mail.com", usecases.ActiveProduct, testTime, testTime,
-		[]string{}, "comentario"}).Once()
+		11, domain.PremiumCarousel, 1, "test@mail.com", domain.ActiveProduct,
+		testTime, testTime, 0, 0, domain.AdminPurchase, domain.AcceptedPurchase,
+		100, testTime, []string{}}).Once()
 	_, err := repo.GetUserProductByID(11)
 
 	assert.Error(t, err)

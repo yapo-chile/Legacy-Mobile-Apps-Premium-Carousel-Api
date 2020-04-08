@@ -2,8 +2,11 @@ package usecases
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
 )
 
 // SetPartialConfigInteractor wraps SetPartialConfig operations
@@ -23,7 +26,7 @@ type setPartialConfigInteractor struct {
 // SetPartialConfigLogger logs SetPartialConfig events
 type SetPartialConfigLogger interface {
 	LogErrorSettingPartialConfig(userProductID int, err error)
-	LogWarnSettingCache(userID string, err error)
+	LogWarnSettingCache(userID int, err error)
 }
 
 // MakeSetPartialConfigInteractor creates a new instance of SetPartialConfigInteractor
@@ -51,10 +54,10 @@ func (interactor *setPartialConfigInteractor) SetPartialConfig(userProductID int
 	return nil
 }
 
-func (interactor *setPartialConfigInteractor) refreshCache(product Product) {
+func (interactor *setPartialConfigInteractor) refreshCache(product domain.Product) {
 	cacheError := interactor.cacheRepo.
-		SetCache(strings.Join([]string{"user", product.UserID, string(product.Type)}, ":"),
-			ProductCacheType, product, interactor.cacheTTL)
+		SetCache(strings.Join([]string{"user", strconv.Itoa(product.UserID),
+			string(product.Type)}, ":"), ProductCacheType, product, interactor.cacheTTL)
 	if cacheError != nil {
 		interactor.logger.LogWarnSettingCache(product.UserID, cacheError)
 	}

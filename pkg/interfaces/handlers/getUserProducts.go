@@ -3,6 +3,8 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Yapo/goutils"
@@ -37,11 +39,16 @@ type productsOutput struct {
 	Email              string    `json:"email"`
 	Type               string    `json:"type"`
 	Status             string    `json:"status"`
+	PurchaseNumber     int       `json:"purchase_number"`
+	PurchasePrice      int       `json:"purchase_price"`
+	PurchaseStatus     string    `json:"purchase_status"`
 	ExpiredAt          time.Time `json:"expiration"`
 	CreatedAt          time.Time `json:"creation"`
 	Comment            string    `json:"comment"`
-	CustomQuery        string    `json:"keywords"`
+	Keywords           string    `json:"keywords"`
+	Categories         string    `json:"categories"`
 	PriceRange         int       `json:"price_range"`
+	Limit              int       `json:"limit"`
 	FillGapsWithRandom bool      `json:"fill_random"`
 }
 
@@ -76,16 +83,22 @@ func (h *GetUserProductsHandler) Execute(ig InputGetter) *goutils.Response {
 	productsOut := []productsOutput{}
 	for _, v := range products {
 		p := productsOutput{
-			ID:                 v.ID,
-			Email:              v.Email,
-			UserID:             v.UserID,
-			Status:             string(v.Status),
-			Type:               string(v.Type),
-			ExpiredAt:          v.ExpiredAt,
-			CreatedAt:          v.CreatedAt,
-			Comment:            v.Comment,
-			CustomQuery:        v.Config.CustomQuery,
-			PriceRange:         v.Config.PriceRange,
+			ID:             v.ID,
+			Email:          v.Email,
+			UserID:         strconv.Itoa(v.UserID),
+			Status:         string(v.Status),
+			Type:           string(v.Type),
+			PurchaseNumber: v.Purchase.Number,
+			PurchasePrice:  v.Purchase.Price,
+			PurchaseStatus: string(v.Purchase.Status),
+			ExpiredAt:      v.ExpiredAt,
+			CreatedAt:      v.CreatedAt,
+			Comment:        v.Config.Comment,
+			Keywords:       strings.Join(v.Config.Keywords, ","),
+			PriceRange:     v.Config.PriceRange,
+			Categories: strings.Trim(strings.Join(
+				strings.Fields(fmt.Sprint(v.Config.Categories)), ","), "[]"),
+			Limit:              v.Config.Limit,
 			FillGapsWithRandom: v.Config.FillGapsWithRandom,
 		}
 		productsOut = append(productsOut, p)

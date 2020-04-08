@@ -69,35 +69,41 @@ type Media struct {
 
 // GetUserAds gets user active ads from search repository using config to
 // match similar ads
-func (repo *adRepo) GetUserAds(userID string, cpConfig usecases.CpConfig) (domain.Ads, error) {
-	limit := repo.makeLimit(cpConfig)
+func (repo *adRepo) GetUserAds(userID int, productParams domain.ProductParams) (domain.Ads, error) {
+	limit := repo.makeLimit(productParams)
 	termQuery := repo.handler.NewTermQuery("UserID", userID)
 	must, mustNot := []Query{termQuery}, []Query{}
 
-	if len(cpConfig.Categories) > 0 {
+	if len(productParams.Categories) > 0 {
 		must = append(must,
-			repo.handler.NewCategoryFilter(cpConfig.Categories...))
+			repo.handler.NewCategoryFilter(productParams.Categories...))
 	}
 
-	if cpConfig.CustomQuery != "" {
-		must = append(must,
-			repo.handler.NewMultiMatchQuery(cpConfig.CustomQuery, "cross_fields",
-				"Category^0.5", "SubCategory^0.5", "Region^0.5", "Commune",
-				"name", "Body", "Subject^2", "Params.Brand", "Params.Model",
-				"Params.Type", "Params.Version"))
+	if len(productParams.Keywords) > 0 {
+		should := []Query{}
+		for _, keyword := range productParams.Keywords {
+			should = append(should,
+				repo.handler.NewMultiMatchQuery(keyword, "cross_fields",
+					"Category", "SubCategory", "Region", "Commune",
+					"Name", "Body", "Subject", "Params.Brand", "Params.Model",
+					"Params.Type", "Params.Version"))
+		}
+		multiMatchBoolQuery := repo.handler.NewBoolQuery(
+			[]Query{}, []Query{}, should)
+		must = append(must, multiMatchBoolQuery)
 	}
 
-	if cpConfig.PriceRange > 0 {
+	if productParams.PriceRange > 0 {
 		must = append(must,
 			repo.handler.NewRangeQuery("Price",
-				cpConfig.PriceFrom, cpConfig.PriceTo))
+				productParams.PriceFrom, productParams.PriceTo))
 	}
-	if len(cpConfig.Exclude) > 0 {
+	if len(productParams.Exclude) > 0 {
 		mustNot = append(mustNot,
-			repo.handler.NewIDsQuery(cpConfig.Exclude...))
+			repo.handler.NewIDsQuery(productParams.Exclude...))
 	}
 
-	boolQuery := repo.handler.NewBoolQuery(must, mustNot)
+	boolQuery := repo.handler.NewBoolQuery(must, mustNot, []Query{})
 	scoreQuery := repo.handler.NewFunctionScoreQuery(boolQuery, 5, "multiply", true)
 	result, err := repo.handler.Search(repo.index, scoreQuery, 0, limit)
 	if err != nil {
@@ -105,13 +111,13 @@ func (repo *adRepo) GetUserAds(userID string, cpConfig usecases.CpConfig) (domai
 	}
 
 	ads := repo.parseToAds(result.GetResults())
-	if len(ads) < limit && cpConfig.FillGapsWithRandom {
-		ads = repo.fillGapsWithRandom(userID, (limit - len(ads)), ads, cpConfig)
+	if len(ads) < limit && productParams.FillGapsWithRandom {
+		ads = repo.fillGapsWithRandom(userID, (limit - len(ads)), ads, productParams)
 	}
 
 	if len(ads) == 0 {
 		return domain.Ads{}, fmt.Errorf("The specified "+
-			"userID: %s don't return results elasticsearch",
+			"userID: %d don't return results elasticsearch",
 			userID)
 	}
 
@@ -120,14 +126,15 @@ func (repo *adRepo) GetUserAds(userID string, cpConfig usecases.CpConfig) (domai
 
 // fillGapsWithRandom fill gaps in case of the limit is less than required ads by config.
 // This method only works if config 'fillGapsWithRandom' is enabled
-func (repo *adRepo) fillGapsWithRandom(userID string, delta int, ads domain.Ads,
-	cpConfig usecases.CpConfig) domain.Ads {
+func (repo *adRepo) fillGapsWithRandom(userID int, delta int, ads domain.Ads,
+	productParams domain.ProductParams) domain.Ads {
 	exclude := []string{}
 	for _, ad := range ads {
 		exclude = append(exclude, ad.ID)
 	}
-	extraAds, _ := repo.GetUserAds(userID, usecases.CpConfig{
-		Exclude:            append(exclude, cpConfig.Exclude...),
+	extraAds, _ := repo.GetUserAds(userID, domain.ProductParams{
+		Exclude:            append(exclude, productParams.Exclude...),
+		Categories:         productParams.Categories,
 		FillGapsWithRandom: false,
 		Limit:              delta,
 	})
@@ -167,8 +174,8 @@ func (repo *adRepo) fillAd(result SearchOutput) domain.Ad {
 	regionName := repo.regionsConf.Get(regionKey)
 	return domain.Ad{
 		ID:         strconv.Itoa(result.ListID),
-		UserID:     strconv.Itoa(result.UserID),
-		CategoryID: strconv.Itoa(result.CategoryID),
+		UserID:     result.UserID,
+		CategoryID: result.CategoryID,
 		Subject:    result.Subject,
 		Price:      result.Price,
 		Currency:   result.Params.Currency,
@@ -211,9 +218,9 @@ func (repo *adRepo) fillImage(ID int) domain.Image {
 }
 
 // makeLimit determines the real limit based on configuration
-func (repo *adRepo) makeLimit(cpConfig usecases.CpConfig) int {
-	if cpConfig.Limit > 0 && cpConfig.Limit < repo.maxAdsToDisplay {
-		return cpConfig.Limit
+func (repo *adRepo) makeLimit(productParams domain.ProductParams) int {
+	if productParams.Limit > 0 && productParams.Limit < repo.maxAdsToDisplay {
+		return productParams.Limit
 	}
 	return repo.maxAdsToDisplay
 }

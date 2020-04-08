@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
 )
 
 type mockGetUserProductsLogger struct {
@@ -24,7 +25,7 @@ func TestGetUserProductsByEmailOk(t *testing.T) {
 	mProductRepo := &mockProductRepo{}
 	mLogger := &mockGetUserProductsLogger{}
 	interactor := MakeGetUserProductsInteractor(mProductRepo, mLogger)
-	products := []Product{}
+	products := []domain.Product{}
 	mProductRepo.On("GetUserProductsByEmail",
 		mock.AnythingOfType("string"),
 		mock.AnythingOfType("int"),
@@ -48,7 +49,7 @@ func TestGetUserProductsByEmailError(t *testing.T) {
 	mProductRepo.On("GetUserProductsByEmail",
 		mock.AnythingOfType("string"),
 		mock.AnythingOfType("int"),
-	).Return([]Product{}, 0, 0, fmt.Errorf("err"))
+	).Return([]domain.Product{}, 0, 0, fmt.Errorf("err"))
 	_, _, _, err := interactor.GetUserProducts("test@test.cl", 1)
 	assert.Error(t, err)
 	mProductRepo.AssertExpectations(t)
@@ -59,7 +60,7 @@ func TestGetUserProductsOk(t *testing.T) {
 	mProductRepo := &mockProductRepo{}
 	mLogger := &mockGetUserProductsLogger{}
 	interactor := MakeGetUserProductsInteractor(mProductRepo, mLogger)
-	products := []Product{}
+	products := []domain.Product{}
 	mProductRepo.On("GetUserProducts",
 		mock.AnythingOfType("int"),
 	).Return(products, 1, 1, nil)
@@ -81,7 +82,7 @@ func TestGetUserProductsError(t *testing.T) {
 		mock.Anything, mock.Anything)
 	mProductRepo.On("GetUserProducts",
 		mock.AnythingOfType("int"),
-	).Return([]Product{}, 0, 0, fmt.Errorf("err"))
+	).Return([]domain.Product{}, 0, 0, fmt.Errorf("err"))
 	_, _, _, err := interactor.GetUserProducts("", 1)
 	assert.Error(t, err)
 	mProductRepo.AssertExpectations(t)

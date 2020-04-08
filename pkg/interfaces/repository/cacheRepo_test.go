@@ -115,8 +115,8 @@ func TestMinifyCacheOK(t *testing.T) {
 	}
 	ad := domain.Ad{
 		ID:         "123",
-		UserID:     "123",
-		CategoryID: "2020",
+		UserID:     123,
+		CategoryID: 2020,
 		Price:      1111,
 		Currency:   "USD",
 	}

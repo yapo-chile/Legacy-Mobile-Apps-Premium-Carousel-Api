@@ -130,6 +130,7 @@ type AdConf struct {
 	CurrencySymbol      string `env:"CURRENCY_SYMBOL" envDefault:"$"`
 	UnitOfAccountSymbol string `env:"UNIT_OF_ACCOUNT_SYMBOL" envDefault:"UF"`
 	MaxAdsToDisplay     int    `env:"MAX_ADS_TO_DISPLAY" envDefault:"15"`
+	MinAdsToDisplay     int    `env:"MIN_ADS_TO_DISPLAY" envDefault:"2"`
 }
 
 // Config holds all configuration for the service

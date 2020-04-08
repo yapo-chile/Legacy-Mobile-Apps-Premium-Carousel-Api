@@ -9,6 +9,7 @@ import (
 
 	"github.com/Yapo/goutils"
 
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
 )
 
@@ -25,9 +26,12 @@ type AddUserProductLogger interface{}
 type addUserProductHandlerInput struct {
 	UserID             int       `json:"user_id"`
 	Email              string    `json:"email"`
+	PurchaseNumber     int       `json:"purchase_number"`
+	PurchasePrice      int       `json:"purchase_price"`
+	PurchaseType       string    `json:"purchase_type"`
 	Categories         string    `json:"categories"`
 	Exclude            string    `json:"exclude"`
-	CustomQuery        string    `json:"keywords"`
+	Keywords           string    `json:"keywords"`
 	Comment            string    `json:"comment"`
 	Limit              int       `json:"limit"`
 	PriceRange         int       `json:"price_range"`
@@ -63,17 +67,28 @@ func (h *AddUserProductHandler) Execute(ig InputGetter) *goutils.Response {
 			},
 		}
 	}
-	config := usecases.CpConfig{
+	config := domain.ProductParams{
 		Categories:         h.getCategories(in.Categories),
-		Exclude:            h.getExclude(in.Exclude),
-		CustomQuery:        in.CustomQuery,
+		Exclude:            h.getCommaSeparedArr(in.Exclude),
+		Keywords:           h.getCommaSeparedArr(in.Keywords),
 		Limit:              in.Limit,
 		PriceRange:         in.PriceRange,
 		FillGapsWithRandom: in.FillGapsWithRandom,
+		Comment:            in.Comment,
 	}
 
-	err := h.Interactor.AddUserProduct(strconv.Itoa(in.UserID), in.Email, in.Comment,
-		usecases.PremiumCarousel, in.ExpiredAt, config)
+	purchaseType, err := h.getPurchaseType(in.PurchaseType)
+	if err != nil {
+		return &goutils.Response{
+			Code: http.StatusBadRequest,
+			Body: goutils.GenericError{
+				ErrorMessage: fmt.Sprintf(`%+v`, err),
+			},
+		}
+	}
+	err = h.Interactor.AddUserProduct(in.UserID, in.Email,
+		in.PurchaseNumber, in.PurchasePrice, purchaseType,
+		domain.PremiumCarousel, in.ExpiredAt, config)
 	if err != nil {
 		return &goutils.Response{
 			Code: http.StatusBadRequest,
@@ -104,9 +119,20 @@ func (h *AddUserProductHandler) getCategories(raw string) (categories []int) {
 	return categories
 }
 
-func (h *AddUserProductHandler) getExclude(raw string) []string {
+func (h *AddUserProductHandler) getCommaSeparedArr(raw string) []string {
 	if raw == "" {
 		return []string{}
 	}
 	return strings.Split(raw, ",")
+}
+
+func (h *AddUserProductHandler) getPurchaseType(raw string) (domain.PurchaseType, error) {
+	switch raw {
+	case "": // retrocompatibility site version 23.03.00
+		fallthrough
+	case "admin":
+		return domain.AdminPurchase, nil
+	default:
+		return "", fmt.Errorf("PurchaseType %s not supported", raw)
+	}
 }

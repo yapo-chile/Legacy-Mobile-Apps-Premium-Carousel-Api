@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
+	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
 )
 
 func TestAddUserProductHandlerInput(t *testing.T) {
@@ -31,10 +31,12 @@ type mockAddUserProductInteractor struct {
 	mock.Mock
 }
 
-func (m *mockAddUserProductInteractor) AddUserProduct(userID string, email string,
-	comment string, productType usecases.ProductType, expiredAt time.Time,
-	config usecases.CpConfig) error {
-	args := m.Called(userID, email, comment, productType, expiredAt, config)
+func (m *mockAddUserProductInteractor) AddUserProduct(userID int,
+	email string, purchaseNumber, purchasePrice int,
+	purchaseType domain.PurchaseType, productType domain.ProductType,
+	expiredAt time.Time, config domain.ProductParams) error {
+	args := m.Called(userID, email, purchaseNumber, purchasePrice,
+		purchaseType, productType, expiredAt, config)
 	return args.Error(0)
 }
 
@@ -58,12 +60,14 @@ func TestAddUserProductHandlerErrorBadInput(t *testing.T) {
 func TestAddUserProductHandlerOK(t *testing.T) {
 	mInteractor := &mockAddUserProductInteractor{}
 	mInteractor.On("AddUserProduct",
+		mock.AnythingOfType("int"),
 		mock.AnythingOfType("string"),
-		mock.AnythingOfType("string"),
-		mock.AnythingOfType("string"),
-		usecases.PremiumCarousel,
+		mock.AnythingOfType("int"),
+		mock.AnythingOfType("int"),
+		mock.AnythingOfType("domain.PurchaseType"),
+		domain.PremiumCarousel,
 		mock.AnythingOfType("time.Time"),
-		mock.AnythingOfType("usecases.CpConfig"),
+		mock.AnythingOfType("domain.ProductParams"),
 	).Return(nil)
 	h := AddUserProductHandler{
 		Interactor: mInteractor,
@@ -86,16 +90,37 @@ func TestAddUserProductHandlerOK(t *testing.T) {
 	mInteractor.AssertExpectations(t)
 }
 
+func TestAddUserProductHandlerBadPurchaseType(t *testing.T) {
+	mInteractor := &mockAddUserProductInteractor{}
+	h := AddUserProductHandler{
+		Interactor: mInteractor,
+	}
+	input := addUserProductHandlerInput{
+		UserID:       123,
+		PurchaseType: "ASDKAD",
+		Email:        "test@test.cl",
+		Categories:   "2000,1000,3000",
+		ExpiredAt:    time.Now().Add(time.Hour * 24 * 365),
+	}
+	getter := MakeMockInputGetter(&input, nil)
+	r := h.Execute(getter)
+
+	assert.Equal(t, http.StatusBadRequest, r.Code)
+	mInteractor.AssertExpectations(t)
+}
+
 func TestAddUserProductHandlerError(t *testing.T) {
 	err := fmt.Errorf("err")
 	mInteractor := &mockAddUserProductInteractor{}
 	mInteractor.On("AddUserProduct",
+		mock.AnythingOfType("int"),
 		mock.AnythingOfType("string"),
-		mock.AnythingOfType("string"),
-		mock.AnythingOfType("string"),
-		usecases.PremiumCarousel,
+		mock.AnythingOfType("int"),
+		mock.AnythingOfType("int"),
+		mock.AnythingOfType("domain.PurchaseType"),
+		domain.PremiumCarousel,
 		mock.AnythingOfType("time.Time"),
-		mock.AnythingOfType("usecases.CpConfig"),
+		mock.AnythingOfType("domain.ProductParams"),
 	).Return(err)
 	h := AddUserProductHandler{
 		Interactor: mInteractor,

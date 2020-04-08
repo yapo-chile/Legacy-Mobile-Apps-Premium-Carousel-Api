@@ -62,7 +62,7 @@ type Search interface {
 	NewTermQuery(name string, value interface{}) Query
 	NewRangeQuery(name string, from, to int) Query
 	NewFunctionScoreQuery(query Query, boost float64, boostMode string, random bool) Query
-	NewBoolQuery(must []Query, mustNot []Query) Query
+	NewBoolQuery(must, mustNot, should []Query) Query
 	NewIDsQuery(ids ...string) Query
 	NewCategoryFilter(categoryIDs ...int) Query
 	GetDoc(index string, id string) (json.RawMessage, error)
