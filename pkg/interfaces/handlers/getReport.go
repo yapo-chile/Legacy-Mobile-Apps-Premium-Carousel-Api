@@ -12,8 +12,8 @@ import (
 	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
 )
 
-// GetReportHandler implements the handler interface and responds to /ads with
-// related user ads
+// GetReportHandler implements the handler interface and responds to /report with
+// sales report data
 type GetReportHandler struct {
 	Interactor usecases.GetReportInteractor
 }
@@ -27,7 +27,7 @@ type getReportHandlerInput struct {
 	EndDate   string `query:"end_date"`
 }
 
-// getUserRequestOutput is the handler output
+// getReportRequestOutput is the handler output
 type getReportRequestOutput struct {
 	Products []productsOutput `json:"assigns"`
 }
