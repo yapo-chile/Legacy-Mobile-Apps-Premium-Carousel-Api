@@ -280,6 +280,76 @@ func TestGetUserProductsOk(t *testing.T) {
 	mLogger.AssertExpectations(t)
 }
 
+func TestGetReportOk(t *testing.T) {
+	mockDB := &dbHandlerMock{}
+	mResult := &mockResult{}
+	mLogger := &mockProductRepoLogger{}
+	repo := MakeProductRepository(mockDB, 10, mLogger)
+	mResult.On("Close").Return(nil)
+
+	// get products query
+	mockDB.On("Query",
+		mock.AnythingOfType("string"),
+		mock.Anything,
+	).Return(mResult, nil).Once()
+	mResult.On("Next").Return(true).Once()
+	mResult.On("Next").Return(false).Once()
+	testTime := time.Now()
+	mResult.On("Scan", mock.Anything).Return([]interface{}{
+		11, domain.PremiumCarousel, 1, "test@mail.com", domain.ActiveProduct,
+		testTime, testTime, 0, 0, domain.AdminPurchase, domain.AcceptedPurchase,
+		100, testTime, []string{"categories=2020,1020",
+			"keywords=a,b,c", "comment=comentario"}}).Once()
+	result, err := repo.GetReport(testTime, testTime)
+	expected := []domain.Product{
+		{
+			ID:        11,
+			Type:      domain.PremiumCarousel,
+			UserID:    1,
+			Email:     "test@mail.com",
+			Status:    domain.ActiveProduct,
+			ExpiredAt: testTime,
+			CreatedAt: testTime,
+			Purchase: domain.Purchase{
+				ID:        0,
+				Number:    0,
+				Price:     100,
+				Type:      domain.AdminPurchase,
+				Status:    domain.AcceptedPurchase,
+				CreatedAt: testTime,
+			},
+			Config: domain.ProductParams{
+				Categories: []int{2020, 1020},
+				Exclude:    []string{},
+				Keywords:   []string{"a", "b", "c"},
+				Comment:    "comentario",
+			},
+		},
+	}
+
+	assert.Equal(t, expected, result)
+	assert.NoError(t, err)
+	mockDB.AssertExpectations(t)
+	mResult.AssertExpectations(t)
+	mLogger.AssertExpectations(t)
+}
+
+func TestGetReportQueryError(t *testing.T) {
+	mockDB := &dbHandlerMock{}
+	mResult := &mockResult{}
+	mLogger := &mockProductRepoLogger{}
+	repo := MakeProductRepository(mockDB, 10, mLogger)
+	mockDB.On("Query",
+		mock.AnythingOfType("string"),
+		mock.Anything,
+	).Return(mResult, fmt.Errorf("err")).Once()
+	_, err := repo.GetReport(time.Now(), time.Now())
+	assert.Error(t, err)
+	mockDB.AssertExpectations(t)
+	mResult.AssertExpectations(t)
+	mLogger.AssertExpectations(t)
+}
+
 func TestGetUserProductsZeroResults(t *testing.T) {
 	mockDB := &dbHandlerMock{}
 	mResult := &mockResult{}
