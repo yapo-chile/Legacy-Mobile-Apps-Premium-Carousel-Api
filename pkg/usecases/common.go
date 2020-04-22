@@ -47,6 +47,7 @@ type ProductRepository interface {
 	SetPartialConfig(userProductID int, configMap map[string]interface{}) error
 	SetExpiration(userProductID int, expiredAt time.Time) error
 	SetStatus(userProductID int, status domain.ProductStatus) error
+	GetReport(startDate, endDate time.Time) ([]domain.Product, error)
 }
 
 // CacheType defines the user cache type

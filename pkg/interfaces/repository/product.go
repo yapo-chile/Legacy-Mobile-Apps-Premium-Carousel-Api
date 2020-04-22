@@ -101,6 +101,31 @@ func (repo *productRepo) GetUserProducts(
 	return products, page, totalPages, nil
 }
 
+// GetReport get a list of user products based on start and end date
+func (repo *productRepo) GetReport(startDate,
+	endDate time.Time) (products []domain.Product, err error) {
+	result, err := repo.makeUserProductQuery(`
+		WHERE  p.created_at BETWEEN $1 AND $2
+		ORDER BY p.id DESC`, startDate, endDate)
+	if err != nil {
+		return []domain.Product{}, err
+	}
+	defer result.Close()
+	for result.Next() {
+		product := domain.Product{}
+		rawConfig := []string{}
+		result.Scan(&product.ID, &product.Type, &product.UserID, &product.Email,
+			&product.Status, &product.ExpiredAt, &product.CreatedAt,
+			&product.Purchase.ID, &product.Purchase.Number, &product.Purchase.Type,
+			&product.Purchase.Status, &product.Purchase.Price, &product.Purchase.CreatedAt,
+			(*pq.StringArray)(&rawConfig))
+		config, _ := repo.parseConfig(rawConfig)
+		product.Config = config
+		products = append(products, product)
+	}
+	return products, nil
+}
+
 func (repo *productRepo) makeUserProductQuery(conditions string,
 	params ...interface{}) (DbResult, error) {
 	return repo.handler.Query(`
