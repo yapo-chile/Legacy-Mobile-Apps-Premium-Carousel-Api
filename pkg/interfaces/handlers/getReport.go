@@ -45,30 +45,12 @@ func (h *GetReportHandler) Execute(ig InputGetter) *goutils.Response {
 	if response != nil {
 		return response
 	}
-	in := input.(*getReportHandlerInput)
-	startDate, err := time.Parse(time.RFC3339, in.StartDate)
+	startDate, endDate, err := h.validate(input.(*getReportHandlerInput))
 	if err != nil {
 		return &goutils.Response{
 			Code: http.StatusBadRequest,
 			Body: goutils.GenericError{
-				ErrorMessage: fmt.Sprintf(`bad start_date format: %+v`, err),
-			},
-		}
-	}
-	endDate, err := time.Parse(time.RFC3339, in.EndDate)
-	if err != nil {
-		return &goutils.Response{
-			Code: http.StatusBadRequest,
-			Body: goutils.GenericError{
-				ErrorMessage: fmt.Sprintf(`bad end_date format: %+v`, err),
-			},
-		}
-	}
-	if startDate.After(endDate) {
-		return &goutils.Response{
-			Code: http.StatusBadRequest,
-			Body: goutils.GenericError{
-				ErrorMessage: fmt.Sprintf(`invalid date interval`),
+				ErrorMessage: fmt.Sprintf(`%+v`, err),
 			},
 		}
 	}
@@ -111,4 +93,20 @@ func (h *GetReportHandler) Execute(ig InputGetter) *goutils.Response {
 		Code: http.StatusOK,
 		Body: body,
 	}
+}
+
+func (h *GetReportHandler) validate(in *getReportHandlerInput) (startDate,
+	endDate time.Time, err error) {
+	startDate, err = time.Parse(time.RFC3339, in.StartDate)
+	if err != nil {
+		return time.Time{}, time.Time{}, fmt.Errorf("bad start_date format: %+v", err)
+	}
+	endDate, err = time.Parse(time.RFC3339, in.EndDate)
+	if err != nil {
+		return time.Time{}, time.Time{}, fmt.Errorf("bad end_date format: %+v", err)
+	}
+	if startDate.After(endDate) {
+		return time.Time{}, time.Time{}, fmt.Errorf("invalid date interval")
+	}
+	return
 }

@@ -101,9 +101,10 @@ func (repo *productRepo) GetUserProducts(
 	return products, page, totalPages, nil
 }
 
-// GetReport get a list of user products based on start and end date
+// GetReport gets sales report using interval between start date and end date.
+// Returns sold products between given interval.
 func (repo *productRepo) GetReport(startDate,
-	endDate time.Time) (products []domain.Product, err error) {
+	endDate time.Time) (soldProducts []domain.Product, err error) {
 	result, err := repo.makeUserProductQuery(`
 		WHERE  p.created_at BETWEEN $1 AND $2
 		ORDER BY p.id DESC`, startDate, endDate)
@@ -121,9 +122,9 @@ func (repo *productRepo) GetReport(startDate,
 			(*pq.StringArray)(&rawConfig))
 		config, _ := repo.parseConfig(rawConfig)
 		product.Config = config
-		products = append(products, product)
+		soldProducts = append(soldProducts, product)
 	}
-	return products, nil
+	return soldProducts, nil
 }
 
 func (repo *productRepo) makeUserProductQuery(conditions string,
