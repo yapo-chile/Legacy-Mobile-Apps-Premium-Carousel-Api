@@ -154,6 +154,11 @@ func main() { //nolint: funlen
 		loggers.MakeGetUserProductsLogger(logger),
 	)
 
+	getReportInteractor := usecases.MakeGetReportInteractor(
+		productRepo,
+		loggers.MakeGetReportLogger(logger),
+	)
+
 	// UserAdsHandler
 	getUserAdsHandler := handlers.GetUserAdsHandler{
 		Interactor:          getUserAdsInteractor,
@@ -168,6 +173,10 @@ func main() { //nolint: funlen
 
 	getUserProductsHandler := handlers.GetUserProductsHandler{
 		Interactor: getUserProductsInteractor,
+	}
+
+	getReportHandler := handlers.GetReportHandler{
+		Interactor: getReportInteractor,
 	}
 
 	setPartialConfigHandler := handlers.SetPartialConfigHandler{
@@ -230,6 +239,12 @@ func main() { //nolint: funlen
 						Method:  "PATCH",
 						Pattern: "/assigns/{ID:[0-9]+}",
 						Handler: &setPartialConfigHandler,
+					},
+					{
+						Name:    "Get report",
+						Method:  "GET",
+						Pattern: "/report",
+						Handler: &getReportHandler,
 					},
 				},
 			},

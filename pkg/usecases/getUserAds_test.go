@@ -27,6 +27,11 @@ func (m *mockProductRepo) GetUserProducts(page int) ([]domain.Product, int, int,
 	return args.Get(0).([]domain.Product), args.Int(1), args.Int(2), args.Error(3)
 }
 
+func (m *mockProductRepo) GetReport(start, end time.Time) ([]domain.Product, error) {
+	args := m.Called(start, end)
+	return args.Get(0).([]domain.Product), args.Error(1)
+}
+
 func (m *mockProductRepo) GetUserProductsByEmail(email string, page int) ([]domain.Product, int, int, error) {
 	args := m.Called(email, page)
 	return args.Get(0).([]domain.Product), args.Int(1), args.Int(2), args.Error(3)
