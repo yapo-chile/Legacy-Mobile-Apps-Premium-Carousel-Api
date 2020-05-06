@@ -43,6 +43,24 @@ type RuntimeConfig struct {
 	Port int    `env:"PORT" envDefault:"8080"`
 }
 
+// KafkaProducerConf holds configurations to connect and produce to kafka
+type KafkaProducerConf struct {
+	Host              string `env:"HOST"`
+	Port              int    `env:"PORT" envDefault:"9092"`
+	Acks              string `env:"ACKS" envDefault:"1"`
+	CompressionType   string `env:"COMPRESSION_TYPE" envDefault:"none"`
+	Retries           int    `env:"RETRIES" envDefault:"10"`
+	LingerMS          int    `env:"LINGER_MS" envDefault:"0"`
+	RequestTimeoutMS  int    `env:"REQUEST_TIMEOUT_MS" envDefault:"30000"`
+	EnableIdempotence bool   `env:"ENABLE_IDEMPOTENCE" envDefault:"false"`
+}
+
+// BackendEventsConf holds backend events configurations
+type BackendEventsConf struct {
+	PremiumProductsTopic string `env:"PREMIUM_PRODUCTS_TOPIC" envDefault:"premium_product"`
+	Enabled              bool   `env:"ENABLED" envDefault:"false"`
+}
+
 // DatabaseConf holds configuration for postgres database connection
 type DatabaseConf struct {
 	Host        string `env:"HOST" envDefault:"db"`
@@ -135,18 +153,20 @@ type AdConf struct {
 
 // Config holds all configuration for the service
 type Config struct {
-	ServiceConf      ServiceConf      `env:"SERVICE_"`
-	PrometheusConf   PrometheusConf   `env:"PROMETHEUS_"`
-	LoggerConf       LoggerConf       `env:"LOGGER_"`
-	Runtime          RuntimeConfig    `env:"APP_"`
-	GomsClientConf   GomsClientConf   `env:"GOMS_"`
-	EtcdConf         EtcdConf         `env:"ETCD_"`
-	CorsConf         CorsConf         `env:"CORS_"`
-	BrowserCacheConf BrowserCacheConf `env:"BROWSER_CACHE_"`
-	CacheConf        CacheConf        `env:"CACHE_"`
-	DatabaseConf     DatabaseConf     `env:"DATABASE_"`
-	AdConf           AdConf           `env:"AD_"`
-	ControlPanelConf ControlPanelConf `env:"CP_"`
+	ServiceConf       ServiceConf       `env:"SERVICE_"`
+	PrometheusConf    PrometheusConf    `env:"PROMETHEUS_"`
+	LoggerConf        LoggerConf        `env:"LOGGER_"`
+	Runtime           RuntimeConfig     `env:"APP_"`
+	GomsClientConf    GomsClientConf    `env:"GOMS_"`
+	EtcdConf          EtcdConf          `env:"ETCD_"`
+	CorsConf          CorsConf          `env:"CORS_"`
+	BrowserCacheConf  BrowserCacheConf  `env:"BROWSER_CACHE_"`
+	CacheConf         CacheConf         `env:"CACHE_"`
+	DatabaseConf      DatabaseConf      `env:"DATABASE_"`
+	AdConf            AdConf            `env:"AD_"`
+	ControlPanelConf  ControlPanelConf  `env:"CP_"`
+	KafkaProducerConf KafkaProducerConf `env:"KAFKA_PRODUCER_"`
+	BackendEventsConf BackendEventsConf `env:"BACKEND_EVENTS_"`
 }
 
 // LoadFromEnv loads the config data from the environment variables

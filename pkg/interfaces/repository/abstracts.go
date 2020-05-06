@@ -68,3 +68,9 @@ type Search interface {
 	GetDoc(index string, id string) (json.RawMessage, error)
 	Search(index string, query Query, from, size int) (SearchResult, error)
 }
+
+// KafkaProducer allows send messages to kafka
+type KafkaProducer interface {
+	SendMessage(topic string, message []byte) error
+	io.Closer
+}

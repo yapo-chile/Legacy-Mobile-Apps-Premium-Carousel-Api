@@ -19,27 +19,33 @@ type AddUserProductInteractor interface {
 
 // addUserProductInteractor defines the interactor for addUserProduct usecase
 type addUserProductInteractor struct {
-	productRepo  ProductRepository
-	purchaseRepo PurchaseRepository
-	cacheRepo    CacheRepository
-	logger       AddUserProductLogger
-	cacheTTL     time.Duration
+	productRepo          ProductRepository
+	purchaseRepo         PurchaseRepository
+	cacheRepo            CacheRepository
+	logger               AddUserProductLogger
+	cacheTTL             time.Duration
+	backendEventsRepo    BackendEventsRepository
+	backendEventsEnabled bool
 }
 
 // AddUserProductLogger logs AddUserProduct events
 type AddUserProductLogger interface {
 	LogErrorAddingProduct(userID int, err error)
 	LogWarnSettingCache(userID int, err error)
+	LogWarnPushingEvent(productID int, err error)
 }
 
 // MakeAddUserProductInteractor creates a new instance of AddUserProductInteractor
 func MakeAddUserProductInteractor(productRepo ProductRepository,
 	purchaseRepo PurchaseRepository,
 	cacheRepo CacheRepository, logger AddUserProductLogger,
-	cacheTTL time.Duration) AddUserProductInteractor {
+	cacheTTL time.Duration, BackendEventsRepo BackendEventsRepository,
+	backendEventsEnabled bool) AddUserProductInteractor {
 	return &addUserProductInteractor{productRepo: productRepo,
 		purchaseRepo: purchaseRepo, cacheRepo: cacheRepo,
-		logger: logger, cacheTTL: cacheTTL}
+		logger: logger, cacheTTL: cacheTTL,
+		backendEventsRepo:    BackendEventsRepo,
+		backendEventsEnabled: backendEventsEnabled}
 }
 
 // AddUserProduct associates a new product to user
@@ -70,6 +76,12 @@ func (interactor *addUserProductInteractor) AddUserProduct(userID int, email str
 		return fmt.Errorf("cannot set control-panel configuration: %+v", err)
 	}
 	interactor.refreshCache(product)
+	if interactor.backendEventsEnabled {
+		if err := interactor.backendEventsRepo.
+			PushSoldProduct(product); err != nil {
+			interactor.logger.LogWarnPushingEvent(product.ID, err)
+		}
+	}
 	return nil
 }
 

@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/Yapo/goutils v1.5.0
 	github.com/Yapo/logger v0.0.0-20170328173756-91855e974718
+	github.com/confluentinc/confluent-kafka-go v1.4.0
 	github.com/go-redis/redis v6.15.7+incompatible
 	github.com/gorilla/context v1.1.1
 	github.com/gorilla/mux v1.7.3 // indirect

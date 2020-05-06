@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 
 	_ "github.com/lib/pq"
 	"github.com/mattes/migrate"
@@ -48,8 +47,8 @@ func main() { //nolint: funlen
 	)
 
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(2) //nolint: gomnd
+		panic(fmt.Errorf("error starting prometheus & loggers: %v", err))
+
 	}
 
 	shutdownSequence.Push(prometheus)
@@ -86,6 +85,28 @@ func main() { //nolint: funlen
 		conf.AdConf.Port,
 		logger,
 	)
+	var backendEventsProducer repository.KafkaProducer
+	var backendEventsRepository usecases.BackendEventsRepository
+	if conf.BackendEventsConf.Enabled {
+		backendEventsProducer, err = infrastructure.NewKafkaProducer(
+			conf.KafkaProducerConf.Host,
+			conf.KafkaProducerConf.Port,
+			conf.KafkaProducerConf.Acks,
+			conf.KafkaProducerConf.CompressionType,
+			conf.KafkaProducerConf.Retries,
+			conf.KafkaProducerConf.LingerMS,
+			conf.KafkaProducerConf.RequestTimeoutMS,
+			conf.KafkaProducerConf.EnableIdempotence,
+		)
+		if err != nil {
+			panic(fmt.Errorf("Error starting kafka producer: %+v", err))
+		}
+		shutdownSequence.Push(backendEventsProducer)
+		backendEventsRepository = repository.MakeBackendEventsProducer(
+			backendEventsProducer,
+			conf.BackendEventsConf.PremiumProductsTopic,
+		)
+	}
 
 	adRepo := repository.MakeAdRepository(
 		elasticsearch,
@@ -133,6 +154,8 @@ func main() { //nolint: funlen
 		cacheRepo,
 		loggers.MakeAddUserProductLogger(logger),
 		conf.CacheConf.DefaultTTL,
+		backendEventsRepository,
+		conf.BackendEventsConf.Enabled,
 	)
 
 	setPartialConfigInteractor := usecases.MakeSetPartialConfigInteractor(
