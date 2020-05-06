@@ -9,5 +9,6 @@ func TestAddUserProductLogger(t *testing.T) {
 	l := MakeAddUserProductLogger(m)
 	l.LogErrorAddingProduct(0, nil)
 	l.LogWarnSettingCache(0, nil)
+	l.LogWarnPushingEvent(0, nil)
 	m.AssertExpectations(t)
 }

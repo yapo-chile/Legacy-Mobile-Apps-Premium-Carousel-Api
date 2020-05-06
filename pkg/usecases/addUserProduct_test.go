@@ -30,12 +30,25 @@ type mockAddUserProductLogger struct {
 	mock.Mock
 }
 
-func (m *mockAddUserProductLogger) LogErrorAddingProduct(UserID int, err error) {
-	m.Called(UserID, err)
+func (m *mockAddUserProductLogger) LogErrorAddingProduct(userID int, err error) {
+	m.Called(userID, err)
 }
 
-func (m *mockAddUserProductLogger) LogWarnSettingCache(UserID int, err error) {
-	m.Called(UserID, err)
+func (m *mockAddUserProductLogger) LogWarnSettingCache(userID int, err error) {
+	m.Called(userID, err)
+}
+
+func (m *mockAddUserProductLogger) LogWarnPushingEvent(productID int, err error) {
+	m.Called(productID, err)
+}
+
+type mockBackendEventRepo struct {
+	mock.Mock
+}
+
+func (m *mockBackendEventRepo) PushSoldProduct(product domain.Product) error {
+	args := m.Called(product)
+	return args.Error(0)
 }
 
 func TestAddProductOk(t *testing.T) {
@@ -44,8 +57,9 @@ func TestAddProductOk(t *testing.T) {
 	mPurchaseRepo := &mockPurchaseRepo{}
 	mCacheRepo := &mockCacheRepo{}
 	mLogger := &mockAddUserProductLogger{}
+	mBackendEventRepo := &mockBackendEventRepo{}
 	interactor := MakeAddUserProductInteractor(mProductRepo, mPurchaseRepo,
-		mCacheRepo, mLogger, 0)
+		mCacheRepo, mLogger, 0, mBackendEventRepo, true)
 	mCacheRepo.On("SetCache", mock.AnythingOfType("string"),
 		ProductCacheType,
 		mock.AnythingOfType("domain.Product"),
@@ -69,6 +83,8 @@ func TestAddProductOk(t *testing.T) {
 	).Return(product, nil)
 	mPurchaseRepo.On("AcceptPurchase",
 		mock.AnythingOfType("domain.Purchase")).Return(domain.Purchase{}, nil)
+	mBackendEventRepo.On("PushSoldProduct",
+		mock.AnythingOfType("domain.Product")).Return(nil)
 	err := interactor.AddUserProduct(0, "", 0, 0, domain.AdminPurchase,
 		domain.PremiumCarousel, time.Time{}, domain.ProductParams{})
 	assert.NoError(t, err)
@@ -76,6 +92,7 @@ func TestAddProductOk(t *testing.T) {
 	mPurchaseRepo.AssertExpectations(t)
 	mCacheRepo.AssertExpectations(t)
 	mLogger.AssertExpectations(t)
+	mBackendEventRepo.AssertExpectations(t)
 }
 
 func TestAddProductValidateError(t *testing.T) {
@@ -83,8 +100,9 @@ func TestAddProductValidateError(t *testing.T) {
 	mPurchaseRepo := &mockPurchaseRepo{}
 	mCacheRepo := &mockCacheRepo{}
 	mLogger := &mockAddUserProductLogger{}
+	mBackendEventRepo := &mockBackendEventRepo{}
 	interactor := MakeAddUserProductInteractor(mProductRepo, mPurchaseRepo,
-		mCacheRepo, mLogger, 0)
+		mCacheRepo, mLogger, 0, mBackendEventRepo, false)
 
 	mLogger.On("LogErrorAddingProduct", mock.Anything, mock.Anything)
 	mProductRepo.On("GetUserActiveProduct",
@@ -99,6 +117,7 @@ func TestAddProductValidateError(t *testing.T) {
 	mPurchaseRepo.AssertExpectations(t)
 	mCacheRepo.AssertExpectations(t)
 	mLogger.AssertExpectations(t)
+	mBackendEventRepo.AssertExpectations(t)
 }
 
 func TestAddProductCreatePurchaseError(t *testing.T) {
@@ -106,9 +125,10 @@ func TestAddProductCreatePurchaseError(t *testing.T) {
 	mPurchaseRepo := &mockPurchaseRepo{}
 	mCacheRepo := &mockCacheRepo{}
 	mLogger := &mockAddUserProductLogger{}
-	mLogger.On("LogErrorAddingProduct", mock.Anything, mock.Anything)
+	mBackendEventRepo := &mockBackendEventRepo{}
 	interactor := MakeAddUserProductInteractor(mProductRepo, mPurchaseRepo,
-		mCacheRepo, mLogger, 0)
+		mCacheRepo, mLogger, 0, mBackendEventRepo, false)
+	mLogger.On("LogErrorAddingProduct", mock.Anything, mock.Anything)
 	mPurchaseRepo.On("CreatePurchase",
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("int"),
@@ -126,6 +146,7 @@ func TestAddProductCreatePurchaseError(t *testing.T) {
 	mPurchaseRepo.AssertExpectations(t)
 	mCacheRepo.AssertExpectations(t)
 	mLogger.AssertExpectations(t)
+	mBackendEventRepo.AssertExpectations(t)
 }
 
 func TestAddProductAcceptPurchaseError(t *testing.T) {
@@ -134,9 +155,11 @@ func TestAddProductAcceptPurchaseError(t *testing.T) {
 	mPurchaseRepo := &mockPurchaseRepo{}
 	mCacheRepo := &mockCacheRepo{}
 	mLogger := &mockAddUserProductLogger{}
-	mLogger.On("LogErrorAddingProduct", mock.Anything, mock.Anything)
+	mBackendEventRepo := &mockBackendEventRepo{}
 	interactor := MakeAddUserProductInteractor(mProductRepo, mPurchaseRepo,
-		mCacheRepo, mLogger, 0)
+		mCacheRepo, mLogger, 0, mBackendEventRepo, false)
+	mLogger.On("LogErrorAddingProduct", mock.Anything, mock.Anything)
+
 	mPurchaseRepo.On("CreatePurchase",
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("int"),
@@ -163,6 +186,7 @@ func TestAddProductAcceptPurchaseError(t *testing.T) {
 	mPurchaseRepo.AssertExpectations(t)
 	mCacheRepo.AssertExpectations(t)
 	mLogger.AssertExpectations(t)
+	mBackendEventRepo.AssertExpectations(t)
 }
 
 func TestAddProductErrorAddingProduct(t *testing.T) {
@@ -171,8 +195,9 @@ func TestAddProductErrorAddingProduct(t *testing.T) {
 	mPurchaseRepo := &mockPurchaseRepo{}
 	mCacheRepo := &mockCacheRepo{}
 	mLogger := &mockAddUserProductLogger{}
+	mBackendEventRepo := &mockBackendEventRepo{}
 	interactor := MakeAddUserProductInteractor(mProductRepo, mPurchaseRepo,
-		mCacheRepo, mLogger, 0)
+		mCacheRepo, mLogger, 0, mBackendEventRepo, false)
 	mLogger.On("LogErrorAddingProduct", mock.Anything, mock.Anything)
 	mProductRepo.On("GetUserActiveProduct",
 		mock.AnythingOfType("int"),
@@ -205,8 +230,9 @@ func TestAddProductOkErrorSettingCache(t *testing.T) {
 	mPurchaseRepo := &mockPurchaseRepo{}
 	mCacheRepo := &mockCacheRepo{}
 	mLogger := &mockAddUserProductLogger{}
+	mBackendEventRepo := &mockBackendEventRepo{}
 	interactor := MakeAddUserProductInteractor(mProductRepo, mPurchaseRepo,
-		mCacheRepo, mLogger, 0)
+		mCacheRepo, mLogger, 0, mBackendEventRepo, false)
 	mLogger.On("LogWarnSettingCache", mock.Anything, mock.Anything)
 	mCacheRepo.On("SetCache", mock.AnythingOfType("string"),
 		ProductCacheType,
@@ -238,4 +264,51 @@ func TestAddProductOkErrorSettingCache(t *testing.T) {
 	mPurchaseRepo.AssertExpectations(t)
 	mCacheRepo.AssertExpectations(t)
 	mLogger.AssertExpectations(t)
+	mBackendEventRepo.AssertExpectations(t)
+}
+
+func TestAddProductOkBackendEventError(t *testing.T) {
+	product := domain.Product{}
+	mProductRepo := &mockProductRepo{}
+	mPurchaseRepo := &mockPurchaseRepo{}
+	mCacheRepo := &mockCacheRepo{}
+	mLogger := &mockAddUserProductLogger{}
+	mBackendEventRepo := &mockBackendEventRepo{}
+	interactor := MakeAddUserProductInteractor(mProductRepo, mPurchaseRepo,
+		mCacheRepo, mLogger, 0, mBackendEventRepo, true)
+	mCacheRepo.On("SetCache", mock.AnythingOfType("string"),
+		ProductCacheType,
+		mock.AnythingOfType("domain.Product"),
+		mock.Anything).
+		Return(nil)
+	mPurchaseRepo.On("CreatePurchase",
+		mock.AnythingOfType("int"),
+		mock.AnythingOfType("int"),
+		mock.AnythingOfType("domain.PurchaseType")).Return(domain.Purchase{}, nil)
+	mProductRepo.On("GetUserActiveProduct",
+		mock.AnythingOfType("int"),
+		mock.AnythingOfType("domain.ProductType")).Return(domain.Product{},
+		ErrProductNotFound)
+	mProductRepo.On("CreateUserProduct",
+		mock.AnythingOfType("int"),
+		mock.AnythingOfType("string"),
+		mock.AnythingOfType("domain.Purchase"),
+		domain.PremiumCarousel,
+		mock.AnythingOfType("time.Time"),
+		mock.AnythingOfType("domain.ProductParams"),
+	).Return(product, nil)
+	mPurchaseRepo.On("AcceptPurchase",
+		mock.AnythingOfType("domain.Purchase")).Return(domain.Purchase{}, nil)
+	mBackendEventRepo.On("PushSoldProduct",
+		mock.AnythingOfType("domain.Product")).Return(fmt.Errorf("err"))
+	mLogger.On("LogWarnPushingEvent", mock.Anything, mock.Anything)
+
+	err := interactor.AddUserProduct(0, "", 0, 0, domain.AdminPurchase,
+		domain.PremiumCarousel, time.Time{}, domain.ProductParams{})
+	assert.NoError(t, err)
+	mProductRepo.AssertExpectations(t)
+	mPurchaseRepo.AssertExpectations(t)
+	mCacheRepo.AssertExpectations(t)
+	mLogger.AssertExpectations(t)
+	mBackendEventRepo.AssertExpectations(t)
 }
