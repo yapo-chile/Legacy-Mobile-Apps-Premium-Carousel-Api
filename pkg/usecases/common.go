@@ -66,3 +66,8 @@ type CacheRepository interface {
 		expiration time.Duration) error
 	GetCache(key string, typ CacheType) ([]byte, error)
 }
+
+// BackendEventsRepository allows push events to backend events queue
+type BackendEventsRepository interface {
+	PushSoldProduct(product domain.Product) error
+}

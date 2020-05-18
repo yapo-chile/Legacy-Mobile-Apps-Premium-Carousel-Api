@@ -1,15 +1,17 @@
-FROM golang:1.13 AS gobuilder
+FROM golang:1.13.5-alpine3.11 AS gobuilder
+RUN apk add --update --no-cache alpine-sdk bash python librdkafka-dev=1.2.2-r0 librdkafka=1.2.2-r0
 
 ARG APPFOLDER
 ARG APPNAME
 
 WORKDIR /go/src/github.mpi-internal.com/Yapo/${APPFOLDER}
 ADD ./ .
+
 RUN make setup
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o /app.linux cmd/${APPNAME}/main.go
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -o /app.linux cmd/${APPNAME}/main.go
 
 FROM alpine:3.11
-RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
+RUN apk update && apk add --no-cache librdkafka-dev=1.2.2-r0 librdkafka=1.2.2-r0 ca-certificates && rm -rf /var/cache/apk/*
 
 ARG GIT_COMMIT
 ARG GIT_BRANCH

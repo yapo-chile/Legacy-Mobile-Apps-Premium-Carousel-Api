@@ -23,6 +23,18 @@ done
 
 GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.24.0
 
+ # install librdkafka
+if [ "$(id -nu)" != "root" ]; then
+    echoTitle "Installing librdkafka"
+    git clone https://github.com/edenhill/librdkafka.git
+    cd librdkafka
+    ./configure --prefix /usr
+    make
+    sudo make install
+    cd ..
+    rm -rf librdkafka
+fi
+
 echoTitle "Installing project dependencies"
 GO111MODULE=on go mod tidy
 
