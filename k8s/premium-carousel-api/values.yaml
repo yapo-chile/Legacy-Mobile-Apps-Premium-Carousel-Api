@@ -26,6 +26,14 @@ core:
 
   database:
     name: "premium-carousel-db"
+  
+  kafka:
+    host: ""
+    port: "9092"
+
+  backendEvents:
+    enabled: "true"
+    premiumProductsTopic: "pre.premium-product"
 
   prometheus:
     enabled: "true"

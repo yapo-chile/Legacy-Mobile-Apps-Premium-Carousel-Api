@@ -16,3 +16,8 @@ data:
   AD_IMAGE_SERVER_URL: "{{ .Values.core.ad.imageServerURL }}"
   CACHE_HOST: "{{ .Values.core.cache.host}}"
   DATABASE_NAME : "{{ .Values.core.database.name }}"
+  DATABASE_NAME : "{{ .Values.core.database.name }}"
+  KAFKA_PRODUCER_HOST: "{{ .Values.core.kafka.host }}"
+  KAFKA_PRODUCER_PORT:  "{{ .Values.core.kafka.port }}"
+  BACKEND_EVENTS_ENABLED: "{{ .Values.core.backendEvents.enabled }}"
+  BACKEND_EVENTS_PREMIUM_PRODUCTS_TOPIC :  "{{ .Values.core.backendEvents.premiumProductsTopic }}"
