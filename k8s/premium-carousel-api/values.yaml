@@ -26,16 +26,11 @@ service:
 env:
   AD_HOST: search-ms
   AD_PORT: 80
-  # Need value for regress
-  #AD_IMAGE_SERVER_URL: "{{ .Values.ad.imageServerURL }}"
-  ETCD_HOST: config-etcd
+  AD_IMAGE_SERVER_URL: http://img.regress.yapo.cl/%s/%s/%s.jpg
+  ETCD_HOST: http://config-etcd:2397
   CACHE_HOST: premium-carousel-api-cache
-  GOMS_HEALTH_PATH: /healthcheck
   LOGGER_LOG_LEVEL: 1
   BACKEND_EVENTS_ENABLED: true
-  BACKEND_EVENTS_PREMIUM_PRODUCTS_TOPIC: pre.premium-product
-  KAFKA_PRODUCER_HOST: ""
-  KAFKA_PRODUCER_PORT:  9092
 
 healthcheck:
   path: /healthcheck

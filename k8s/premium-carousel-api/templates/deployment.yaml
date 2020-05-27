@@ -55,6 +55,8 @@ spec:
             - configMapRef:
                 name: {{.Release.Name}}-premium-carousel-api-configmap
           env:
+            - name: GOMS_HEALTH_PATH
+              value: {{ .Values.healthcheck.path }}
             - name: PROMETHEUS_ENABLED
               value: {{ .Values.prometheus.enabled }}
             - name: DATABASE_HOST
@@ -82,6 +84,25 @@ spec:
                 secretKeyRef:
                   name: resource-premium-carousel-db
                   key: DB
+            - name: KAFKA_PRODUCER_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: resource-premium-carousel-kafka
+                  key: PRODUCER_HOST
+            - name: KAFKA_PRODUCER_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: resource-premium-carousel-kafka
+                  key: PRODUCER_PORT
+            - name: BACKEND_EVENTS_PREMIUM_PRODUCTS_TOPIC
+              valueFrom:
+                secretKeyRef:
+                  name: resource-premium-carousel-kafka
+                  key: PREMIUM_PRODUCTS_TOPIC
+            {{- range $key, $value := .Values.env }}
+            - name: {{ quote $key }}
+              value: {{ quote $value }}
+            {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
