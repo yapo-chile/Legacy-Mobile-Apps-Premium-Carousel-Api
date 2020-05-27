@@ -17,8 +17,6 @@ spec:
         app: {{ .Chart.Name }}
         app.kubernetes.io/name: {{ include "premium-carousel-api.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
-      annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       dnsConfig:
         options:
@@ -51,9 +49,6 @@ spec:
             periodSeconds: {{ .Values.healthcheck.readiness.periodSeconds }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          envFrom:
-            - configMapRef:
-                name: {{.Release.Name}}-premium-carousel-api-configmap
           env:
             - name: GOMS_HEALTH_PATH
               value: {{ .Values.healthcheck.path }}

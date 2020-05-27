@@ -2,4 +2,4 @@ apiVersion: v1
 appVersion: "1.0"
 description: https://github.mpi-internal.com/Yapo/premium-carousel-api
 name: premium-carousel-api
-version: 0.2.0
+version: 0.2.1
