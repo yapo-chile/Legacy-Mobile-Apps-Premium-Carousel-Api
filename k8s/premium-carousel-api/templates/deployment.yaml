@@ -51,9 +51,9 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
             - name: GOMS_HEALTH_PATH
-              value: {{ .Values.healthcheck.path }}
+              value: {{ quote .Values.healthcheck.path }}
             - name: PROMETHEUS_ENABLED
-              value: {{ .Values.prometheus.enabled }}
+              value: {{ quote .Values.prometheus.enabled }}
             - name: DATABASE_HOST
               valueFrom:
                 secretKeyRef:

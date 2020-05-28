@@ -32,6 +32,9 @@ env:
   LOGGER_LOG_LEVEL: 1
   BACKEND_EVENTS_ENABLED: true
 
+prometheus:
+  enabled: "true"
+
 healthcheck:
   path: /healthcheck
   readiness:
@@ -49,3 +52,5 @@ ingress:
   hosts:
     - host: "yapo.cl"
       paths: ['/']
+
+resources: {}
