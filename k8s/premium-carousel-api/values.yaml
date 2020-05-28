@@ -24,8 +24,8 @@ service:
   prometheus_port: 8877
 
 env:
-  AD_HOST: search-ms
-  AD_PORT: 80
+  AD_HOST: elastic-ad-index
+  AD_PORT: 19200
   AD_IMAGE_SERVER_URL: http://img.regress.yapo.cl/%s/%s/%s.jpg
   ETCD_HOST: http://config-etcd:2397
   CACHE_HOST: premium-carousel-api-cache
