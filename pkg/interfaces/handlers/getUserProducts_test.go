@@ -58,7 +58,8 @@ func TestGetUserProductsHandlerOK(t *testing.T) {
 	mInteractor := &mockGetUserProductsInteractor{}
 	mInteractor.On("GetUserProducts", mock.AnythingOfType("string"),
 		mock.AnythingOfType("int")).
-		Return([]domain.Product{{ID: 123}}, 1, 1, nil)
+		Return([]domain.Product{{ID: 123,
+			Purchase: domain.Purchase{ID: 1, Type: domain.AdminPurchase}}}, 1, 1, nil)
 	h := GetUserProductsHandler{
 		Interactor: mInteractor,
 	}
@@ -71,7 +72,8 @@ func TestGetUserProductsHandlerOK(t *testing.T) {
 	expected := &goutils.Response{
 		Code: http.StatusOK,
 		Body: getUserProductsRequestOutput{
-			Products: []productsOutput{{ID: 123, UserID: "0"}},
+			Products: []productsOutput{{ID: 123, UserID: "0", PurchaseID: 1,
+				PurchaseType: "ADMIN"}},
 			Metadata: metadata{CurrentPage: 1, TotalPages: 1},
 		},
 	}
