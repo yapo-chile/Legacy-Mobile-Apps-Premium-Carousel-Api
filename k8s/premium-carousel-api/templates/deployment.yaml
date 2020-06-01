@@ -17,19 +17,17 @@ spec:
         app: {{ .Chart.Name }}
         app.kubernetes.io/name: {{ include "premium-carousel-api.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
-      annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       dnsConfig:
         options:
           - name: ndots
             value: "1"
       imagePullSecrets:
-        - name: {{ .Values.core.image.pullSecret }}
+        - name: {{ .Values.image.pullSecret }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.core.image.repository }}:{{ .Values.core.image.tag }}"
-          imagePullPolicy: {{ .Values.core.image.pullPolicy }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
               containerPort: 8080
@@ -39,42 +37,67 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: "{{ .Values.core.healthcheck.path }}"
+              path: "{{ .Values.healthcheck.path }}"
               port: http
-            initialDelaySeconds: {{ .Values.core.healthcheck.liveness.initialDelaySeconds }}
-            periodSeconds: {{ .Values.core.healthcheck.liveness.periodSeconds }}
+            initialDelaySeconds: {{ .Values.healthcheck.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.healthcheck.liveness.periodSeconds }}
           readinessProbe:
             httpGet:
-              path: "{{ .Values.core.healthcheck.path }}"
+              path: "{{ .Values.healthcheck.path }}"
               port: http
-            initialDelaySeconds: {{ .Values.core.healthcheck.readiness.initialDelaySeconds }}
-            periodSeconds: {{ .Values.core.healthcheck.readiness.periodSeconds }}
+            initialDelaySeconds: {{ .Values.healthcheck.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.healthcheck.readiness.periodSeconds }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          envFrom:
-            - configMapRef:
-                name: {{.Release.Name}}-premium-carousel-api-configmap
           env:
-            - name: DATABASE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: secret-premium-carousel-api
-                  key: password
-            - name: DATABASE_USER
-              valueFrom:
-                secretKeyRef:
-                  name: secret-premium-carousel-api
-                  key: username
+            - name: GOMS_HEALTH_PATH
+              value: {{ quote .Values.healthcheck.path }}
+            - name: PROMETHEUS_ENABLED
+              value: {{ quote .Values.prometheus.enabled }}
             - name: DATABASE_HOST
               valueFrom:
                 secretKeyRef:
-                  name: secret-premium-carousel-api
-                  key: host
+                  name: resource-premium-carousel-db
+                  key: HOST
             - name: DATABASE_PORT
               valueFrom:
                 secretKeyRef:
-                  name: secret-premium-carousel-api
-                  key: port
+                  name: resource-premium-carousel-db
+                  key: PORT
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: resource-premium-carousel-db
+                  key: USER
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: resource-premium-carousel-db
+                  key: PASS
+            - name: DATABASE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: resource-premium-carousel-db
+                  key: DB
+            - name: KAFKA_PRODUCER_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: resource-premium-carousel-kafka
+                  key: PRODUCER_HOST
+            - name: KAFKA_PRODUCER_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: resource-premium-carousel-kafka
+                  key: PRODUCER_PORT
+            - name: BACKEND_EVENTS_PREMIUM_PRODUCTS_TOPIC
+              valueFrom:
+                secretKeyRef:
+                  name: resource-premium-carousel-kafka
+                  key: PREMIUM_PRODUCTS_TOPIC
+            {{- range $key, $value := .Values.env }}
+            - name: {{ quote $key }}
+              value: {{ quote $value }}
+            {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
