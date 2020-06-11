@@ -60,7 +60,8 @@ func TestGetReportHandlerOK(t *testing.T) {
 	testTime := time.Now()
 	mInteractor.On("GetReport", mock.AnythingOfType("time.Time"),
 		mock.AnythingOfType("time.Time")).
-		Return([]domain.Product{{ID: 123}}, nil)
+		Return([]domain.Product{{ID: 123, Purchase: domain.Purchase{ID: 1,
+			Type: domain.AdminPurchase}}}, nil)
 	h := GetReportHandler{
 		Interactor: mInteractor,
 	}
@@ -73,7 +74,8 @@ func TestGetReportHandlerOK(t *testing.T) {
 	expected := &goutils.Response{
 		Code: http.StatusOK,
 		Body: getReportRequestOutput{
-			Products: []productsOutput{{ID: 123, UserID: "0"}},
+			Products: []productsOutput{{ID: 123, UserID: "0", PurchaseID: 1,
+				PurchaseType: "ADMIN"}},
 		},
 	}
 	assert.Equal(t, expected, r)

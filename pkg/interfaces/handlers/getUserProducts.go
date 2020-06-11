@@ -39,9 +39,11 @@ type productsOutput struct {
 	Email              string    `json:"email"`
 	Type               string    `json:"type"`
 	Status             string    `json:"status"`
+	PurchaseID         int       `json:"purchase_id"`
 	PurchaseNumber     int       `json:"purchase_number"`
 	PurchasePrice      int       `json:"purchase_price"`
 	PurchaseStatus     string    `json:"purchase_status"`
+	PurchaseType       string    `json:"purchase_type"`
 	ExpiredAt          time.Time `json:"expiration"`
 	CreatedAt          time.Time `json:"creation"`
 	Comment            string    `json:"comment"`
@@ -88,9 +90,11 @@ func (h *GetUserProductsHandler) Execute(ig InputGetter) *goutils.Response {
 			UserID:         strconv.Itoa(v.UserID),
 			Status:         string(v.Status),
 			Type:           string(v.Type),
+			PurchaseID:     v.Purchase.ID,
 			PurchaseNumber: v.Purchase.Number,
 			PurchasePrice:  v.Purchase.Price,
 			PurchaseStatus: string(v.Purchase.Status),
+			PurchaseType:   string(v.Purchase.Type),
 			ExpiredAt:      v.ExpiredAt,
 			CreatedAt:      v.CreatedAt,
 			Comment:        v.Config.Comment,
