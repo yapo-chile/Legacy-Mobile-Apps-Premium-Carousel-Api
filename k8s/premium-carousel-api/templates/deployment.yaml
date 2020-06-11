@@ -54,46 +54,17 @@ spec:
               value: {{ quote .Values.healthcheck.path }}
             - name: PROMETHEUS_ENABLED
               value: {{ quote .Values.prometheus.enabled }}
-            - name: DATABASE_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: resource-premium-carousel-db
-                  key: HOST
-            - name: DATABASE_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: resource-premium-carousel-db
-                  key: PORT
-            - name: DATABASE_USER
-              valueFrom:
-                secretKeyRef:
-                  name: resource-premium-carousel-db
-                  key: USER
-            - name: DATABASE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: resource-premium-carousel-db
-                  key: PASS
-            - name: DATABASE_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: resource-premium-carousel-db
-                  key: DB
-            - name: KAFKA_PRODUCER_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: resource-premium-carousel-kafka
-                  key: PRODUCER_HOST
-            - name: KAFKA_PRODUCER_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: resource-premium-carousel-kafka
-                  key: PRODUCER_PORT
-            - name: BACKEND_EVENTS_PREMIUM_PRODUCTS_TOPIC
-              valueFrom:
-                secretKeyRef:
-                  name: resource-premium-carousel-kafka
-                  key: PREMIUM_PRODUCTS_TOPIC
+            # secrets
+            {{- range $secret, $map := .Values.secrets }}
+              {{- range $name, $key := $map }}
+              - name: {{ $name }}
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $secret }}
+                    key: {{ $key }}
+              {{- end }}
+            {{- end }}
+            # env
             {{- range $key, $value := .Values.env }}
             - name: {{ quote $key }}
               value: {{ quote $value }}

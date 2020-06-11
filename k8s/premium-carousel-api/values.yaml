@@ -23,9 +23,23 @@ service:
   port: 80
   prometheus_port: 8877
 
+secrets:
+  resource-premium-carousel-db:
+    DATABASE_HOST: HOST
+    DATABASE_PORT: PORT
+    DATABASE_USER: USER
+    DATABASE_PASSWORD: PASS
+    DATABASE_NAME: DB
+  resource-kafka-topic-premium-product:
+    KAFKA_PRODUCER_HOST: HOST
+    KAFKA_PRODUCER_PORT: PORT
+    BACKEND_EVENTS_PREMIUM_PRODUCTS_TOPIC: TOPIC
+  resource-elastic-index-ads:
+    AD_HOST: HOST
+    AD_PORT: PORT
+    AD_PATH: INDEX
+
 env:
-  AD_HOST: elastic-ad-index
-  AD_PORT: 19200
   AD_IMAGE_SERVER_URL: http://img.regress.yapo.cl/%s/%s/%s.jpg
   ETCD_HOST: http://config-etcd:2397
   CACHE_HOST: premium-carousel-api-cache
