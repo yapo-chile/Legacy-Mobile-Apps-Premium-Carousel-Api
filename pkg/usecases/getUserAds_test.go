@@ -82,6 +82,11 @@ func (m *mockProductRepo) SetStatus(userProductID int,
 	return args.Error(0)
 }
 
+func (m *mockProductRepo) ExpireProducts() error {
+	args := m.Called()
+	return args.Error(0)
+}
+
 type mockAdRepo struct {
 	mock.Mock
 }

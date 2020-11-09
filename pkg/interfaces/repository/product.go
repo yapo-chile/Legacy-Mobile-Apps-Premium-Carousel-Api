@@ -399,3 +399,17 @@ func (repo *productRepo) SetExpiration(userProductID int, expiredAt time.Time) e
 	}
 	return result.Close()
 }
+
+// ExpireProductds sets expired status for all expired products
+func (repo *productRepo) ExpireProducts() error {
+	return repo.handler.Update(
+		`UPDATE
+			user_product
+		SET
+			status = 'EXPIRED'
+		WHERE
+			expired_at < (NOW() AT TIME ZONE 'UTC')
+		AND
+			status != 'EXPIRED'`,
+	)
+}

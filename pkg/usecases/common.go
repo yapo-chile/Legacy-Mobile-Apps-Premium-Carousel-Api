@@ -48,6 +48,7 @@ type ProductRepository interface {
 	SetExpiration(userProductID int, expiredAt time.Time) error
 	SetStatus(userProductID int, status domain.ProductStatus) error
 	GetReport(startDate, endDate time.Time) ([]domain.Product, error)
+	ExpireProducts() error
 }
 
 // CacheType defines the user cache type
