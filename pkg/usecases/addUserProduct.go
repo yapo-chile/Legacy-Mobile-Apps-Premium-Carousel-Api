@@ -53,11 +53,6 @@ func (interactor *addUserProductInteractor) AddUserProduct(userID int, email str
 	purchaseNumber, purchasePrice int, purchaseType domain.PurchaseType,
 	productType domain.ProductType, expiredAt time.Time,
 	config domain.ProductParams) error {
-	err := interactor.validate(userID, productType)
-	if err != nil {
-		interactor.logger.LogErrorAddingProduct(userID, err)
-		return err
-	}
 	purchase, err := interactor.purchaseRepo.CreatePurchase(purchaseNumber,
 		purchasePrice, purchaseType)
 	if err != nil {
@@ -81,20 +76,6 @@ func (interactor *addUserProductInteractor) AddUserProduct(userID int, email str
 			PushSoldProduct(product); err != nil {
 			interactor.logger.LogWarnPushingEvent(product.ID, err)
 		}
-	}
-	return nil
-}
-
-// validate validates conditions to create a product for user
-func (interactor *addUserProductInteractor) validate(userID int,
-	productType domain.ProductType) error {
-	_, err := interactor.productRepo.GetUserActiveProduct(userID, productType)
-	if err != ErrProductNotFound {
-		if err == nil {
-			err = fmt.Errorf("user already has an active product %s",
-				productType)
-		}
-		return err
 	}
 	return nil
 }
