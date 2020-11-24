@@ -10,6 +10,7 @@ go:
 if: tags IS blank
 
 before_install:
+  - configure_docker
   - configure_jfrog_client
   - helm init --client-only
 
