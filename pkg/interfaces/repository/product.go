@@ -190,7 +190,7 @@ func (repo *productRepo) GetUserActiveProduct(userID int,
 	result, err := repo.makeUserProductQuery(`
 		WHERE  p.status = 'ACTIVE'
 		AND p.user_id = $1 AND p.product_type = $2
-		ORDER BY p.expired_at, p.start_at ASC LIMIT 1`,
+		ORDER BY p.expired_at, p.start_at LIMIT 1`,
 		userID, productType)
 	if err != nil {
 		return domain.Product{}, err
@@ -411,6 +411,6 @@ func (repo *productRepo) ExpireProducts() error {
 		WHERE
 			expired_at < NOW()
 		AND
-			status != 'EXPIRED'`,
+			status = 'ACTIVE'`,
 	)
 }
