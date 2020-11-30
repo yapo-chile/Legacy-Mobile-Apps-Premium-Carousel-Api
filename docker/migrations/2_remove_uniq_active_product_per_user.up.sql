@@ -1,0 +1,2 @@
+DROP INDEX IF EXISTS user_product_unique_active_product;
+DROP INDEX IF EXISTS user_product_unique_active_product_per_email;

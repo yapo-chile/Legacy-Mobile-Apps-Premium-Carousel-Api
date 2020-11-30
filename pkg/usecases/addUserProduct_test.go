@@ -69,10 +69,6 @@ func TestAddProductOk(t *testing.T) {
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("domain.PurchaseType")).Return(domain.Purchase{}, nil)
-	mProductRepo.On("GetUserActiveProduct",
-		mock.AnythingOfType("int"),
-		mock.AnythingOfType("domain.ProductType")).Return(domain.Product{},
-		ErrProductNotFound)
 	mProductRepo.On("CreateUserProduct",
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("string"),
@@ -95,31 +91,6 @@ func TestAddProductOk(t *testing.T) {
 	mBackendEventRepo.AssertExpectations(t)
 }
 
-func TestAddProductValidateError(t *testing.T) {
-	mProductRepo := &mockProductRepo{}
-	mPurchaseRepo := &mockPurchaseRepo{}
-	mCacheRepo := &mockCacheRepo{}
-	mLogger := &mockAddUserProductLogger{}
-	mBackendEventRepo := &mockBackendEventRepo{}
-	interactor := MakeAddUserProductInteractor(mProductRepo, mPurchaseRepo,
-		mCacheRepo, mLogger, 0, mBackendEventRepo, false)
-
-	mLogger.On("LogErrorAddingProduct", mock.Anything, mock.Anything)
-	mProductRepo.On("GetUserActiveProduct",
-		mock.AnythingOfType("int"),
-		mock.AnythingOfType("domain.ProductType")).Return(domain.Product{},
-		nil)
-
-	err := interactor.AddUserProduct(0, "", 0, 0, domain.AdminPurchase,
-		domain.PremiumCarousel, time.Time{}, domain.ProductParams{})
-	assert.Error(t, err)
-	mProductRepo.AssertExpectations(t)
-	mPurchaseRepo.AssertExpectations(t)
-	mCacheRepo.AssertExpectations(t)
-	mLogger.AssertExpectations(t)
-	mBackendEventRepo.AssertExpectations(t)
-}
-
 func TestAddProductCreatePurchaseError(t *testing.T) {
 	mProductRepo := &mockProductRepo{}
 	mPurchaseRepo := &mockPurchaseRepo{}
@@ -134,10 +105,6 @@ func TestAddProductCreatePurchaseError(t *testing.T) {
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("domain.PurchaseType")).
 		Return(domain.Purchase{}, fmt.Errorf("err"))
-	mProductRepo.On("GetUserActiveProduct",
-		mock.AnythingOfType("int"),
-		mock.AnythingOfType("domain.ProductType")).Return(domain.Product{},
-		ErrProductNotFound)
 
 	err := interactor.AddUserProduct(0, "", 0, 0, domain.AdminPurchase,
 		domain.PremiumCarousel, time.Time{}, domain.ProductParams{})
@@ -164,10 +131,6 @@ func TestAddProductAcceptPurchaseError(t *testing.T) {
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("domain.PurchaseType")).Return(domain.Purchase{}, nil)
-	mProductRepo.On("GetUserActiveProduct",
-		mock.AnythingOfType("int"),
-		mock.AnythingOfType("domain.ProductType")).Return(domain.Product{},
-		ErrProductNotFound)
 	mProductRepo.On("CreateUserProduct",
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("string"),
@@ -199,10 +162,6 @@ func TestAddProductErrorAddingProduct(t *testing.T) {
 	interactor := MakeAddUserProductInteractor(mProductRepo, mPurchaseRepo,
 		mCacheRepo, mLogger, 0, mBackendEventRepo, false)
 	mLogger.On("LogErrorAddingProduct", mock.Anything, mock.Anything)
-	mProductRepo.On("GetUserActiveProduct",
-		mock.AnythingOfType("int"),
-		mock.AnythingOfType("domain.ProductType")).Return(domain.Product{},
-		ErrProductNotFound)
 	mPurchaseRepo.On("CreatePurchase",
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("int"),
@@ -239,10 +198,6 @@ func TestAddProductOkErrorSettingCache(t *testing.T) {
 		mock.AnythingOfType("domain.Product"),
 		mock.Anything).
 		Return(fmt.Errorf("err"))
-	mProductRepo.On("GetUserActiveProduct",
-		mock.AnythingOfType("int"),
-		mock.AnythingOfType("domain.ProductType")).Return(domain.Product{},
-		ErrProductNotFound)
 	mPurchaseRepo.On("CreatePurchase",
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("int"),
@@ -285,10 +240,6 @@ func TestAddProductOkBackendEventError(t *testing.T) {
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("domain.PurchaseType")).Return(domain.Purchase{}, nil)
-	mProductRepo.On("GetUserActiveProduct",
-		mock.AnythingOfType("int"),
-		mock.AnythingOfType("domain.ProductType")).Return(domain.Product{},
-		ErrProductNotFound)
 	mProductRepo.On("CreateUserProduct",
 		mock.AnythingOfType("int"),
 		mock.AnythingOfType("string"),

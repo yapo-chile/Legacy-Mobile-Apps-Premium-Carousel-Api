@@ -189,7 +189,8 @@ func (repo *productRepo) GetUserActiveProduct(userID int,
 	productType domain.ProductType) (domain.Product, error) {
 	result, err := repo.makeUserProductQuery(`
 		WHERE  p.status = 'ACTIVE'
-		AND p.user_id = $1 AND p.product_type = $2`,
+		AND p.user_id = $1 AND p.product_type = $2
+		ORDER BY p.expired_at, p.start_at LIMIT 1`,
 		userID, productType)
 	if err != nil {
 		return domain.Product{}, err
@@ -398,4 +399,18 @@ func (repo *productRepo) SetExpiration(userProductID int, expiredAt time.Time) e
 		return err
 	}
 	return result.Close()
+}
+
+// ExpireProductds sets expired status for all expired products
+func (repo *productRepo) ExpireProducts() error {
+	return repo.handler.Update(
+		`UPDATE
+			user_product
+		SET
+			status = 'EXPIRED'
+		WHERE
+			expired_at < NOW()
+		AND
+			status = 'ACTIVE'`,
+	)
 }

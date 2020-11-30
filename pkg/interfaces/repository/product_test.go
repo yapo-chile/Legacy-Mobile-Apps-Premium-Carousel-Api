@@ -826,3 +826,31 @@ func TestSetExpirationError(t *testing.T) {
 	mResult.AssertExpectations(t)
 	mLogger.AssertExpectations(t)
 }
+
+func TestSetExpirateProductsOK(t *testing.T) {
+	mockDB := &dbHandlerMock{}
+	mLogger := &mockProductRepoLogger{}
+	repo := MakeProductRepository(mockDB, 10, mLogger)
+	mockDB.On("Update",
+		mock.AnythingOfType("string"),
+		mock.Anything,
+	).Return(nil)
+	err := repo.ExpireProducts()
+	assert.NoError(t, err)
+	mockDB.AssertExpectations(t)
+	mLogger.AssertExpectations(t)
+}
+
+func TestSetExpirateProductsError(t *testing.T) {
+	mockDB := &dbHandlerMock{}
+	mLogger := &mockProductRepoLogger{}
+	repo := MakeProductRepository(mockDB, 10, mLogger)
+	mockDB.On("Update",
+		mock.AnythingOfType("string"),
+		mock.Anything,
+	).Return(fmt.Errorf("err"))
+	err := repo.ExpireProducts()
+	assert.Error(t, err)
+	mockDB.AssertExpectations(t)
+	mLogger.AssertExpectations(t)
+}

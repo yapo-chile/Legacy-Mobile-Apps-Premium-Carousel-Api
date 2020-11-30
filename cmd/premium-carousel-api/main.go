@@ -182,6 +182,11 @@ func main() { //nolint: funlen
 		loggers.MakeGetReportLogger(logger),
 	)
 
+	expireProductsInteractor := usecases.MakeExpireProductsInteractor(
+		productRepo,
+		loggers.MakeExpireProductsLogger(logger),
+	)
+
 	// UserAdsHandler
 	getUserAdsHandler := handlers.GetUserAdsHandler{
 		Interactor:          getUserAdsInteractor,
@@ -209,6 +214,11 @@ func main() { //nolint: funlen
 	setConfigHandler := handlers.SetConfigHandler{
 		Interactor: setConfigInteractor,
 	}
+
+	expireProductsHandler := handlers.ExpireProductsHandler{
+		Interactor: expireProductsInteractor,
+	}
+
 	// HealthHandler
 	var healthHandler handlers.HealthHandler
 
@@ -268,6 +278,12 @@ func main() { //nolint: funlen
 						Method:  "GET",
 						Pattern: "/report",
 						Handler: &getReportHandler,
+					},
+					{
+						Name:    "Expire products",
+						Method:  "GET",
+						Pattern: "/expire-products",
+						Handler: &expireProductsHandler,
 					},
 				},
 			},
