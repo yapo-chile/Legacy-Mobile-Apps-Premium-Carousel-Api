@@ -1,4 +1,14 @@
 ---
+.build:
+  image: golang:1.17.0
+  stage: build
+  script:
+    - CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -o $CI_PROJECT_DIR/app ./cmd/$CI_PROJECT_NAME/main.go
+  allow_failure: true
+  artifacts:
+    paths:
+      - app
+
 variables:
   GO_PROJECT: gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api
   CHART_DIR: k8s/$CI_PROJECT_NAME
