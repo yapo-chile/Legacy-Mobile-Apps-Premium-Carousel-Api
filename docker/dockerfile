@@ -1,5 +1,5 @@
 FROM golang:1.17.9-alpine3.15 AS gobuilder
-RUN apk add --update --no-cache alpine-sdk bash python librdkafka-dev=1.2.2-r0 librdkafka=1.2.2-r0
+RUN apk add --update --no-cache alpine-sdk bash python librdkafka-dev=1.8.2-r0 librdkafka=1.8.2-r0
 
 ARG APPFOLDER
 ARG APPNAME
