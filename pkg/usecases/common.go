@@ -32,7 +32,7 @@ type Ad struct {
 	OldPrice      float64              `json:"oldPrice"`
 	ListTime      time.Time            `json:"listTime"`
 	Media         []AdMedia            `json:"media"`
-	PublisherType domain.PublisherType `json:"publisherType"`
+	PublisherType string               `json:"publisherType"`
 	Params        map[string]Param     `json:"params"`
 }
 

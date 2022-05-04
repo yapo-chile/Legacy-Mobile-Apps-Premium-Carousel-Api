@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/domain"
 	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/usecases"
@@ -139,20 +138,27 @@ func (repo *adRepo) parseToAds(results []json.RawMessage) (ads domain.Ads) {
 func (repo *adRepo) fillAd(result usecases.Ad) domain.Ad {
 	regionKey := fmt.Sprintf("region.%d.link", result.Location.RegionID)
 	regionName := repo.regionsConf.Get(regionKey)
+	currency := "peso"
+	if val, ok := result.Params["currency"]; ok  {
+		currency, ok = val.Value.(string)
+		if !ok {
+			currency = "peso"
+		}
+	}
 	return domain.Ad{
-		ID:         strconv.Itoa(result.ListID),
-		UserID:     result.UserID,
-		CategoryID: result.Category.ParentID,
+		ID:         strconv.FormatInt(result.ListID, 10),
+		UserID:     int(result.UserID),
+		CategoryID: int(result.Category.ParentID),
 		Subject:    result.Subject,
 		Price:      result.Price,
-		Currency:   result.Params.Currency,
+		Currency:   currency,
 		URL: "/" + strings.Join(
 			[]string{
 				notAlphaNumbericRegex.ReplaceAllString(
 					specialCases.Replace(strings.ToLower(regionName)), "_"),
 				notAlphaNumbericRegex.ReplaceAllString(
 					specialCases.Replace(strings.ToLower(result.Subject)), "_") +
-					"_" + strconv.Itoa(result.ListID),
+					"_" + strconv.FormatInt(result.ListID, 10),
 			},
 			"/",
 		),
@@ -162,7 +168,7 @@ func (repo *adRepo) fillAd(result usecases.Ad) domain.Ad {
 }
 
 // getMainImage gets the main image for required ad using media struct
-func (repo *adRepo) getMainImage(imgs []Media) domain.Image {
+func (repo *adRepo) getMainImage(imgs []usecases.AdMedia) domain.Image {
 	if len(imgs) == 0 {
 		return domain.Image{}
 	}
