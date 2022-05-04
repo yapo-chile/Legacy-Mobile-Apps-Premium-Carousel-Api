@@ -1,4 +1,19 @@
 ---
+.install:
+  image: golang:1.17.0
+  stage: install
+  script:
+    - *set-golang-folders
+    - go mod init
+    - go mod tidy -compat=1.17
+    - cp ./go.sum $CI_PROJECT_DIR
+    - cp ./go.mod $CI_PROJECT_DIR
+  allow_failure: false
+  artifacts:
+    paths:
+      - go.sum
+      - go.mod
+
 variables:
   GO_PROJECT: gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api
   CHART_DIR: k8s/$CI_PROJECT_NAME
