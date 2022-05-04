@@ -1,5 +1,5 @@
 ---
- variables:
+variables:
   GO_PROJECT: gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api
   CHART_DIR: k8s/$CI_PROJECT_NAME
   CI_JOB_TIMESTAMP: date-tag
@@ -81,4 +81,3 @@ deploy-k8s-pro:
   only:
     - main
     - master
-
