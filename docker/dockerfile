@@ -1,4 +1,4 @@
-FROM golang:1.16 AS gobuilder
+FROM golang:1.17.9-alpine3.15 AS gobuilder
 RUN apk add --update --no-cache alpine-sdk bash python librdkafka-dev=1.2.2-r0 librdkafka=1.2.2-r0
 
 ARG APPFOLDER
