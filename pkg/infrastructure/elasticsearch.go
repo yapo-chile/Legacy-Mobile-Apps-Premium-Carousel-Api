@@ -135,10 +135,10 @@ func (e *elasticsearch) NewCategoryFilter(categoryIDs ...int) repository.Query {
 		}
 		if (cat % 1000) == 0 {
 			inputShould = append(inputShould,
-				elastic.NewRangeQuery("CategoryID").Gte(cat).Lt(cat+1000))
+				elastic.NewRangeQuery("category.parentId").Gte(cat).Lt(cat+1000))
 		} else {
 			inputShould = append(inputShould,
-				elastic.NewTermQuery("CategoryID", cat))
+				elastic.NewTermQuery("category.parentId", cat))
 
 		}
 	}

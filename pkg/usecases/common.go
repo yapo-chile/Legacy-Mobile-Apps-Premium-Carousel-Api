@@ -7,6 +7,58 @@ import (
 	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/domain"
 )
 
+// AdMedia holds ad images data
+type AdMedia struct {
+	// ID image unique ID
+	ID int `json:"ID"`
+	// SeqNo is the image sequence number to display in inblocket platform
+	SeqNo int `json:"SeqNo"`
+}
+
+// Ad holds ad response from external source
+type Ad struct {
+	AdID          int64                `json:"adId"`
+	ListID        int64                `json:"listId"`
+	UserID        int64                `json:"userId"`
+	Type          string               `json:"type"`
+	Phone         string               `json:"phone"`
+	Location      Location             `json:"location"`
+	Category      Category             `json:"category"`
+	Name          string               `json:"name"`
+	URL           string               `json:"url"`
+	Subject       string               `json:"subject"`
+	Body          string               `json:"body"`
+	Price         float64              `json:"price"`
+	OldPrice      float64              `json:"oldPrice"`
+	ListTime      time.Time            `json:"listTime"`
+	Media         []AdMedia            `json:"media"`
+	PublisherType domain.PublisherType `json:"publisherType"`
+	Params        map[string]Param     `json:"params"`
+}
+
+// Param represents additional parameters on ads
+type Param struct {
+	Type      string      `json:"type"`
+	Value     interface{} `json:"value"`
+	Translate interface{} `json:"translate"`
+}
+
+// Category represents a Yapo category details
+type Category struct {
+	ID         int64  `json:"id"`
+	Name       string `json:"name"`
+	ParentID   int64  `json:"parentId"`
+	ParentName string `json:"parentName"`
+}
+
+// Location represents a location object on Ad
+type Location struct {
+	RegionID    int64  `json:"regionId"`
+	RegionName  string `json:"regionName"`
+	ComunneID   int64  `json:"communeId"`
+	CommuneName string `json:"communeName"`
+}
+
 // GomsRepository interface that represents all the methods available to
 // interact with premium-carousel-api microservice
 type GomsRepository interface {

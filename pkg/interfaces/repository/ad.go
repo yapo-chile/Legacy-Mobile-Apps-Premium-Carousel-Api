@@ -34,44 +34,11 @@ func MakeAdRepository(handler Search, regionsConf Config, index,
 	}
 }
 
-// SearchOutput holds the ad data contained in external repository
-type SearchOutput struct {
-	AdID        int
-	ListID      int
-	CategoryID  int
-	CommuneID   int
-	RegionID    int
-	UserID      int
-	Type        string
-	Phone       string
-	Region      string
-	Commune     string
-	Category    string
-	SubCategory string
-	Name        string
-	Subject     string
-	Body        string
-	Price       float64
-	OldPrice    float64
-	ListTime    time.Time
-	Media       []Media
-	Params      struct {
-		Condition string
-		Currency  string
-	}
-}
-
-// Media holds image data in search Repository format
-type Media struct {
-	ID    int
-	SeqNo int
-}
-
 // GetUserAds gets user active ads from search repository using config to
 // match similar ads
 func (repo *adRepo) GetUserAds(userID int, productParams domain.ProductParams) (domain.Ads, error) {
 	limit := repo.makeLimit(productParams)
-	termQuery := repo.handler.NewTermQuery("UserID", userID)
+	termQuery := repo.handler.NewTermQuery("userId", userID)
 	must, mustNot := []Query{termQuery}, []Query{}
 
 	if len(productParams.Categories) > 0 {
@@ -84,9 +51,9 @@ func (repo *adRepo) GetUserAds(userID int, productParams domain.ProductParams) (
 		for _, keyword := range productParams.Keywords {
 			should = append(should,
 				repo.handler.NewMultiMatchQuery(keyword, "cross_fields",
-					"Category", "SubCategory", "Region", "Commune",
-					"Name", "Body", "Subject", "Params.Brand", "Params.Model",
-					"Params.Type", "Params.Version"))
+					"category.parentId", "category.id", "location.regionId", "location.communeId",
+					"name", "body", "subject", "params.brand", "params.model",
+					"params.type", "params.version"))
 		}
 		multiMatchBoolQuery := repo.handler.NewBoolQuery(
 			[]Query{}, []Query{}, should)
@@ -95,7 +62,7 @@ func (repo *adRepo) GetUserAds(userID int, productParams domain.ProductParams) (
 
 	if productParams.PriceRange > 0 {
 		must = append(must,
-			repo.handler.NewRangeQuery("Price",
+			repo.handler.NewRangeQuery("price",
 				productParams.PriceFrom, productParams.PriceTo))
 	}
 	if len(productParams.Exclude) > 0 {
@@ -161,7 +128,7 @@ var specialCases = strings.NewReplacer("á", "a", "é", "e", "í", "i", "ó", "o
 // parseToAds parses raw searchRepository response to domain object
 func (repo *adRepo) parseToAds(results []json.RawMessage) (ads domain.Ads) {
 	for _, hit := range results {
-		result := SearchOutput{}
+		result := usecases.Ad{}
 		json.Unmarshal(hit, &result) // nolint
 		ads = append(ads, repo.fillAd(result))
 	}
@@ -169,13 +136,13 @@ func (repo *adRepo) parseToAds(results []json.RawMessage) (ads domain.Ads) {
 }
 
 // fillAd parses search's document to domain.Ad struct
-func (repo *adRepo) fillAd(result SearchOutput) domain.Ad {
-	regionKey := fmt.Sprintf("region.%d.link", result.RegionID)
+func (repo *adRepo) fillAd(result usecases.Ad) domain.Ad {
+	regionKey := fmt.Sprintf("region.%d.link", result.Location.RegionID)
 	regionName := repo.regionsConf.Get(regionKey)
 	return domain.Ad{
 		ID:         strconv.Itoa(result.ListID),
 		UserID:     result.UserID,
-		CategoryID: result.CategoryID,
+		CategoryID: result.Category.ParentID,
 		Subject:    result.Subject,
 		Price:      result.Price,
 		Currency:   result.Params.Currency,
@@ -231,7 +198,7 @@ func (repo *adRepo) GetAd(listID string) (domain.Ad, error) {
 	if err != nil {
 		return domain.Ad{}, err
 	}
-	result := SearchOutput{}
+	result := usecases.Ad{}
 	if e := json.Unmarshal(res, &result); e != nil {
 		return domain.Ad{}, e
 	}
