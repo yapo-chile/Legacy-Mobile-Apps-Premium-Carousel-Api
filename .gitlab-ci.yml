@@ -1,4 +1,20 @@
 ---
+.set-golang-folders: &set-golang-folders
+  - export GO_PROJECT=${GO_PROJECT}
+  - export CHART_DIR=${CHART_DIR}
+  - export APPNAME=${CI_PROJECT_NAME}
+  - echo ${GOPATH}
+  - echo ${GO_PROJECT}
+# crea el directorio en el workspace de Go
+  - mkdir -p ${GOPATH}/src/${GO_PROJECT}
+# copia todo el contenido de CI_PROJECT_DIR al workspace de Go.
+# CI_PROJECT_DIR es una variable predefinida de GitLab que contiene
+# la ruta donde el repositorio es clonado y donde el job está corriendo
+  - cp -r ${CI_PROJECT_DIR}/* ${GOPATH}/src/${GO_PROJECT}/
+  - cd ${GOPATH}/src/${GO_PROJECT}
+  - pwd
+  - ls -la
+
 .install:
   image: golang:1.17.0
   stage: install
