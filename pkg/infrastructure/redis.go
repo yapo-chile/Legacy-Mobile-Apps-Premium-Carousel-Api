@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/interfaces/loggers"
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/interfaces/repository"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/interfaces/loggers"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/interfaces/repository"
 )
 
 // RedisHandler handler for the request made to redis

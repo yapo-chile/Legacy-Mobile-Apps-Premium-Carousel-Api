@@ -1,6 +1,6 @@
 package loggers
 
-import "github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
+import "gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/usecases"
 
 type addUserProductLogger struct {
 	logger Logger

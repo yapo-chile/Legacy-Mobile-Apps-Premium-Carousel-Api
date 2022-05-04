@@ -9,7 +9,7 @@ import (
 
 	"github.com/Yapo/goutils"
 
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/usecases"
 )
 
 // GetReportHandler implements the handler interface and responds to /report with

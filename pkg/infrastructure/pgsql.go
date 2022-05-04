@@ -6,8 +6,8 @@ import (
 	"time"
 
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/interfaces/loggers"
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/interfaces/repository"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/interfaces/loggers"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/interfaces/repository"
 )
 
 // PgsqlHandler allows connection with postgres database

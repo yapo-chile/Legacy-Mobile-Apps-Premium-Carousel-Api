@@ -11,7 +11,7 @@ import (
 	"github.com/pact-foundation/pact-go/dsl"
 	"github.com/pact-foundation/pact-go/types"
 
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/infrastructure"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/infrastructure"
 )
 
 type PactConf struct {

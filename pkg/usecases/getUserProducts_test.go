@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/domain"
 )
 
 type mockGetUserProductsLogger struct {
