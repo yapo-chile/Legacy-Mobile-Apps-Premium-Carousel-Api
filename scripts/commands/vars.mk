@@ -22,7 +22,7 @@ export REPORT_ARTIFACTS=reports
 # This variables are for the use of your microservice. This variables must be updated each time you are creating a new microservice
 export APPNAME=premium-carousel-api
 export APPFOLDER=premium-carousel-api
-export APPMODULE=github.mpi-internal.com/Yapo/${APPNAME}
+export APPMODULE=gitlab.com/yapo_team/legacy/mobile-apps/${APPNAME}
 export YO=`whoami`
 export SERVICE_PORT=8080
 export SERVICE_HOST=:localhost
@@ -47,7 +47,7 @@ export DOCKER_PORT=$(call genport,1)
 # Documentation variables
 export DOCS_DIR=docs
 export DOCS_HOST=localhost:$(call genport,3)
-export DOCS_PATH=github.mpi-internal.com/Yapo/${APPNAME}
+export DOCS_PATH=gitlab.com/yapo_team/legacy/mobile-apps/${APPNAME}
 export DOCS_COMMIT_MESSAGE=Generate updated documentation
 
 # Prometheus variables

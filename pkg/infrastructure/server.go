@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/interfaces/loggers"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/interfaces/loggers"
 )
 
 // Server struct that implements http server to routes incoming requests

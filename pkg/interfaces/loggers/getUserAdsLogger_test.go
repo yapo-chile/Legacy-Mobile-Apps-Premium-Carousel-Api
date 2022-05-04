@@ -3,7 +3,7 @@ package loggers
 import (
 	"testing"
 
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/domain"
 )
 
 func TestGetUserAdsLogger(t *testing.T) {

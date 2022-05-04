@@ -33,7 +33,7 @@
         "name": "VAR_GITHUB_LINK",
         "type": "constant",
         "label": "GITHUB_LINK",
-        "value": "https://github.mpi-internal.com/Yapo/premium-carousel-api",
+        "value": "https://gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api",
         "description": ""
       },
       {

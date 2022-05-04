@@ -1,5 +1,5 @@
 apiVersion: v1
 appVersion: "1.0"
-description: https://github.mpi-internal.com/Yapo/premium-carousel-api
+description: https://gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api
 name: premium-carousel-api
 version: 0.2.5

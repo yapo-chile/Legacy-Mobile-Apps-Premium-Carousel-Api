@@ -1,10 +1,10 @@
-FROM golang:1.13.5-alpine3.11 AS gobuilder
+FROM golang:1.16 AS gobuilder
 RUN apk add --update --no-cache alpine-sdk bash python librdkafka-dev=1.2.2-r0 librdkafka=1.2.2-r0
 
 ARG APPFOLDER
 ARG APPNAME
 
-WORKDIR /go/src/github.mpi-internal.com/Yapo/${APPFOLDER}
+WORKDIR /go/src/gitlab.com/yapo_team/legacy/mobile-apps/${APPFOLDER}
 ADD ./ .
 
 RUN make setup

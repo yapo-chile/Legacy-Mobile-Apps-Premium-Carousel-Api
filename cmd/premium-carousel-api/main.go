@@ -9,11 +9,11 @@ import (
 	mpgsql "github.com/mattes/migrate/database/postgres"
 	_ "github.com/mattes/migrate/source/file"
 
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/infrastructure"
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/interfaces/handlers"
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/interfaces/loggers"
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/interfaces/repository"
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/infrastructure"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/interfaces/handlers"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/interfaces/loggers"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/interfaces/repository"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/usecases"
 )
 
 func main() { //nolint: funlen

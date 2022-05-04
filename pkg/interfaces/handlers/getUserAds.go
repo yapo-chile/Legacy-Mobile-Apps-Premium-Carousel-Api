@@ -6,8 +6,8 @@ import (
 
 	"github.com/Yapo/goutils"
 
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/domain"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/usecases"
 )
 
 // GetUserAdsHandler implements the handler interface and responds to /ads with

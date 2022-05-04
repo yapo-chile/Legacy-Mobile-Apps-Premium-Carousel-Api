@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/domain"
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/usecases"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/domain"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/usecases"
 )
 
 // producer allows to push events to queue

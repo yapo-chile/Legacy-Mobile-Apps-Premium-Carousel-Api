@@ -6,7 +6,7 @@ import (
 
 	"github.com/Yapo/logger"
 	"github.com/confluentinc/confluent-kafka-go/kafka" // nolint
-	"github.mpi-internal.com/Yapo/premium-carousel-api/pkg/interfaces/repository"
+	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/interfaces/repository"
 )
 
 // KafkaProducer struct representing a message producer for kafka
