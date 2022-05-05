@@ -1,5 +1,5 @@
 FROM golang:1.17.9-alpine3.15 AS gobuilder
-RUN apk add --update --no-cache alpine-sdk bash python librdkafka-dev=1.8.2-r0 librdkafka=1.8.2-r0
+RUN apk add --update --no-cache alpine-sdk bash librdkafka=1.8.2-r0 librdkafka-dev=1.8.2-r0
 
 ARG APPFOLDER
 ARG APPNAME
@@ -8,10 +8,10 @@ WORKDIR /go/src/gitlab.com/yapo_team/legacy/mobile-apps/${APPFOLDER}
 ADD ./ .
 
 RUN make setup
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -o /app.linux cmd/${APPNAME}/main.go
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -tags musl -o /app.linux cmd/${APPNAME}/main.go
 
-FROM alpine:3.11
-RUN apk update && apk add --no-cache librdkafka-dev=1.2.2-r0 librdkafka=1.2.2-r0 ca-certificates && rm -rf /var/cache/apk/*
+FROM alpine:3.15
+RUN apk update && apk add --no-cache alpine-sdk librdkafka=1.8.2-r0  librdkafka-dev=1.8.2-r0 ca-certificates && rm -rf /var/cache/apk/*
 
 ARG GIT_COMMIT
 ARG GIT_BRANCH

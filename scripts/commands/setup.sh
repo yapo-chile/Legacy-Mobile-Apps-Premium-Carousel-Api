@@ -6,8 +6,6 @@ if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 . "$DIR/colors.sh"
 
 echoHeader "Running dependencies script"
-
-set -e
 # List of tools used for testing, validation, and report generation
 tools=(
     github.com/jstemmer/go-junit-report
@@ -21,7 +19,7 @@ for tool in ${tools[@]}; do
    GO111MODULE=off go get -u -v ${tool}
 done
 
-GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.24.0
+GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint
 
  # install librdkafka
 if [ "$(id -nu)" != "root" ]; then
