@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-# Include colors.sh
-DIR="${BASH_SOURCE%/*}"
-if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
-. "$DIR/colors.sh"
-
 set -e
 
 mkdir -p ${REPORT_ARTIFACTS}
@@ -14,12 +9,13 @@ TMP_COVER_FILE=${REPORT_ARTIFACTS}/cover.out.tmp
 COVERAGE_REPORT=${REPORT_ARTIFACTS}/coverage.xml
 JUNIT_REPORT=${REPORT_ARTIFACTS}/junit-report.xml
 EXCLUDE_FILE=./cover.exclude.directory.txt
+COVER_HTML_FILE=${REPORT_ARTIFACTS}/cover.html
 
 echoHeader "Running Unit Tests"
 
 function run_tests {
     # Get packages list except vendor and pact directories
-    packages=$(go list ./... | join -v 2 cover.exclude.directory.txt - | grep -v vendor | grep -v pact )
+    packages=$(go list ./... 2>/dev/null | join -v 2 ${EXCLUDE_FILE} -)
     # Create cover output file
     echo "mode: count" > ${COVER_FILE}
     # Test all packages from the list
@@ -44,8 +40,8 @@ elif [[ $@ == **html** ]]; then
     # Open browser with code coverage details
     echoTitle "Printing code coverage details"
     go tool cover -func ${COVER_FILE}
-    echoTitle "Displaying coverage on default browser"
-    go tool cover -html ${COVER_FILE}
+    echoTitle "Rendering coverage html file"
+    go tool cover -html ${COVER_FILE} -o ${COVER_HTML_FILE}
 else
     # Generate coverage report
     echoTitle "Generating coverage report"

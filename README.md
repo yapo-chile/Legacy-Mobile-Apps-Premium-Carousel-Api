@@ -14,14 +14,14 @@ premium-carousel-api needs a description here.
 
 ## How to run premium-carousel-api
 
-* Create the dir: `~/go/src/github.mpi-internal.com/Yapo`
+* Create the dir: `~/go/src/gitlab.com/yapo_team`
 
 * Set the go path: `export GOPATH=~/go` or add the line on your file `.bash_rc`
 
 * Clone this repo:
 
   ```
-  $ cd ~/go/src/github.mpi-internal.com/Yapo
+  $ cd ~/go/src/gitlab.com/yapo_team
   $ git clone git@github.mpi-internal.com:Yapo/premium-carousel-api.git
   ```
 

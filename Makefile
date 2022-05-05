@@ -1,72 +1,46 @@
-include scripts/commands/vars.mk
+include mk/help.mk
+include mk/colors.mk
+SHELL=bash
 
-## Run tests and generate quality reports
-test:
-	@scripts/commands/test.sh
+# Image information
+export APPNAME ?= $(shell basename `git rev-parse --show-toplevel`)
+export BRANCH ?= $(shell git branch | sed -n 's/^\* //p')
+export COMMIT ?= $(shell git rev-parse HEAD)
+export COMMIT_DATE ?= $(shell TZ="America/Santiago" git show --quiet --date='format-local:%Y%m%d_%H%M%S' --format="%cd")
+export COMMIT_DATE_UTC ?= $(shell TZ=UTC git show --quiet --date='format-local:%Y%m%d_%H%M%S' --format="%cd")
+export CREATION_DATE ?= $(shell date -u '+%Y%m%d_%H%M%S')
+export CREATOR ?= $(shell git log --format=format:%ae | head -n 1)
 
-## Run tests and output coverage reports
-cover:
-	@scripts/commands/test_cover.sh cli
+# Docker environment
+export DOCKER_REGISTRY ?= registry.gitlab.com/yapo_team/legacy/mobile-apps
+export DOCKER_IMAGE ?= ${DOCKER_REGISTRY}/${APPNAME}
+export DOCKER_TAG ?= $(shell echo ${BRANCH} | tr '[:upper:]' '[:lower:]' | sed 's,/,_,g')
+export DOCKER ?= docker
 
-## Run tests and open report on default web browser
-coverhtml:
-	@scripts/commands/test_cover.sh html
+# Golang environment
+export GO111MODULE ?= on
 
-## Run gometalinter and output report as text
-checkstyle:
-	@scripts/commands/test_style.sh display
+# K8s environment
+export CHART_DIR ?= k8s/${APPNAME}
 
-## Install golang system level dependencies
-setup:
-	@scripts/commands/setup.sh
-	
-## Compile and build the executable file for pact tests
-pact-build:
-	scripts/commands/pact-build.sh
+# Service variables
+export SERVICE_PORT=8080
+export BASE_URL="http://localhost:${SERVICE_PORT}"
 
-## Execute pact tests
-pact-test: pact-build
-	scripts/commands/pact-test.sh
-	
-## Compile the code
-build:
-	@scripts/commands/build.sh
 
-## Execute the service
-run:
-	@env APP_PORT=${SERVICE_PORT} ./${APPNAME}
-
-## Compile and start the service
-start: build run
-
-## Compile and start the service using docker
-docker-start: build docker-build docker-compose-up info
-
-## Stop docker containers
-docker-stop: docker-compose-down
-
-## Setup a new service repository based on premium-carousel-api
+## Setup a new service repository based on ads-recommender
 clone:
 	@scripts/commands/clone.sh
 
-## Deploy project image on rancher
-deploy-rancher:
-	@scripts/commands/deploy-rancher.sh
-
-deploy-k8s:
-	@scripts/commands/deploy-k8s.sh
-
-## Run gofmt to reindent source
-fix-format:
-	@scripts/commands/fix-format.sh
-
 ## Display basic service info
 info:
-	@echo "YO           : ${YO}"
-	@echo "ServerRoot   : ${SERVER_ROOT}"
-	@echo "API Base URL : ${BASE_URL}"
-	@echo "Healthcheck  : curl ${BASE_URL}/healthcheck"
+	@echo "Service: ${APPNAME}"
+	@echo "Images from latest commit:"
+	@echo -e "- ${DOCKER_IMAGE}:${DOCKER_TAG}"
+	@echo -e "- ${DOCKER_IMAGE}:${COMMIT_DATE_UTC}"
+	@echo "API Base URL: ${BASE_URL}"
+	@echo "Healthcheck: curl ${BASE_URL}/healthcheck"
 
-include docs.mk
-include docker.mk
-include help.mk
+include mk/dev.mk
+include mk/test.mk
+include mk/deploy.mk

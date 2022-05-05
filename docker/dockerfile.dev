@@ -1,0 +1,21 @@
+FROM golang:1.17-alpine3.15
+RUN apk add --update --no-cache alpine-sdk bash librdkafka=1.8.2-r0 librdkafka-dev=1.8.2-r0
+
+ENV TZ America/Santiago
+
+# Copy zoneinfo file and then remove cache
+# RUN cp /usr/share/zoneinfo/$TZ /etc/localtime
+RUN GO111MODULE=off go get -u github.com/githubnemo/CompileDaemon
+
+ENV PATH="/pact/bin:${PATH}"
+
+EXPOSE 8080
+
+ARG APPNAME
+ARG MAIN_FILE
+ENV APPNAME ${APPNAME:-premium-carousel-api}
+ENV MAIN_FILE ${MAIN_FILE:-cmd/${APPNAME}/main.go}
+
+WORKDIR /app
+
+CMD CompileDaemon -log-prefix=false -build="go build -v -tags musl -o ${APPNAME} ./${MAIN_FILE}" -command="./${APPNAME}"

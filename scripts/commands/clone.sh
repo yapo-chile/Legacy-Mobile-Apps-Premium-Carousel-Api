@@ -1,17 +1,12 @@
 #!/usr/bin/env bash
 
-# Include colors.sh
-DIR="${BASH_SOURCE%/*}"
-if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
-. "$DIR/colors.sh"
-
 TEMPLATE=premium-carousel-api
 BRANCH=master
-GITHUB_ORG=github.mpi-internal.com/Yapo
-GITHUB_URL=git@github.mpi-internal.com:Yapo
-BASEPATH=${GOPATH}/src/${GITHUB_ORG}
-GITHUB_NAME=$(git config user.name)
-GITHUB_EMAIL=$(git config user.email)
+GITLAB_ORG=gitlab.com/yapo_team
+GITLAB_URL=git@gitlab.com:yapo_team
+BASEPATH=${GOPATH}/src/${GITLAB_ORG}
+GITLAB_NAME=$(git config user.name)
+GITLAB_EMAIL=$(git config user.email)
 
 set -e
 
@@ -21,20 +16,20 @@ echoTitle "What's the name of your service? Please use dash-separated-lowercase-
 read -p "Service name? " SERVICE
 [ -z "${SERVICE}" ] && echo "No name? No service!" && false
 echo -e "${SERVICE}" | grep -sqv "[a-z-]" && echo "Bad format. No service!" && false
-echo "Great! Please ensure that ${GITHUB_ORG}/${SERVICE} exists and is empty"
+echo "Great! Please ensure that ${GITLAB_ORG}/${SERVICE} exists and is empty"
 
 echoTitle "Confirm your identity. Press enter to accept the default"
-read -p "User name to display [${GITHUB_NAME}]? " NAME
-read -p "User email to display [${GITHUB_EMAIL}]? " EMAIL
-[ -z ${NAME} ] && NAME=${GITHUB_NAME}
-[ -z ${EMAIL} ] && EMAIL=${GITHUB_EMAIL}
+read -p "User name to display [${GITLAB_NAME}]? " NAME
+read -p "User email to display [${GITLAB_EMAIL}]? " EMAIL
+[ -z ${NAME} ] && NAME=${GITLAB_NAME}
+[ -z ${EMAIL} ] && EMAIL=${GITLAB_EMAIL}
 echo "Commits will be created as: [${NAME} <${EMAIL}>]"
 
 echoTitle "Cloning a fresh ${TEMPLATE}:${BRANCH} to ${SERVICE}"
 rm -rf ${BASEPATH}/${SERVICE}
 git clone \
 	-b ${BRANCH} \
-	${GITHUB_URL}/${TEMPLATE}.git ${BASEPATH}/${SERVICE}
+	${GITLAB_URL}/${TEMPLATE}.git ${BASEPATH}/${SERVICE}
 cd ${BASEPATH}/${SERVICE}
 
 echoTitle "Preparing the new repo ${SERVICE}:${BRANCH}"
@@ -59,6 +54,7 @@ else
     find cmd -name main.go | xargs sed -i.bak '/CLONE-RCONF REMOVE START/,/CLONE-RCONF REMOVE END/d'
     find docker -name docker-compose.yml | xargs sed -i.bak '/CLONE-RCONF REMOVE START/,/CLONE-RCONF REMOVE END/d'
     find . -iname "*rconf*" | xargs rm
+    find . -iname "*mockLoggerInfra_test*" | xargs rm
 fi
 
 for dir in $(find . -name "${TEMPLATE}" -type d); do
@@ -86,7 +82,7 @@ echoTitle "Making first commit"
 git add -A
 git commit -m "Rename ${TEMPLATE} -> ${SERVICE}"
 git tag -m "Forked from ${TEMPLATE}" v0.0.0
-git remote set-url origin ${GITHUB_URL}/${SERVICE}.git
+git remote set-url origin ${GITLAB_URL}/${SERVICE}.git
 git gc --aggressive
 
 echoHeader "Your fresh service is ready to code at ${BASEPATH}/${SERVICE}"

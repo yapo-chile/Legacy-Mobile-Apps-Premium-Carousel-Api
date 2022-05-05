@@ -1,46 +1,32 @@
-FROM golang:1.16 AS gobuilder
-RUN apk add --update --no-cache alpine-sdk bash python librdkafka-dev=1.2.2-r0 librdkafka=1.2.2-r0
-
-ARG APPFOLDER
+FROM golang:1.17.9-alpine3.15 AS gobuilder
+RUN apk add --update --no-cache alpine-sdk bash librdkafka=1.8.2-r0 librdkafka-dev=1.8.2-r0
 ARG APPNAME
 
-WORKDIR /go/src/gitlab.com/yapo_team/legacy/mobile-apps/${APPFOLDER}
-ADD ./ .
+WORKDIR /go/src/gitlab.com/yapo_team/mobile-apps/${APPNAME}
+COPY ./ .
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -tags musl -o /app.linux cmd/${APPNAME}/main.go
 
-RUN make setup
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -o /app.linux cmd/${APPNAME}/main.go
+FROM alpine:3.15
+RUN apk update && apk add --no-cache alpine-sdk librdkafka=1.8.2-r0  librdkafka-dev=1.8.2-r0 ca-certificates && rm -rf /var/cache/apk/*
 
-FROM alpine:3.11
-RUN apk update && apk add --no-cache librdkafka-dev=1.2.2-r0 librdkafka=1.2.2-r0 ca-certificates && rm -rf /var/cache/apk/*
+# Package tzdata is needed before setting TZ ENV variable
+RUN apk update && apk add ca-certificates && apk add -U tzdata
+ENV TZ America/Santiago
 
-ARG GIT_COMMIT
-ARG GIT_BRANCH
-ARG GIT_COMMIT_DATE
-ARG BUILD_CREATOR
-ARG APPNAME
+# Copy zoneinfo file and then remove cache
+RUN cp /usr/share/zoneinfo/$TZ /etc/localtime && rm -rf /var/cache/apk/*
 
 EXPOSE 8080
 WORKDIR /home/user/app/
-
-ENV PS1="\[\e[1;32m\]$APPNAME \[\e[1;31m\][`pwd`] # \[\e[0m\]"
-
-# Need to define ENV in order to use it in CMD
-
-LABEL branch=$GIT_BRANCH \
-   commit=$GIT_COMMIT \
-   commit-date=$GIT_COMMIT_DATE \
-   build-creator=$BUILD_CREATOR \
-   appname=$APPNAME
-
 COPY --from=gobuilder /app.linux .
 COPY /docker/migrations/*.sql /home/user/app/migrations/
 
 RUN touch /home/user/app/$GIT_COMMIT
 
-# Package tzdata is needed before setting TZ ENV variable
-RUN apk update && apk add ca-certificates && apk add -U tzdata
-ENV TZ America/Santiago
-# Copy zoneinfo file and then remove cache
-RUN cp /usr/share/zoneinfo/$TZ /etc/localtime && rm -rf /var/cache/apk/*
-
 CMD ["./app.linux"]
+
+ARG APPNAME
+ENV PS1="\[\e[1;32m\]$APPNAME \[\e[1;31m\][`pwd`] # \[\e[0m\]"
+
+ARG GIT_COMMIT
+RUN touch /home/user/app/$GIT_COMMIT

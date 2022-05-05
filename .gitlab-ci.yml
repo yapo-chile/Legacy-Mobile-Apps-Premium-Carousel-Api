@@ -1,34 +1,13 @@
 ---
-.set-golang-folders: &set-golang-folders
-  - export GO_PROJECT=${GO_PROJECT}
-  - export CHART_DIR=${CHART_DIR}
-  - export APPNAME=${CI_PROJECT_NAME}
-  - echo ${GOPATH}
-  - echo ${GO_PROJECT}
-# crea el directorio en el workspace de Go
-  - mkdir -p ${GOPATH}/src/${GO_PROJECT}
-# copia todo el contenido de CI_PROJECT_DIR al workspace de Go.
-# CI_PROJECT_DIR es una variable predefinida de GitLab que contiene
-# la ruta donde el repositorio es clonado y donde el job está corriendo
-  - cp -r ${CI_PROJECT_DIR}/* ${GOPATH}/src/${GO_PROJECT}/
-  - cd ${GOPATH}/src/${GO_PROJECT}
-  - pwd
-  - ls -la
-
-.install:
+.build:
   image: golang:1.17.0
-  stage: install
+  stage: build
   script:
-    - *set-golang-folders
-    - go mod init
-    - go mod tidy -compat=1.17
-    - cp ./go.sum $CI_PROJECT_DIR
-    - cp ./go.mod $CI_PROJECT_DIR
+    - CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -v -tags musl -o $CI_PROJECT_DIR/app ./cmd/$CI_PROJECT_NAME/main.go
   allow_failure: false
   artifacts:
     paths:
-      - go.sum
-      - go.mod
+      - app
 
 variables:
   GO_PROJECT: gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api
@@ -37,7 +16,7 @@ variables:
 
 include:
   - project: 'yapo_team/yotf/sre-team/sre-services/ci-templates/golang-pipeline-template'
-    ref: main
+    ref: golang-1.17
     file: 'gitlab-ci.yml'
   - project: 'yapo_team/yotf/sre-team/sre-services/ci-templates/docker-pipeline-template'
     ref: main
@@ -112,4 +91,3 @@ deploy-k8s-pro:
   only:
     - main
     - master
-
