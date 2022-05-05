@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# Include colors.sh
-DIR="${BASH_SOURCE%/*}"
-if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
-. "$DIR/colors.sh"
-
 set -e
 
 mkdir -p ${REPORT_ARTIFACTS}
