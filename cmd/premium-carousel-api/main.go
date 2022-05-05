@@ -83,6 +83,8 @@ func main() { //nolint: funlen
 	elasticsearch := infrastructure.NewElasticsearch(
 		conf.AdConf.Host,
 		conf.AdConf.Port,
+		conf.AdConf.Username,
+		conf.AdConf.Password,
 		logger,
 	)
 	var backendEventsProducer repository.KafkaProducer

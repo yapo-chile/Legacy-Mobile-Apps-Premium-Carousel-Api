@@ -143,6 +143,8 @@ func (chc *BrowserCacheConf) InitEtag() int64 {
 type AdConf struct {
 	Host                string `env:"HOST" envDefault:"http://10.15.1.78"`
 	Port                string `env:"PORT" envDefault:"19200"`
+	Username            string `env:"USERNAME" envDefault:"user"`
+	Password            string `env:"PASSSWORD" envDefault:"pass"`
 	Index               string `env:"PATH" envDefault:"ads"`
 	ImageServerURL      string `env:"IMAGE_SERVER_URL" envDefault:"https://img.yapo.cl/%s/%s/%s.jpg"`
 	CurrencySymbol      string `env:"CURRENCY_SYMBOL" envDefault:"$"`

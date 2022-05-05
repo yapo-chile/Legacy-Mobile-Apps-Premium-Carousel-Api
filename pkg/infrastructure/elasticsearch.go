@@ -17,10 +17,11 @@ type elasticsearch struct {
 }
 
 // NewElasticsearch creates a new instance for elasticsearch connector
-func NewElasticsearch(host, port string, logger loggers.Logger) *elasticsearch {
+func NewElasticsearch(host, port, username, password string, logger loggers.Logger) *elasticsearch {
 	client, _ := elastic.NewClient(
 		elastic.SetSniff(false),
 		elastic.SetURL(host+":"+port),
+		elastic.SetBasicAuth(username, password),
 	)
 	esversion, err := client.ElasticsearchVersion(host + ":" + port)
 	if err != nil {
