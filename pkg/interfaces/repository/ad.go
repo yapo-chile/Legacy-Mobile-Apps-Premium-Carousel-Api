@@ -200,13 +200,11 @@ func (repo *adRepo) makeLimit(productParams domain.ProductParams) int {
 
 // GetAd gets ad in search Repository using listID
 func (repo *adRepo) GetAd(listID string) (domain.Ad, error) {
-	res, err := repo.handler.GetDoc(repo.index, listID)
+	termQuery := repo.handler.NewTermQuery("listId", listID)
+	res, err := repo.handler.Search(repo.index, termQuery, 0, 10)
 	if err != nil {
 		return domain.Ad{}, err
 	}
-	result := usecases.Ad{}
-	if e := json.Unmarshal(res, &result); e != nil {
-		return domain.Ad{}, e
-	}
-	return repo.fillAd(result), nil
+	ads := repo.parseToAds(res.GetResults())
+	return ads[0], nil
 }
