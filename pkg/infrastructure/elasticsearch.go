@@ -18,14 +18,19 @@ type elasticsearch struct {
 
 // NewElasticsearch creates a new instance for elasticsearch connector
 func NewElasticsearch(host, port, username, password string, logger loggers.Logger) *elasticsearch {
-	client, _ := elastic.NewClient(
-		elastic.SetSniff(false),
+	client, err := elastic.NewClient(
 		elastic.SetURL(host+":"+port),
+		elastic.SetSniff(false),
+		elastic.SetHealthcheck(true),
 		elastic.SetBasicAuth(username, password),
 	)
+	if err != nil {
+		logger.Error("Error connecting to elasticsearch: %s", err)
+		return nil
+	}
 	esversion, err := client.ElasticsearchVersion(host + ":" + port)
 	if err != nil {
-		logger.Error("Error connecting to elasticsearch")
+		logger.Error("Error connecting to elasticsearch: %s", err)
 		return nil
 	}
 	logger.Info("Connected to elasticsearch version: %s", esversion)
