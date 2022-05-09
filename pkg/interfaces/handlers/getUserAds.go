@@ -81,7 +81,7 @@ func (h *GetUserAdsHandler) Execute(ig InputGetter) *goutils.Response {
 		}
 	}
 	body := getUserRequestOutput{
-		Ads: h.fillResponse(resp),
+		Ads: h.fillResponse(resp, in.ListID),
 	}
 	if len(body.Ads) == 0 {
 		return &goutils.Response{
@@ -95,9 +95,12 @@ func (h *GetUserAdsHandler) Execute(ig InputGetter) *goutils.Response {
 }
 
 // fillResponse parses domain struct to expected handler output
-func (h *GetUserAdsHandler) fillResponse(ads domain.Ads) []adsOutput {
+func (h *GetUserAdsHandler) fillResponse(ads domain.Ads, listID string) []adsOutput {
 	resp := []adsOutput{}
 	for _, ad := range ads {
+		if ad.ID == listID {
+			continue;
+		}
 		adOutTemp := adsOutput{
 			ID:       ad.ID,
 			Title:    ad.Subject,
