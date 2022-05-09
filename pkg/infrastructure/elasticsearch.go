@@ -17,14 +17,20 @@ type elasticsearch struct {
 }
 
 // NewElasticsearch creates a new instance for elasticsearch connector
-func NewElasticsearch(host, port string, logger loggers.Logger) *elasticsearch {
-	client, _ := elastic.NewClient(
-		elastic.SetSniff(false),
+func NewElasticsearch(host, port, username, password string, logger loggers.Logger) *elasticsearch {
+	client, err := elastic.NewClient(
 		elastic.SetURL(host+":"+port),
+		elastic.SetSniff(false),
+		elastic.SetHealthcheck(true),
+		elastic.SetBasicAuth(username, password),
 	)
+	if err != nil {
+		logger.Error("Error connecting to elasticsearch: %s", err)
+		return nil
+	}
 	esversion, err := client.ElasticsearchVersion(host + ":" + port)
 	if err != nil {
-		logger.Error("Error connecting to elasticsearch")
+		logger.Error("Error connecting to elasticsearch: %s", err)
 		return nil
 	}
 	logger.Info("Connected to elasticsearch version: %s", esversion)
@@ -135,10 +141,10 @@ func (e *elasticsearch) NewCategoryFilter(categoryIDs ...int) repository.Query {
 		}
 		if (cat % 1000) == 0 {
 			inputShould = append(inputShould,
-				elastic.NewRangeQuery("CategoryID").Gte(cat).Lt(cat+1000))
+				elastic.NewRangeQuery("category.parentId").Gte(cat).Lt(cat+1000))
 		} else {
 			inputShould = append(inputShould,
-				elastic.NewTermQuery("CategoryID", cat))
+				elastic.NewTermQuery("category.parentId", cat))
 
 		}
 	}
