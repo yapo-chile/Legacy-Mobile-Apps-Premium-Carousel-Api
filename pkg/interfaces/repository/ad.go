@@ -3,6 +3,7 @@ package repository
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"math/rand"
 	"regexp"
 	"strconv"
@@ -126,9 +127,13 @@ var specialCases = strings.NewReplacer("á", "a", "é", "e", "í", "i", "ó", "o
 
 // parseToAds parses raw searchRepository response to domain object
 func (repo *adRepo) parseToAds(results []json.RawMessage) (ads domain.Ads) {
+	fmt.Printf("results %+v\n", results)
+	log.Printf("results %+v\n", results)
 	for _, hit := range results {
 		result := usecases.Ad{}
-		json.Unmarshal(hit, &result) // nolint
+		err := json.Unmarshal(hit, &result) // nolint
+		log.Printf("result Unmarshal err %+v\n", err)
+		fmt.Printf("result Unmarshal err %+v\n", err)
 		ads = append(ads, repo.fillAd(result))
 	}
 	return
@@ -139,7 +144,7 @@ func (repo *adRepo) fillAd(result usecases.Ad) domain.Ad {
 	regionKey := fmt.Sprintf("region.%d.link", result.Location.RegionID)
 	regionName := repo.regionsConf.Get(regionKey)
 	currency := "peso"
-	if val, ok := result.Params["currency"]; ok  {
+	if val, ok := result.Params["currency"]; ok {
 		currency, ok = val.Value.(string)
 		if !ok {
 			currency = "peso"
@@ -201,7 +206,11 @@ func (repo *adRepo) makeLimit(productParams domain.ProductParams) int {
 // GetAd gets ad in search Repository using listID
 func (repo *adRepo) GetAd(listID string) (domain.Ad, error) {
 	termQuery := repo.handler.NewTermQuery("listId", listID)
+	log.Printf("termQuery %s\n", termQuery)
+	fmt.Printf("termQuery %s\n", termQuery)
 	res, err := repo.handler.Search(repo.index, termQuery, 0, 10)
+	log.Printf("Search res:%+v err:%+v\n", res, err)
+	fmt.Printf("Search res:%+v err:%+v\n", res, err)
 	if err != nil {
 		return domain.Ad{}, err
 	}
