@@ -99,7 +99,7 @@ func (h *GetUserAdsHandler) fillResponse(ads domain.Ads, listID string) []adsOut
 	resp := []adsOutput{}
 	for _, ad := range ads {
 		if ad.ID == listID {
-			continue
+			continue;
 		}
 		adOutTemp := adsOutput{
 			ID:       ad.ID,
