@@ -99,7 +99,7 @@ func (h *GetUserAdsHandler) fillResponse(ads domain.Ads, listID string) []adsOut
 	resp := []adsOutput{}
 	for _, ad := range ads {
 		if ad.ID == listID {
-			continue;
+			continue
 		}
 		adOutTemp := adsOutput{
 			ID:       ad.ID,
@@ -117,7 +117,6 @@ func (h *GetUserAdsHandler) fillResponse(ads domain.Ads, listID string) []adsOut
 		}
 		if ad.Currency == "uf" {
 			adOutTemp.Currency = h.UnitOfAccountSymbol
-			adOutTemp.Price = adOutTemp.Price / 100
 		} else {
 			adOutTemp.Currency = h.CurrencySymbol
 		}
