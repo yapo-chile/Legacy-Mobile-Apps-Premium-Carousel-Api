@@ -117,7 +117,6 @@ func (h *GetUserAdsHandler) fillResponse(ads domain.Ads, listID string) []adsOut
 		}
 		if ad.Currency == "uf" {
 			adOutTemp.Currency = h.UnitOfAccountSymbol
-			adOutTemp.Price = adOutTemp.Price / 100
 		} else {
 			adOutTemp.Currency = h.CurrencySymbol
 		}
