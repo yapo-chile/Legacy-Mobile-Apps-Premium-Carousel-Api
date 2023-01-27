@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"log"
 
 	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/domain"
 	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/usecases"
@@ -200,8 +201,11 @@ func (repo *adRepo) makeLimit(productParams domain.ProductParams) int {
 
 // GetAd gets ad in search Repository using listID
 func (repo *adRepo) GetAd(listID string) (domain.Ad, error) {
+	log.Printf("Getting Ad", listID)
 	termQuery := repo.handler.NewTermQuery("listId", listID)
+	log.Printf("termQuery Ad", termQuery)
 	res, err := repo.handler.Search(repo.index, termQuery, 0, 10)
+	log.Printf("Search Ad", res)
 	if err != nil {
 		return domain.Ad{}, err
 	}
