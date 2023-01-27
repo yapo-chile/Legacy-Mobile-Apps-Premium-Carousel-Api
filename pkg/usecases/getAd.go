@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 	"time"
+	"log"
 
 	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/domain"
 )
@@ -42,12 +43,17 @@ func (interactor *getAdInteractor) GetAd(listID string) (ad domain.Ad, err error
 	if cacheError == nil {
 		return ad, nil
 	}
+	log.Printf("Before Getting Ad")
 	interactor.logger.LogWarnGettingCache(listID, cacheError)
 	ad, err = interactor.adRepo.GetAd(listID)
+	log.Printf("After Getting Ad")
+	log.Printf("AD", ad)
+	log.Printf("err", err)
 	if err != nil {
 		interactor.logger.LogErrorGettingAd(listID, err)
 		return domain.Ad{}, err
 	}
+	log.Printf("Before Refresh Cache")
 	interactor.refreshCache(ad)
 	return ad, nil
 }
