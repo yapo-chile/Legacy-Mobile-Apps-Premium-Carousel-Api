@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/olivere/elastic/v7"
 
@@ -44,13 +45,17 @@ func NewElasticsearch(host, port, username, password string, logger loggers.Logg
 func (e *elasticsearch) Search(index string,
 	query repository.Query, from,
 	size int) (repository.SearchResult, error) {
+	log.Printf("Elastic")
 	res, err := e.client.Search().
 		Index(index).
 		Query(query).
 		From(from).Size(size).
 		Pretty(true).
 		Do(context.Background())
+	log.Printf("Elastic err", err)
+	log.Printf("Elastic err", res)
 	if err != nil {
+
 		return nil, err
 	}
 	result := searchResult(*res)
