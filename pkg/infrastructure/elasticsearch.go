@@ -52,10 +52,8 @@ func (e *elasticsearch) Search(index string,
 		From(from).Size(size).
 		Pretty(true).
 		Do(context.Background())
-	log.Printf("Elastic err", err)
-	log.Printf("Elastic err", res)
 	if err != nil {
-
+		log.Printf("Elastic err", res)
 		return nil, err
 	}
 	result := searchResult(*res)
