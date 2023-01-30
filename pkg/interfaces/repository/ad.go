@@ -210,5 +210,6 @@ func (repo *adRepo) GetAd(listID string) (domain.Ad, error) {
 		return domain.Ad{}, err
 	}
 	ads := repo.parseToAds(res.GetResults())
+	log.Printf("Success")
 	return ads[0], nil
 }
