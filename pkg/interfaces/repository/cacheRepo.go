@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 	"time"
+	"log"
 
 	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/domain"
 	"gitlab.com/yapo_team/legacy/mobile-apps/premium-carousel-api/pkg/usecases"
@@ -43,12 +44,17 @@ func (repo *cacheRepository) GetCache(key string, cacheType usecases.CacheType) 
 // SetCache saves the response of request in redis
 func (repo *cacheRepository) SetCache(key string, cacheType usecases.CacheType,
 	data interface{}, expiration time.Duration) error {
+	log.Printf("Set cache")
 	if expiration <= 0 {
 		expiration = repo.defaultExpiration
 	}
+	log.Printf("After set expiration")
 	k := repo.makeRedisKey(key, cacheType)
+	log.Printf("After make redis key")
 	data = repo.minifyCache(cacheType, data)
+	log.Printf("After minify redis key")
 	bytes, _ := json.Marshal(data) // nolint
+	log.Printf("After marshal data")
 	return repo.handler.Set(k, bytes, expiration)
 }
 
